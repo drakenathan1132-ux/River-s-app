@@ -116,54 +116,10 @@
     </style>
 </head>
 <body class="min-h-screen pb-20">
-
-// CONFIGURACIÓN TÁCTICA RIVERS
-const UBICACION_CAMPO = { lat: 19.0633, lng: -97.0402 }; // Coordenadas aproximadas Unidad Deportiva
-const RADIO_MAXIMO = 300; // Metros permitidos (margen de error GPS)
-
-async function validarYRegistrar() {
-    // 1. GENERAR ID ÚNICO DE CELULAR
-    let deviceID = localStorage.getItem('rivers_device_id');
-    if (!deviceID) {
-        deviceID = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('rivers_device_id', deviceID);
-    }
-
-    // 2. PEDIR UBICACIÓN Y VALIDAR
-    if (!navigator.geolocation) {
-        alert("Tu navegador no soporta GPS. Usa Chrome.");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition((pos) => {
-        const d = calcularDistancia(pos.coords.latitude, pos.coords.longitude, UBICACION_CAMPO.lat, UBICACION_CAMPO.lng);
-        
-        if (d > RADIO_MAXIMO) {
-            alert(`ERROR DE UBICACIÓN: Estás a ${Math.round(d)}m. Debes estar en el campo.`);
-            return;
-        }
-
-        // 3. SELECCIÓN DE NOMBRE (Temporal)
-        const nombre = prompt("Escribe tu nombre para el registro:");
-        if (nombre) {
-            ejecutarRegistroOficial(nombre, deviceID);
-        }
-    }, (error) => {
-        alert("Debes activar el GPS y permitir el acceso para registrarte.");
-    });
-}
-
-// Función matemática de distancia
-function calcularDistancia(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const p1 = lat1 * Math.PI/180;
-    const p2 = lat2 * Math.PI/180;
-    const dp = (lat2-lat1) * Math.PI/180;
-    const dl = (lon2-lon1) * Math.PI/180;
-    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
+<div id="status-bar" style="position: sticky; top: 0; background: #000; color: #0f0; text-align: center; padding: 10px; border-bottom: 2px solid #0f0; font-family: monospace; z-index: 100;">
+    [ RIVERS CONTROL: ACTIVO ] <br>
+    UBICACIÓN REQUERIDA | ID CELULAR VINCULADO
+</div>
     <!-- Main Content -->
     <main class="max-w-md mx-auto px-4 py-6">
         
