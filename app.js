@@ -23,7 +23,34 @@ const RIVERS_SCHEDULE = {
 // ========================================
 
 class DataManager {
-    constructor() {
+    constructor() {    getDeviceID() {
+        let id = localStorage.getItem('rivers_device_id');
+        if (!id) {
+            id = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('rivers_device_id', id);
+        }
+        return id;
+    }
+
+    checkHorario() {
+        const ahora = new Date();
+        const diaSemana = ahora.getDay();
+        const horaActual = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
+
+        if (!RIVERS_SCHEDULE.DIAS_PERMITIDOS.includes(diaSemana)) {
+            return { habilitado: false, msg: "Hoy no hay entrenamiento programado." };
+        }
+        if (horaActual < RIVERS_SCHEDULE.APERTURA) {
+            return { habilitado: false, msg: `El registro abre a las 4:30 PM. (Hora actual: ${horaActual})` };
+        }
+        if (horaActual > RIVERS_SCHEDULE.CIERRE) {
+            return { habilitado: false, msg: "El registro ya cerró. Reportate con el Coach." };
+        }
+        
+        const esRetardo = horaActual > RIVERS_SCHEDULE.INICIO_ENTRENO;
+        return { habilitado: true, estatus: esRetardo ? "⚠️ RETARDO" : "✅ ASISTENCIA" };
+    }
+
         this.PLAYERS_KEY = 'rivers_players';
         this.ATTENDANCE_KEY = 'rivers_attendance';
     }
