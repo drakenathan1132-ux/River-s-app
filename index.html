@@ -116,10 +116,66 @@
     </style>
 </head>
 <body class="min-h-screen pb-20">
-<div id="status-bar" style="position: sticky; top: 0; background: #000; color: #0f0; text-align: center; padding: 10px; border-bottom: 2px solid #0f0; font-family: monospace; z-index: 100;">
-    [ RIVERS CONTROL: ACTIVO ] <br>
-    UBICACIÓN REQUERIDA | ID CELULAR VINCULADO
-</div>
+    <div id="status-bar" style="position: sticky; top: 0; background: #000; color: #0f0; text-align: center; padding: 10px; border-bottom: 2px solid #0f0; font-family: monospace; z-index: 100;">
+        [ RIVERS CONTROL: ACTIVO ] <br>
+        UBICACIÓN REQUERIDA | ID CELULAR VINCULADO
+    </div>
+
+    ```
+
+### 2. Configuración de `app.js` (El Cerebro)
+Abre tu archivo **`app.js`** en GitHub. Aquí es donde pondremos la "inteligencia" que pediste (GPS, ID de celular y Retardo). Borra lo que tenga y pega esto:
+
+```javascript
+// CONFIGURACIÓN TÁCTICA RIVERS
+const CONFIG = {
+    HORA_ENTRENO: "16:00",
+    LAT: 19.0633, 
+    LNG: -97.0402,
+    RADIO: 300 // metros
+};
+
+async function validarYRegistrar() {
+    // 1. IDENTIFICAR CELULAR
+    let deviceID = localStorage.getItem('rivers_device_id') || 
+                  (localStorage.setItem('rivers_device_id', 'DEV-' + Math.random().toString(36).substr(2,9)), localStorage.getItem('rivers_device_id'));
+
+    // 2. VALIDAR GPS
+    if (!navigator.geolocation) return alert("Activa el GPS");
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const dist = calcularDistancia(pos.coords.latitude, pos.coords.longitude, CONFIG.LAT, CONFIG.LNG);
+        
+        if (dist > CONFIG.RADIO) return alert(`Fuera de rango: estás a ${Math.round(dist)}m`);
+
+        // 3. CALCULAR RETARDO
+        const ahora = new Date();
+        const limite = new Date();
+        const [h, m] = CONFIG.HORA_ENTRENO.split(':');
+        limite.setHours(h, m, 0);
+        
+        const estatus = ahora > limite ? "RETARDO" : "ASISTENCIA";
+        const nombre = prompt(`Registrando como ${estatus}. Escribe tu nombre:`);
+
+        if (nombre) {
+            // Aquí se guarda en la memoria del cel
+            const registro = { nombre, estatus, deviceID, hora: ahora.toLocaleString() };
+            const historial = JSON.parse(localStorage.getItem('asistencias') || '[]');
+            historial.push(registro);
+            localStorage.setItem('asistencias', JSON.stringify(historial));
+            alert("Registro exitoso, Coach.");
+        }
+    });
+}
+
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+    const dp = (lat2-lat1) * Math.PI/180, dl = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2) * Math.sin(dl/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
     <!-- Main Content -->
     <main class="max-w-md mx-auto px-4 py-6">
         
