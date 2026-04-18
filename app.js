@@ -571,6 +571,52 @@ class AdminManager {
         }
     }
 }
+// CONFIGURACIÓN TÁCTICA
+const UBICACION_CAMPO = { lat: 19.1234, lng: -97.1234 }; // Coordenadas del campo (ajustar después)
+const RADIO_MAXIMO = 200; // Metros permitidos a la redonda
+
+async function validarYRegistrar() {
+    // 1. OBTENER ID DEL DISPOSITIVO
+    let deviceID = localStorage.getItem('rivers_device_id');
+    if (!deviceID) {
+        deviceID = 'DEV-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('rivers_device_id', deviceID);
+    }
+
+    // 2. PEDIR UBICACIÓN
+    if (!navigator.geolocation) {
+        alert("Tu celular no soporta GPS. No puedes registrarte.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const d = calcularDistancia(pos.coords.latitude, pos.coords.longitude, UBICACION_CAMPO.lat, UBICACION_CAMPO.lng);
+        
+        if (d > RADIO_MAXIMO) {
+            alert(`Estás muy lejos del campo (${Math.round(d)}m). Acércate para registrarte.`);
+            return;
+        }
+
+        // 3. SELECCIÓN DE NOMBRE (Temporal hasta tener la lista)
+        const nombre = prompt("Escribe tu nombre completo para confirmar:");
+        if (!nombre) return;
+
+        procesarAsistencia(nombre, deviceID);
+    });
+}
+
+// Fórmula matemática para calcular distancia entre coordenadas
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; 
+    const phi1 = lat1 * Math.PI/180;
+    const phi2 = lat2 * Math.PI/180;
+    const deltaPhi = (lat2-lat1) * Math.PI/180;
+    const deltaLambda = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
+              Math.cos(phi1) * Math.cos(phi2) *
+              Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 
 const adminManager = new AdminManager();
 
