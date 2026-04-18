@@ -10,10 +10,14 @@
 const ADMIN_PIN = '2000';
 const TOLERANCE_MINUTES = 15;
 const RETARDOS_PER_FALTA = 3;
-
 // Google Apps Script endpoint (configurar con tu URL de deployment)
 const SYNC_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
-
+const RIVERS_SCHEDULE = {
+    DIAS_PERMITIDOS: [2, 4], // Martes = 2, Jueves = 4
+    APERTURA: "16:30",
+    INICIO_ENTRENO: "17:00",
+    CIERRE: "17:15" // Después de esto ya no pueden registrarse ni con retardo
+};
 // ========================================
 // 2. DATA MANAGEMENT (LocalStorage)
 // ========================================
