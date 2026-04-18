@@ -6,12 +6,14 @@
     <meta name="theme-color" content="#0A0A0A">
     <meta name="description" content="RIVERS Tochito Club - Sistema de Gestión">
     <title>RIVERS Tochito Club</title>
-let deviceID = localStorage.getItem('rivers_device_id');
-if (!deviceID) {
-    // Si es la primera vez, le asignamos un ID único a este cel
-    deviceID = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('rivers_device_id', deviceID);
-}    
+    <script>
+        // Esto genera el ID único para el celular
+        let deviceID = localStorage.getItem('rivers_device_id');
+        if (!deviceID) {
+            deviceID = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('rivers_device_id', deviceID);
+        }
+    </script>
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
     
