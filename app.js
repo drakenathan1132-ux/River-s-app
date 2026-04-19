@@ -23,7 +23,13 @@ const RIVERS_SCHEDULE = {
 // ========================================
 
 class DataManager {
-    constructor() {    getDeviceID() {
+    constructor() {   
+        this.PLAYERS_KEY = 'rivers_players';
+        this.ATTENDANCE_KEY = 'rivers_attendance';
+        this.DEVICE_KEY = 'rivers_device_id';
+    }
+
+ getDeviceID() {
         let id = localStorage.getItem('rivers_device_id');
         if (!id) {
             id = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
