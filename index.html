@@ -8,11 +8,6 @@
     <title>RIVERS Tochito Club</title>
     <script>
         // Esto genera el ID único para el celular
-        let deviceID = localStorage.getItem('rivers_device_id');
-        if (!deviceID) {
-            deviceID = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('rivers_device_id', deviceID);
-        }
     </script>
     <!-- PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
