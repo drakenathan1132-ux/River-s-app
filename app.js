@@ -666,13 +666,19 @@ const adminManager = new AdminManager();
 
 // ========================================
 // 7. INITIALIZATION
-// ========================================
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🏈 RIVERS Tochito Club App Initialized');
     
-    // Set default start time
-    const now = new Date();
+    // Esto asegura que el botón de escaneo use tu nueva lógica de GPS
+    const scanBtn = document.getElementById('startScanBtn');
+    if (scanBtn) {
+        // Quitamos cualquier evento previo y ponemos el de validación
+        scanBtn.replaceWith(scanBtn.cloneNode(true)); 
+        document.getElementById('startScanBtn').addEventListener('click', validarYRegistrar);
+    }
+
+    // Mantén tu configuración de hora por defecto
     const defaultTime = '18:00';
-    document.getElementById('startTime').value = defaultTime;
+    const startTimeInput = document.getElementById('startTime');
+    if (startTimeInput) startTimeInput.value = defaultTime;
 });
