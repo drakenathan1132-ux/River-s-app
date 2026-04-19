@@ -11,7 +11,16 @@ const ADMIN_PIN = '2000';
 const TOLERANCE_MINUTES = 15;
 const RETARDOS_PER_FALTA = 3;
 // Google Apps Script endpoint (configurar con tu URL de deployment)
-const SYNC_ENDPOINT = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+const SYNC_ENDPOINT =
+const RIVERS_SCHEDULE = {
+    DIAS_PERMITIDOS: [2, 4], // Martes y Jueves
+    APERTURA: "16:30",
+    INICIO_ENTRENO: "17:00",
+    CIERRE: "17:15",
+    COORDENADAS: { lat: 19.0633, lng: -97.0402 },
+    RADIO_MAXIMO: 300
+};
+ 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 const RIVERS_SCHEDULE = {
     DIAS_PERMITIDOS: [2, 4], // Martes = 2, Jueves = 4
     APERTURA: "16:30",
