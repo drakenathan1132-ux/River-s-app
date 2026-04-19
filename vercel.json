@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "public": true,
+  "buildCommand": null,
+  "devCommand": null,
+  "installCommand": "npm install",
+  "framework": null
+}

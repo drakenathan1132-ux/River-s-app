@@ -1,0 +1,23 @@
+{
+  "name": "primary",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión de Asistencias para el club de flag football RIVERS. Aplicación Progressive Web App (PWA) con funcionalidad offline completa, scanner QR y sincronización en la nube.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drakenathan1132-ux/River-s-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/drakenathan1132-ux/River-s-app/issues"
+  },
+  "homepage": "https://github.com/drakenathan1132-ux/River-s-app#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
