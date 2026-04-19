@@ -232,8 +232,8 @@ class CheckInManager {
     }
     
     init() {
-        document.getElementById('startScanBtn').addEventListener('click', () => this.startScanning());
-        document.getElementById('stopScanBtn').addEventListener('click', () => this.stopScanning());
+  document.getElementById('startScanBtn').addEventListener('click', () => validarYRegistrar());
+      document.getElementById('stopScanBtn').addEventListener('click', () => this.stopScanning());
     }
     
     startScanning() {
