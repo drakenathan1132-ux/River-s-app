@@ -262,7 +262,33 @@ class CheckInManager {
             this.showResult('Error al iniciar cámara: ' + err, 'error');
         });
     }
-    
+        handleScan(decodedText) {
+        this.stopScanning(); 
+
+        if (decodedText !== 'RIVERS_ENTRENAMIENTO') {
+            alert("❌ QR no válido.");
+            return;
+        }
+
+        const nombre = prompt("🎯 QR Válido. Escribe tu nombre para confirmar asistencia:");
+        if (nombre && nombre.trim() !== "") {
+            const horario = db.checkHorario();
+            const registro = {
+                nombre: nombre.trim(),
+                fecha: new Date().toLocaleDateString(),
+                hora: new Date().toLocaleTimeString(),
+                estatus: horario.estatus,
+                deviceID: db.getDeviceID()
+            };
+
+            const asistencias = JSON.parse(localStorage.getItem('rivers_attendance') || '[]');
+            asistencias.push(registro);
+            localStorage.setItem('rivers_attendance', JSON.stringify(asistencias));
+
+            alert(`✅ REGISTRO EXITOSO\n${nombre}\nEstatus: ${horario.estatus}`);
+        }
+    }
+
     stopScanning() {
         if (this.scanner && this.isScanning) {
             this.scanner.stop().then(() => {
