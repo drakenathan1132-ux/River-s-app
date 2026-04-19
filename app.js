@@ -55,11 +55,9 @@ class DataManager {
         
         const esRetardo = horaActual > RIVERS_SCHEDULE.INICIO_ENTRENO;
         return { habilitado: true, estatus: esRetardo ? "⚠️ RETARDO" : "✅ ASISTENCIA" };
-    }
+        }
 
-        this.PLAYERS_KEY = 'rivers_players';
-        this.ATTENDANCE_KEY = 'rivers_attendance';
-    }
+ }
     
     // Players CRUD
     getPlayers() {
