@@ -708,3 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startTimeInput = document.getElementById('startTime');
     if (startTimeInput) startTimeInput.value = defaultTime;
 });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
