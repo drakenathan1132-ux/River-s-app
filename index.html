@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RIVERS TOCHITO CLUB</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body { background: #0A0A0A; color: #f0f0f0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
         header { text-align: center; padding: 20px; background: linear-gradient(180deg, #00FFFF22 0%, #0A0A0A 100%); }
@@ -16,7 +15,7 @@
         nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
         .nav-item { text-align: center; color: #555; font-size: 0.7rem; cursor: pointer; }
         .nav-item.active { color: #00FFFF; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
+        select, input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; font-size: 1rem; }
     </style>
 </head>
 <body>
@@ -29,23 +28,34 @@
 <main>
     <section id="reglamento" class="section-content active">
         <div class="glass-card">
-            <h2 style="color:#00FFFF">📋 Reglamento de Asistencia</h2>
-            <p><strong>4:45 PM:</strong> Inicia registro.</p>
-            <p><strong>5:00 PM:</strong> Límite puntual. Después es retardo.</p>
-            <p><strong>5:30 PM:</strong> Cierre de sistema.</p>
+            <h2 style="color:#00FFFF">📋 Sección I - Asistencia</h2>
+            <p><strong>Art 1. Tolerancia:</strong> 15 minutos exactos tras el inicio.</p>
+            <p><strong>Art 2. Retardos:</strong> 3 retardos equivalen a 1 falta.</p>
+            <p><strong>Art 3. Bajas:</strong> La 3ra falta es baja automática.</p>
+            <a href="./reglamento.pdf" download style="text-decoration:none;">
+                <button class="btn-primary">📥 Descargar PDF Completo</button>
+            </a>
         </div>
     </section>
 
     <section id="checkin" class="section-content">
         <div class="glass-card">
-            <h2>📱 Check-In QR</h2>
-            <div id="reader" style="width:100%; border-radius:15px; overflow:hidden;"></div>
-            <button class="btn-primary" id="startBtn">🎯 Escanear Código</button>
+            <h2 style="color:#00FFFF">📱 Registro Manual</h2>
+            <p style="font-size:0.8rem; color:#888;">Selecciona tu nombre para registrar entrada.</p>
             
-            <div id="result-box" style="display:none; margin-top:15px; text-align:center;">
-                <h3 id="player-name" style="color:#00FFFF"></h3>
-                <p id="time-status"></p>
-                <button class="btn-primary" onclick="confirmRecord()">✅ Confirmar y Subir a Nube</button>
+            <label>Nombre:</label>
+            <select id="playerSelect">
+                <option value="">-- Selecciona --</option>
+                <option value="Tadeo Solis">Tadeo Solis (Coach-1)</option>
+                <option value="Jesús Bonilla">Jesús Bonilla (Coach-2)</option>
+                <option value="Joshua">Joshua (Coach-3)</option>
+                <option value="Lia Rodriguez">Lia Rodriguez (Coach-4)</option>
+                </select>
+
+            <button class="btn-primary" onclick="registerAttendance()">✅ Confirmar Asistencia</button>
+            
+            <div id="status-msg" style="display:none; margin-top:15px; text-align:center; color:#00FF88; font-weight:bold;">
+                ¡Registro enviado a la nube!
             </div>
         </div>
     </section>
@@ -54,12 +64,11 @@
         <div class="glass-card">
             <h2>🔐 Panel de Control</h2>
             <div id="login-admin">
-                <input type="password" id="pass" placeholder="Pin de Coach">
-                <button class="btn-primary" onclick="accessAdmin()">Entrar al Panel</button>
+                <input type="password" id="pass" placeholder="Pin de Seguridad">
+                <button class="btn-primary" onclick="accessAdmin()">Entrar</button>
             </div>
             <div id="panel-data" style="display:none;">
-                <p><strong>Coach:</strong> Tadeo / Staff</p>
-                <p><strong>Jugadoras:</strong> 80 Registradas</p>
+                <p><strong>Acceso:</strong> Staff Técnico autorizado.</p>
                 <button class="btn-primary" style="background:#ff4444" onclick="location.reload()">Cerrar Sesión</button>
             </div>
         </div>
@@ -73,8 +82,8 @@
 </nav>
 
 <script>
-    const SCRIPT_URL = "PEGAR_AQUI_TU_URL_DE_APPS_SCRIPT";
-    let tempPlayer = null;
+    // URL DE TU GOOGLE SHEETS
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
 
     function showSection(id, el) {
         document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
@@ -83,46 +92,47 @@
         el.classList.add('active');
     }
 
-    const scanner = new Html5Qrcode("reader");
-    document.getElementById('startBtn').onclick = () => {
-        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
-            scanner.stop();
-            const now = new Date();
-            const hour = now.getHours();
-            const min = now.getMinutes();
-            const totalMin = (hour * 60) + min;
+    async function registerAttendance() {
+        const name = document.getElementById('playerSelect').value;
+        if (!name) return alert("Selecciona un nombre");
 
-            // Lógica de tiempo: 4:45 PM = 1005 min, 5:00 PM = 1020 min
-            let status = (totalMin <= 1020) ? "PRESENTE" : "RETARDO";
-            
-            tempPlayer = { name: text, status: status, date: now.toLocaleDateString(), time: now.toLocaleTimeString() };
-            document.getElementById('player-name').innerText = text;
-            document.getElementById('time-status').innerText = "Estatus: " + status;
-            document.getElementById('result-box').style.display = "block";
-        });
-    };
+        const now = new Date();
+        const hour = now.getHours();
+        const min = now.getMinutes();
+        const totalMin = (hour * 60) + min;
 
-    async function confirmRecord() {
+        // Lógica: 5:00 PM es el límite (1020 min)
+        let status = (totalMin <= 1020) ? "PRESENTE" : "RETARDO";
+
+        const data = {
+            name: name,
+            status: status,
+            date: now.toLocaleDateString(),
+            time: now.toLocaleTimeString()
+        };
+
         alert("Sincronizando con Google Sheets...");
+
         try {
             await fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify(tempPlayer)
+                body: JSON.stringify(data)
             });
-            alert("¡Guardado exitoso!");
-            document.getElementById('result-box').style.display = "none";
-        } catch(e) {
-            alert("Error de conexión. Se intentará luego.");
+            document.getElementById('status-msg').style.display = "block";
+            setTimeout(() => { location.reload(); }, 2500);
+        } catch (e) {
+            alert("Error de conexión. Revisa el internet.");
         }
     }
 
     function accessAdmin() {
-        if(document.getElementById('pass').value === "2000") { // Pon tu clave aquí
+        // Tu clave personalizada
+        if(document.getElementById('pass').value === "2000") {
             document.getElementById('login-admin').style.display = "none";
             document.getElementById('panel-data').style.display = "block";
         } else {
-            alert("Clave incorrecta");
+            alert("Pin incorrecto");
         }
     }
 </script>
