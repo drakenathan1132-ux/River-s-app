@@ -4,398 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RIVERS Tochito Club</title>
-    <meta name="description" content="Sistema de Gestión RIVERS">
-
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="icon" sizes="512x512" href="/android-512x512-icon.png">
-    <link rel="apple-touch-icon" href="/apple-180x180-icon.png">
     
-    <meta name="theme-color" content="#0A0A0A">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="RIVERS">
-
-    <script>
-        // Registro de Service Worker para que funcione Offline
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
-            });
-        }
-    </script>
-    
-    <!-- Custom Styles -->
     <style>
-     html {
-    scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent;
-}
- /* DISEÑO DE LA BARRA INFERIOR RIVERS */
-.bottom-nav {
-    background: rgba(15, 15, 15, 0.95) !important;
-    backdrop-filter: blur(10px);
-    border-top: 1px solid #00FFFF;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
-    z-index: 1000;
-}
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-/* QUITA EL FONDO BLANCO Y DA COLOR A LOS ICONOS */
-.nav-item {
-    background: transparent !important;
-    color: #888 !important;
-    border: none !important;
-    text-align: center;
-}
+        body {
+            background-color: #0A0A0A;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding-bottom: 80px; /* Espacio para la barra inferior */
+        }
 
-/* COLOR CIAN PARA LA SECCIÓN ACTIVA */
-.nav-item.active {
-    color: #00FFFF !important;
-}
+        /* OCULTAR SECCIONES */
+        .section-content {
+            display: none; /* Todo apagado por defecto */
+        }
 
-/* HACK PARA EL TEXTO DEL REGLAMENTO */
-.section-content, p, li {
-    color: #e5e7eb !important;
-}
+        .section-content.active {
+            display: block !important; /* Solo la sección activa se ve */
+        }
 
- <script>
-function showSection(sectionId) {
-    // 1. Esconde todo
-    document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-    
-    // 2. Muestra la sección que elegiste
-    const target = document.getElementById(sectionId);
-    if (target) target.classList.add('active');
+        /* DISEÑO DE LA BARRA INFERIOR */
+        .bottom-nav {
+            background: rgba(15, 15, 15, 0.98) !important;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #00FFFF;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
 
-    // 3. Cambia el color del icono
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-}
+        .nav-item {
+            background: transparent !important;
+            color: #888 !important;
+            border: none !important;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
 
-</script>
-main section.active, .section-content.active {
-    display: block !important; /* Solo muestra la activa */
-}
-main section.active, .section-content.active {
-    display: block !important; /* Solo muestra la activa */
-}
-   
-/* 1. Fondo y letra general */
-body {
-    background-color: #0A0A0A;
-    color: #f0f0f0;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-}
+        .nav-item.active {
+            color: #00FFFF !important;
+        }
 
-/* 2. Ocultar secciones para que no se vea todo hacia abajo */
-main section, .section-content {
-    display: none; /* Esto es lo que "apaga" las páginas */
-}
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
 
-/* 3. Mostrar solo la sección que seleccionas */
-main section.active, .section-content.active {
-    display: block !important;
-}
-
-/* 4. Estilo de la barra inferior */
-.bottom-nav {
-    background: rgba(15, 15, 15, 0.95) !important;
-    border-top: 1px solid #00FFFF;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    z-index: 1000;
-}
-   </style>
-
+        .btn-primary {
+            background: #00FFFF;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            width: 100%;
+        }
+    </style>
 </head>
-    <meta property="og:title" content="RIVERS Tochito Club">
-    <meta property="og:description" content="Sistema de Gestión y Asistencia">
-    <meta property="og:image" content="https://riversapp.vercel.app/icon-512x512.png">
-    <meta name="twitter:card" content="summary_large_image">
-<body class="min-h-screen pb-20">
-    <div id="status-bar" style="position: sticky; top: 0; background: #000; color: #0f0; text-align: center; padding: 10px; border-bottom: 2px solid #0f0; font-family: monospace; z-index: 100;">
-        [ RIVERS CONTROL: ACTIVO ] <br>
-        UBICACIÓN REQUERIDA | ID CELULAR VINCULADO
+
+<body>
+    <div id="status-bar" style="background: #000; color: #00FFFF; text-align: center; padding: 10px; border-bottom: 1px solid #00FFFF; font-family: monospace; font-size: 12px;">
+        [ RIVERS CONTROL: ACTIVO ]
     </div>
 
-    <!-- Main Content -->
-    <main class="max-w-md mx-auto px-4 py-6">
+    <main class="max-w-md mx-auto px-4 py-6" style="max-width: 500px; margin: auto;">
         
-        <!-- SECTION: REGLAMENTO -->
-        <div id="section-reglamento" class="section-content active">
-            <div class="glass-card rounded-3xl p-6 mb-6">
-                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
-                    <span class="text-3xl mr-3">📋</span>
-                    Reglamento Oficial
-                </h2>
-                
-                <div class="text-gray-300 space-y-4 text-sm leading-relaxed">
-                    
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-400 mb-2">SECCIÓN I - ASISTENCIA Y PUNTUALIDAD</h3>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 1. Tolerancia de Llegada</strong><br>
-                        Se otorgará una tolerancia máxima de <strong class="text-cyan-400">15 MINUTOS EXACTOS</strong> después del horario oficial de inicio de cada entrenamiento. Después de este tiempo, se considerará retardo.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 2. Equivalencia de Retardos</strong><br>
-                        <strong class="text-pink-400">3 RETARDOS = 1 FALTA</strong><br>
-                        La acumulación de tres (3) retardos será contabilizada automáticamente como una (1) falta injustificada para efectos de registro.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 3. Consecuencias por Inasistencias</strong><br>
-                        La tercera (3ra) falta injustificada resultará en <strong class="text-red-400">BAJA AUTOMÁTICA E INMEDIATA</strong> del programa. Esta disposición no admite excepciones.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 4. Justificación de Inasistencias</strong><br>
-                        Las faltas por motivos médicos, académicos o de emergencia familiar deberán ser notificadas al staff de RIVERS con al menos 24 horas de anticipación (cuando sea posible) y presentar justificante oficial para que no sean contabilizadas como injustificadas.</p>
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-400 mb-2">SECCIÓN II - SEGURIDAD Y EQUIPO DEPORTIVO</h3>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 5. Uso Obligatorio de Protector Bucal</strong><br>
-                        Es <strong class="text-cyan-400">OBLIGATORIO</strong> el uso de protector bucal durante todos los entrenamientos y competencias. Ningún jugador podrá participar en actividades de contacto sin este equipo de seguridad.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 6. Prohibición de Joyería</strong><br>
-                        Queda <strong class="text-red-400">ESTRICTAMENTE PROHIBIDO</strong> el uso de:</p>
-                        <ul class="list-disc list-inside ml-4 mb-3 space-y-1">
-                            <li>Aretes (perforaciones)</li>
-                            <li>Anillos</li>
-                            <li>Pulseras, collares o cualquier tipo de accesorio</li>
-                        </ul>
-                        <p class="mb-3">Esta medida es de carácter preventivo para evitar lesiones durante el jalón de bandera.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 7. Restricción de Uñas Largas</strong><br>
-                        No se permite el uso de <strong class="text-red-400">UÑAS LARGAS</strong> (naturales o postizas) por riesgo de lesión al jalar las banderas o durante el contacto con otros jugadores. Las uñas deben estar cortas y limadas.</p>
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-400 mb-2">SECCIÓN III - INDUMENTARIA Y UNIFORME</h3>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 8. Shorts sin Bolsas</strong><br>
-                        El short deportivo debe ser <strong class="text-cyan-400">SIN BOLSAS</strong> para evitar enganches con las banderas y permitir un juego limpio y seguro.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 9. Uniforme Oficial</strong><br>
-                        Todo miembro de RIVERS TOCHITO CLUB debe portar el <strong class="text-cyan-400">UNIFORME OFICIAL</strong> del club durante entrenamientos y competencias oficiales. El uniforme incluye:</p>
-                        <ul class="list-disc list-inside ml-4 mb-3 space-y-1">
-                            <li>Jersey oficial de Rivers</li>
-                            <li>Short deportivo sin bolsas</li>
-                            <li>Cinturón de banderas del club</li>
-                            <li>Tacos o tenis deportivos apropiados</li>
-                        </ul>
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-400 mb-2">SECCIÓN IV - CONDUCTA Y DISCIPLINA</h3>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 10. Valores del Club</strong><br>
-                        Todo miembro de RIVERS TOCHITO CLUB debe manifestar en todo momento:</p>
-                        <ul class="list-disc list-inside ml-4 mb-3 space-y-1">
-                            <li><strong class="text-cyan-400">DISCIPLINA</strong> en entrenamientos y competencias</li>
-                            <li><strong class="text-cyan-400">RESPETO</strong> hacia el staff técnico, compañeros y rivales</li>
-                            <li><strong class="text-cyan-400">COMPROMISO</strong> con el desarrollo del equipo</li>
-                            <li><strong class="text-cyan-400">TRABAJO EN EQUIPO</strong> y espíritu de colaboración</li>
-                        </ul>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 11. Respeto al Staff Técnico</strong><br>
-                        El staff técnico de RIVERS TOCHITO CLUB (entrenadores, asistentes y cuerpo directivo) debe ser tratado con <strong class="text-cyan-400">RESPETO ABSOLUTO</strong>. Las faltas de respeto, actitudes desafiantes o conductas inapropiadas resultarán en sanciones disciplinarias que pueden incluir suspensión temporal o baja definitiva.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 12. Jerarquía de Capitanas</strong><br>
-                        Las <strong class="text-pink-400">CAPITANAS</strong> del equipo son líderes designadas por el staff técnico. Sus indicaciones durante entrenamientos y partidos deben ser acatadas con respeto y profesionalismo. Ellas son el enlace entre el coaching staff y el equipo.</p>
-                        
-                        <p class="mb-3"><strong class="text-white">Artículo 13. Prohibición de Conductas Antideportivas</strong><br>
-                        Quedan <strong class="text-red-400">ESTRICTAMENTE PROHIBIDAS</strong> las siguientes conductas:</p>
-                        <ul class="list-disc list-inside ml-4 mb-3 space-y-1">
-                            <li>Uso de lenguaje ofensivo o vulgar</li>
-                            <li>Agresión física o verbal hacia cualquier persona</li>
-                            <li>Consumo de sustancias prohibidas o alcohol</li>
-                            <li>Conductas que dañen la imagen del club</li>
-                        </ul>
-                        <p>Cualquier violación a estos principios será sancionada de acuerdo a la gravedad de la falta.</p>
-                    </div>
+        <div id="reglamento" class="section-content active">
+            <div class="glass-card">
+                <h2 style="color: #00FFFF;">📋 Reglamento Oficial</h2>
+                <div style="font-size: 14px; line-height: 1.6; color: #ccc;">
+                    <h3 style="color: #fff;">SECCIÓN I - ASISTENCIA</h3>
+                    <p><strong>Art 1.</strong> Tolerancia de 15 minutos.</p>
+                    <p><strong>Art 2.</strong> 3 Retardos = 1 Falta.</p>
+                    <p><strong>Art 3.</strong> 3 Faltas = Baja automática.</p>
                 </div>
-                
-                <a href="./reglamento.pdf" download="RIVERS_Reglamento_Oficial.pdf" class="block mt-6">
-                    <button class="btn-primary w-full py-4 rounded-2xl text-gray-900 font-bold text-lg">
-                        📥 Descargar PDF Oficial
-                    </button>
-                </a>
             </div>
         </div>
-        
-        <!-- SECTION: CHECK-IN -->
+
         <div id="checkin" class="section-content">
-            <div class="glass-card rounded-3xl p-6 mb-6">
-                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
-                    <span class="text-3xl mr-3">📱</span>
-                    Check-In QR
-                </h2>
-                
-                <div class="mb-4">
-                    <label class="text-gray-300 text-sm mb-2 block">Hora de Inicio del Entrenamiento:</label>
-                    <input type="time" id="startTime" class="w-full bg-gray-800 text-white rounded-xl px-4 py-3 border border-cyan-500/30 focus:outline-none focus:border-cyan-500" value="18:00">
-                </div>              
-                <div id="reader" class="mb-4"></div>
-                <button id="startScanBtn" class="btn-primary w-full py-4 rounded-2xl text-gray-900 font-bold text-lg mb-4">
-                    🎯 Iniciar Escaneo
-                </button>
-                
-                <button id="stopScanBtn" class="btn-secondary w-full py-4 rounded-2xl text-gray-900 font-bold text-lg hidden">
-                    ⏹️ Detener Escaneo
-                </button>
-                
-                <div id="scanResult" class="mt-4 p-4 rounded-2xl hidden">
-                    <p id="scanResultText" class="text-white font-bold text-center"></p>
-                </div>
+            <div class="glass-card">
+                <h2 style="color: #00FFFF;">📱 Check-In QR</h2>
+                <button class="btn-primary">🎯 Iniciar Escaneo</button>
             </div>
         </div>
-        
-        <!-- SECTION: DASHBOARD -->
-        <div id="section-dashboard" class="section-content">
-            <div class="glass-card rounded-3xl p-6 mb-6">
-                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
-                    <span class="text-3xl mr-3">📊</span>
-                    Dashboard Público
-                </h2>
-                
-                <div class="mb-4">
-                    <p class="text-gray-400 text-sm">Asistencias de Hoy: <span id="todayDate" class="text-cyan-400 font-bold"></span></p>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-cyan-500/30">
-                                <th class="text-left text-cyan-400 py-2 px-2">Nombre</th>
-                                <th class="text-left text-cyan-400 py-2 px-2">Hora</th>
-                                <th class="text-left text-cyan-400 py-2 px-2">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashboardTableBody" class="text-gray-300">
-                            <!-- Dynamic content -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div id="emptyDashboard" class="text-center text-gray-500 py-8 hidden">
-                    <p>No hay registros de asistencia hoy</p>
-                </div>
+
+        <div id="dashboard" class="section-content">
+            <div class="glass-card">
+                <h2 style="color: #00FFFF;">📊 Dashboard</h2>
+                <p>No hay registros hoy.</p>
             </div>
         </div>
-        
-        <!-- SECTION: ADMIN -->
-        <div id="section-admin" class="section-content">
-            <div class="glass-card rounded-3xl p-6 mb-6">
-                <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
-                    <span class="text-3xl mr-3">🔐</span>
-                    Panel Admin
-                </h2>
-                
-                <button id="unlockAdminBtn" class="btn-primary w-full py-4 rounded-2xl text-gray-900 font-bold text-lg mb-4">
-                    🔓 Desbloquear Panel
-                </button>
-                
-                <div id="adminContent" class="hidden">
-                    
-                    <!-- Sync Button -->
-                    <button id="syncDataBtn" class="btn-secondary w-full py-3 rounded-2xl text-gray-900 font-bold mb-6">
-                        ☁️ Sincronizar Datos con Nube
-                    </button>
-                    
-                    <!-- Add Player Form -->
-                    <div class="mb-6 p-4 bg-gray-800/50 rounded-2xl">
-                        <h3 class="text-white font-bold mb-3">➕ Agregar Jugadora</h3>
-                        <input type="text" id="newPlayerName" placeholder="Nombre completo" class="w-full bg-gray-900 text-white rounded-xl px-4 py-3 mb-2 border border-cyan-500/30 focus:outline-none focus:border-cyan-500">
-                        <input type="text" id="newPlayerId" placeholder="ID (ej: RIV001)" class="w-full bg-gray-900 text-white rounded-xl px-4 py-3 mb-2 border border-cyan-500/30 focus:outline-none focus:border-cyan-500">
-                        <input type="number" id="newPlayerAge" placeholder="Edad" class="w-full bg-gray-900 text-white rounded-xl px-4 py-3 mb-3 border border-cyan-500/30 focus:outline-none focus:border-cyan-500">
-                        <button id="addPlayerBtn" class="btn-primary w-full py-3 rounded-xl text-gray-900 font-bold">
-                            Agregar
-                        </button>
-                    </div>
-                    
-                    <!-- Players List -->
-                    <div>
-                        <h3 class="text-white font-bold mb-3">👥 Roster de Jugadoras</h3>
-                        <div id="playersList" class="space-y-2">
-                            <!-- Dynamic content -->
-                        </div>
-                        
-                        <div id="emptyRoster" class="text-center text-gray-500 py-8 hidden">
-                            <p>No hay jugadoras registradas</p>
-                        </div>
-                    </div>
-                </div>
+
+        <div id="admin" class="section-content">
+            <div class="glass-card">
+                <h2 style="color: #00FFFF;">🔐 Panel Admin</h2>
+                <button class="btn-primary">🔓 Desbloquear Panel</button>
             </div>
         </div>
-        
     </main>
 
-    <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
+    <nav class="bottom-nav">
         <div class="nav-item active" onclick="showSection('reglamento')">
-            <span class="block text-xl">📋</span>
-            <p>Reglamento</p>
+            <span>📋</span><br>Reglamento
         </div>
         <div class="nav-item" onclick="showSection('checkin')">
-            <span class="block text-xl">📱</span>
-            <p>Check-In</p>
+            <span>📱</span><br>Check-In
         </div>
         <div class="nav-item" onclick="showSection('dashboard')">
-            <span class="block text-xl">📊</span>
-            <p>Dashboard</p>
+            <span>📊</span><br>Dashboard
         </div>
         <div class="nav-item" onclick="showSection('admin')">
-            <span class="block text-xl">🔐</span>
-            <p>Admin</p>
+            <span>🔐</span><br>Admin
         </div>
     </nav>
 
-    <!-- PIN Modal -->
-    <div id="pinModal" class="modal">
-        <div class="glass-card rounded-3xl p-8 max-w-sm mx-4">
-            <h3 class="text-white text-xl font-bold mb-4 text-center">Ingresa el PIN</h3>
-            <input type="password" id="pinInput" maxlength="4" class="w-full bg-gray-900 text-white text-center text-2xl rounded-xl px-4 py-4 mb-4 border border-cyan-500/30 focus:outline-none focus:border-cyan-500" placeholder="••••">
-            <button id="submitPinBtn" class="btn-primary w-full py-3 rounded-xl text-gray-900 font-bold">
-                Confirmar
-            </button>
-            <button id="cancelPinBtn" class="mt-2 w-full py-3 rounded-xl text-gray-400 font-bold">
-                Cancelar
-            </button>
-        </div>
-    </div>
-
-    <!-- Edit Player Modal -->
-    <div id="editPlayerModal" class="modal">
-        <div class="glass-card rounded-3xl p-8 max-w-sm mx-4">
-            <h3 class="text-white text-xl font-bold mb-4">Editar Jugadora</h3>
-            <input type="hidden" id="editPlayerId">
-            <input type="text" id="editPlayerName" placeholder="Nombre" class="w-full bg-gray-900 text-white rounded-xl px-4 py-3 mb-2 border border-cyan-500/30 focus:outline-none focus:border-cyan-500">
-            <input type="number" id="editPlayerAge" placeholder="Edad" class="w-full bg-gray-900 text-white rounded-xl px-4 py-3 mb-4 border border-cyan-500/30 focus:outline-none focus:border-cyan-500">
-            <button id="saveEditBtn" class="btn-primary w-full py-3 rounded-xl text-gray-900 font-bold mb-2">
-                Guardar Cambios
-            </button>
-            <button id="cancelEditBtn" class="w-full py-3 rounded-xl text-gray-400 font-bold">
-                Cancelar
-            </button>
-        </div>
-    </div>
-
-    <script src="./app.js"></script>
-    
     <script>
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registrado'))
-                    .catch(err => console.log('Service Worker error:', err));
+        function showSection(sectionId) {
+            // 1. Esconder todas las secciones
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
             });
+
+            // 2. Mostrar la sección elegida
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            // 3. Actualizar color de los botones
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // 4. Subir al inicio
+            window.scrollTo(0, 0);
         }
     </script>
 </body>
