@@ -75,7 +75,40 @@
     .nav-item.active {
         color: #00FFFF; /* Azul para el seleccionado */
     }
+/* EL HACK DEL SCROLL */
+html {
+    scroll-behavior: smooth !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* DISEÑO DE LA BARRA INFERIOR */
+.bottom-nav {
+    background: rgba(15, 15, 15, 0.95) !important; /* Fondo casi negro */
+    backdrop-filter: blur(10px); /* Efecto de cristal */
+    border-top: 1px solid #00FFFF; /* Línea cian de RIVERS */
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 1000;
+}
+
+/* QUITA EL FONDO BLANCO DE LOS BOTONES */
+.nav-item {
+    background: transparent !important;
+    color: #888 !important; /* Color gris para los no seleccionados */
+    border: none !important;
+    text-align: center;
+}
+
+/* COLOR PARA EL BOTÓN SELECCIONADO */
+.nav-item.active {
+    color: #00FFFF !important; /* Cian brillante */
+}
     </style>
+
 </head>
     <meta property="og:title" content="RIVERS Tochito Club">
     <meta property="og:description" content="Sistema de Gestión y Asistencia">
