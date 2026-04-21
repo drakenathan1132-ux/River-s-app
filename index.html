@@ -2,115 +2,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RIVERS Tochito Club</title>
-    
-    <meta name="theme-color" content="#0A0A0A">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIVERS TOCHITO CLUB</title>
+    <link rel="manifest" href="/manifest.json">
     <style>
-        /* ESTILOS BASE Y HACKS DE LEGIBILIDAD */
-        html { scroll-behavior: smooth !important; -webkit-tap-highlight-color: transparent; }
-        
+        /* Tus estilos base */
         body {
             background-color: #0A0A0A;
             color: #f0f0f0;
             font-family: 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding-bottom: 90px;
+            padding-bottom: 80px;
         }
-
-        /* HEADER CON LOGO ACTUALIZADO */
         header {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            background: rgba(10, 10, 10, 0.85);
-            border-bottom: 2px solid #00FFFF;
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-            backdrop-filter: blur(12px);
-        }
-        .logo-img {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 2px solid #00FFFF;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
-            margin-right: 15px;
-            object-fit: cover;
-        }
-        header h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: 1.5px; margin: 0; color: #fff; }
-
-        /* CONTENEDORES DE SECCIÓN */
-        main section { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        main section.active { display: block !important; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(0, 255, 255, 0.15);
-            border-radius: 28px;
-            padding: 22px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        /* REGLAMENTO: TEXTO BRILLANTE */
-        .section-content p, .section-content li {
-            color: #e5e7eb !important; 
-            line-height: 1.6;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-        }
-        .regla-titulo { color: #00FFFF; font-weight: bold; margin-top: 20px; border-left: 3px solid #00FFFF; padding-left: 10px; }
-
-        /* BARRA INFERIOR RIVERS */
-        .bottom-nav {
-            background: rgba(15, 15, 15, 0.95) !important;
-            backdrop-filter: blur(10px);
-            border-top: 1px solid #00FFFF;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-        .nav-item {
-            background: transparent !important;
-            color: #888 !important;
-            border: none !important;
             text-align: center;
-            flex: 1;
-            cursor: pointer;
-            transition: 0.3s;
+            padding: 20px;
+            background: linear-gradient(180deg, #00FFFF33 0%, #0A0A0A 100%);
         }
-        .nav-item.active { color: #00FFFF !important; }
-        .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; }
-        .nav-item p { margin: 0; font-size: 10px; font-weight: 600; }
+        .logo-img { width: 80px; margin-bottom: 10px; }
+        .section-content { display: none; padding: 20px; }
+        .section-content.active { display: block !important; }
+        
+        /* Estilo de las tarjetas */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-        /* BOTONES */
+        /* Botones */
         .btn-primary {
             background: #00FFFF;
             color: #000;
             border: none;
-            padding: 16px;
-            border-radius: 18px;
-            font-weight: 800;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
             width: 100%;
-            font-size: 1rem;
-            text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+            cursor: pointer;
         }
+
+        /* Navegación Inferior */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #111;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #333;
+        }
+        .nav-item { text-align: center; color: #888; font-size: 0.8rem; cursor: pointer; }
+        .nav-item.active { color: #00FFFF; }
     </style>
 </head>
-
 <body>
 
     <header>
@@ -121,42 +69,31 @@
     <main>
         <section id="reglamento" class="section-content active">
             <div class="glass-card">
-                <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 20px;">📋 Reglamento Oficial</h2>
-                
-                <div class="regla-titulo">SECCIÓN I - ASISTENCIA</div>
-                <p><strong>Art 1.</strong> Tolerancia de 15 min. Después se marca retardo.</p>
-                <p><strong>Art 2.</strong> 3 Retardos equivalen a 1 Falta técnica.</p>
-                <p><strong>Art 3.</strong> 3 Faltas injustificadas = <span style="color:#ff4d4d">Baja Automática</span>.</p>
-
-                <div class="regla-titulo">SECCIÓN II - EQUIPAMIENTO</div>
-                <p><strong>Art 4.</strong> Uso de calzado deportivo y shorts sin bolsas (obligatorio).</p>
-                <p><strong>Art 5.</strong> Protector bucal obligatorio en sesiones de contacto.</p>
-                <p><strong>Art 6.</strong> Prohibido el uso de joyería y uñas largas (postizas) por seguridad.</p>
-
-                <div class="regla-titulo">SECCIÓN III - DISCIPLINA</div>
-                <p><strong>Art 7.</strong> Respeto total a coaches, compañeras y oficiales.</p>
-                <p><strong>Art 8.</strong> Cuidar el equipo y material proporcionado por el club.</p>
-
+                <h2>📋 Reglamento Oficial</h2>
+                <p>Art 1. Tolerancia de 15 minutos.</p>
+                <p>Art 2. 3 Retardos = 1 Falta.</p>
+                <p>Art 3. 3 Faltas = Baja automática.</p>
                 <a href="./reglamento.pdf" download="RIVERS_Reglamento_Oficial.pdf" style="text-decoration: none;">
-                    <button class="btn-primary" style="margin-top: 20px;">📥 Descargar PDF Completo</button>
+                    <button class="btn-primary" style="margin-top: 20px;">📥 Descargar PDF</button>
                 </a>
             </div>
         </section>
-       <section id="checkin" class="section-content">
+
+        <section id="checkin" class="section-content">
             <div class="glass-card">
-                <h2 style="color: #fff; margin-bottom: 20px;">📱 Check-In QR</h2>
+                <h2>📱 Check-In QR</h2>
                 <label style="font-size: 0.8rem; color: #888;">Hora de Entrenamiento:</label>
-                <input type="time" value="16:45" id="startTime" style="width:100%; padding:15px; background:#1a1a1a; border:1px solid #333; color:white; border-radius:15px; margin-bottom: 20px;">
+                <input type="time" id="startTime" value="16:45" style="width:100%; padding:15px; background:#1a1a1a; border:1px solid #333; color:white; border-radius:15px; margin-bottom: 20px;">
                 
                 <div id="reader" style="width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 15px;"></div>
                 
-                <button class="btn-primary"> <id="startScanBtn">🎯 Iniciar Escaneo</button>
+                <button class="btn-primary" id="startScanBtn">🎯 Iniciar Escaneo</button>
             </div>
         </section>
 
         <section id="dashboard" class="section-content">
             <div class="glass-card">
-                <h2 style="color: #fff;">📊 Dashboard Público</h2>
+                <h2>📊 Dashboard Público</h2>
                 <div style="text-align: center; padding: 50px 0; color: #555;">
                     <p>No hay registros activos en este momento.</p>
                 </div>
@@ -165,14 +102,13 @@
 
         <section id="admin" class="section-content">
             <div class="glass-card">
-                <h2 style="color: #fff;">🔐 Panel Admin</h2>
-                <p style="font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus credenciales para gestionar jugadoras.</p>
-                <button class="btn-primary">🔓 Desbloquear Panel</button>
+                <h2>🔐 Administración</h2>
+                <p style="color: #888;">Acceso restringido para coordinadores.</p>
             </div>
         </section>
     </main>
 
-    <nav class="bottom-nav">
+    <nav>
         <div class="nav-item active" onclick="showSection('reglamento')">
             <span>📋</span><p>Reglamento</p>
         </div>
@@ -186,48 +122,56 @@
             <span>🔐</span><p>Admin</p>
         </div>
     </nav>
-<script>
-// 1. Función para cambiar de pestañas (corregida)
-function showSection(sectionId) {
-    // Ocultar todas las secciones
-    document.querySelectorAll('.section-content').forEach(section => {
-        section.classList.remove('active');
-    });
 
-    // Mostrar la sección seleccionada
-    const target = document.getElementById(sectionId);
-    if (target) target.classList.add('active');
+    <script>
+        // 1. FUNCIÓN DE NAVEGACIÓN (Corregida)
+        function showSection(sectionId) {
+            // Ocultar todas
+            document.querySelectorAll('.section-content').forEach(s => {
+                s.classList.remove('active');
+            });
+            // Mostrar la elegida
+            const target = document.getElementById(sectionId);
+            if (target) target.classList.add('active');
 
-    // Actualizar iconos del menú
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    event.currentTarget.classList.add('active');
-    
-    window.scrollTo(0,0);
-}
+            // Actualizar menú inferior
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            window.scrollTo(0,0);
+        }
 
-// 2. Lógica de validación de hora (4:30 PM - 5:30 PM)
-document.getElementById('startScanBtn').addEventListener('click', function() {
-    const ahora = new Date();
-    const horaActual = ahora.getHours();
-    const minutosActuales = ahora.getMinutes();
-    const totalMinutos = (horaActual * 60) + minutosActuales;
+        // 2. VALIDACIÓN DE HORARIO (4:30 PM - 5:30 PM)
+        document.getElementById('startScanBtn').addEventListener('click', function() {
+            const ahora = new Date();
+            const horaActual = ahora.getHours();
+            const minutosActuales = ahora.getMinutes();
+            const totalMinutos = (horaActual * 60) + minutosActuales;
 
-    // 4:30 PM es 16:30 (990 min) | 5:30 PM es 17:30 (1050 min)
-    const inicio = (16 * 60) + 30;
-    const fin = (17 * 60) + 30;
+            // 16:30 (4:30 PM) a 17:30 (5:30 PM)
+            const inicio = (16 * 60) + 30;
+            const fin = (17 * 60) + 30;
 
-    if (totalMinutos < inicio || totalMinutos > fin) {
-        alert("⚠️ Registro cerrado. Solo disponible de 4:30 PM a 5:30 PM.");
-        return; 
-    }
+            if (totalMinutos < inicio || totalMinutos > fin) {
+                alert("⚠️ Registro cerrado. Solo disponible de 4:30 PM a 5:30 PM.");
+                return; 
+            }
 
-    // Aquí va la lógica de tu cámara que ya tenías
-    console.log("Acceso autorizado. Iniciando cámara...");
-});
-<link rel="manifest" href="/manifest.json">
+            // Aquí se dispararía tu cámara si ya tienes la librería html5-qrcode
+            console.log("Horario verificado. Iniciando escáner...");
+            if (typeof startScanner === "function") {
+                startScanner();
+            }
+        });
 
-</script>   
+        // 3. REGISTRO PARA MODO OFFLINE (Service Worker)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log("Modo Offline: Activo"))
+                .catch(err => console.log("Error de SW:", err));
+        }
+    </script>
 </body>
 </html>
