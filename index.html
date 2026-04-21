@@ -293,24 +293,22 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 glass-card">
-        <div class="max-w-md mx-auto flex justify-around py-3">
-            <button class="nav-item active flex flex-col items-center text-xs" data-section="reglamento">
-                <span class="text-2xl mb-1">📋</span>
-                <span>Reglamento</span>
-            </button>
-            <button class="nav-item flex flex-col items-center text-xs text-gray-400" data-section="checkin">
-                <span class="text-2xl mb-1">📱</span>
-                <span>Check-In</span>
-            </button>
-            <button class="nav-item flex flex-col items-center text-xs text-gray-400" data-section="dashboard">
-                <span class="text-2xl mb-1">📊</span>
-                <span>Dashboard</span>
-            </button>
-            <button class="nav-item flex flex-col items-center text-xs text-gray-400" data-section="admin">
-                <span class="text-2xl mb-1">🔐</span>
-                <span>Admin</span>
-            </button>
+        <nav class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('reglamento')">
+            <span class="block text-xl">📋</span>
+            <p>Reglamento</p>
+        </div>
+        <div class="nav-item" onclick="showSection('checkin')">
+            <span class="block text-xl">📱</span>
+            <p>Check-In</p>
+        </div>
+        <div class="nav-item" onclick="showSection('dashboard')">
+            <span class="block text-xl">📊</span>
+            <p>Dashboard</p>
+        </div>
+        <div class="nav-item" onclick="showSection('admin')">
+            <span class="block text-xl">🔐</span>
+            <p>Admin</p>
         </div>
     </nav>
 
