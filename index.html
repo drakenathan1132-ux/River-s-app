@@ -140,7 +140,37 @@ main section.active {
     display: block;
     opacity: 1;
 }
+/* DISEÑO DE LA BARRA INFERIOR RIVERS */
+.bottom-nav {
+    background: rgba(15, 15, 15, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #00FFFF;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 1000;
+}
 
+/* QUITA EL FONDO BLANCO Y DA COLOR A LOS ICONOS */
+.nav-item {
+    background: transparent !important;
+    color: #888 !important;
+    border: none !important;
+    text-align: center;
+}
+
+/* COLOR CIAN PARA LA SECCIÓN ACTIVA */
+.nav-item.active {
+    color: #00FFFF !important;
+}
+
+/* HACK PARA EL TEXTO DEL REGLAMENTO */
+.section-content, p, li {
+    color: #e5e7eb !important;
+}
     </style>
 
 </head>
