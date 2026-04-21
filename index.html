@@ -76,52 +76,45 @@ function showSection(sectionId) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     event.currentTarget.classList.add('active');
 }
+
 </script>
 main section.active, .section-content.active {
     display: block !important; /* Solo muestra la activa */
 }
+main section.active, .section-content.active {
+    display: block !important; /* Solo muestra la activa */
+}
   
-   body {
-        background-color: #0A0A0A;
-        color: #f0f0f0; /* Texto claro para que se lea en el fondo negro */
-        font-family: 'Segoe UI', Roboto, sans-serif;
-    }
-
-    /* Arreglo del Reglamento: Texto más brillante */
-    .section-content {
-        color: #e5e7eb !important; 
-        line-height: 1.6;
-    }
-/* Esto evita que la app se vea hacia abajo como una página larga */
-main section {
-    display: none; /* Esconde todo por defecto */
+   <style>
+/* 1. Fondo y letra general */
+body {
+    background-color: #0A0A0A;
+    color: #f0f0f0;
+    font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
-main section.active {
-    display: block; /* Solo muestra la sección que seleccionas */
+/* 2. Ocultar secciones para que no se vea todo hacia abajo */
+main section, .section-content {
+    display: none; /* Esto es lo que "apaga" las páginas */
 }
 
-    /* Barra Superior: Cámbiala de Verde a los colores de tu logo */
-    #status-bar {
-        background: #000;
-        border-bottom: 2px solid #00FFFF; /* El azul de tu águila */
-        color: #00FFFF;
-        font-family: monospace;
-    }
+/* 3. Mostrar solo la sección que seleccionas */
+main section.active, .section-content.active {
+    display: block !important;
+}
 
-    /* Barra Inferior: EFECTO CRISTAL (Glassmorphism) */
-    .bottom-nav {
-        background: rgba(15, 15, 15, 0.9) !important;
-        backdrop-filter: blur(10px);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        display: flex;
-        justify-content: space-around;
-        padding: 12px 0;
-        z-index: 1000;
-    }
+/* 4. Estilo de la barra inferior */
+.bottom-nav {
+    background: rgba(15, 15, 15, 0.95) !important;
+    border-top: 1px solid #00FFFF;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    z-index: 1000;
+}
+   </style>
 
     .nav-item {
         color: #666; /* Iconos inactivos */
