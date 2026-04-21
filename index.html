@@ -110,6 +110,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -185,26 +186,48 @@
             <span>🔐</span><p>Admin</p>
         </div>
     </nav>
+<script>
+// 1. Función para cambiar de pestañas (corregida)
+function showSection(sectionId) {
+    // Ocultar todas las secciones
+    document.querySelectorAll('.section-content').forEach(section => {
+        section.classList.remove('active');
+    });
 
-    <script>
-        function showSection(sectionId) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('main section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Mostrar la seleccionada
-            const target = document.getElementById(sectionId);
-            if (target) target.classList.add('active');
+    // Mostrar la sección seleccionada
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.add('active');
 
-            // Actualizar iconos del menú
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
+    // Actualizar iconos del menú
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+    
+    window.scrollTo(0,0);
+}
 
-            window.scrollTo(0,0);
-        }
-    </script>
+// 2. Lógica de validación de hora (4:30 PM - 5:30 PM)
+document.getElementById('startScanBtn').addEventListener('click', function() {
+    const ahora = new Date();
+    const horaActual = ahora.getHours();
+    const minutosActuales = ahora.getMinutes();
+    const totalMinutos = (horaActual * 60) + minutosActuales;
+
+    // 4:30 PM es 16:30 (990 min) | 5:30 PM es 17:30 (1050 min)
+    const inicio = (16 * 60) + 30;
+    const fin = (17 * 60) + 30;
+
+    if (totalMinutos < inicio || totalMinutos > fin) {
+        alert("⚠️ Registro cerrado. Solo disponible de 4:30 PM a 5:30 PM.");
+        return; 
+    }
+
+    // Aquí va la lógica de tu cámara que ya tenías
+    console.log("Acceso autorizado. Iniciando cámara...");
+});
+<link rel="manifest" href="/manifest.json">
+
+</script>   
 </body>
 </html>
