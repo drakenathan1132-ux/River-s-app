@@ -6,57 +6,17 @@
     <title>RIVERS TOCHITO CLUB</title>
     <link rel="manifest" href="/manifest.json">
     <style>
-        /* Tus estilos base */
-        body {
-            background-color: #0A0A0A;
-            color: #f0f0f0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding-bottom: 80px;
-        }
-        header {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(180deg, #00FFFF33 0%, #0A0A0A 100%);
-        }
-        .logo-img { width: 80px; margin-bottom: 10px; }
+        body { background-color: #0A0A0A; color: #f0f0f0; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 80px; }
+        header { text-align: center; padding: 20px; background: linear-gradient(180deg, #00FFFF33 0%, #0A0A0A 100%); }
+        .logo-img { width: 80px; }
         .section-content { display: none; padding: 20px; }
         .section-content.active { display: block !important; }
-        
-        /* Estilo de las tarjetas */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Botones */
-        .btn-primary {
-            background: #00FFFF;
-            color: #000;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        /* Navegación Inferior */
-        nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: #111;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid #333;
-        }
-        .nav-item { text-align: center; color: #888; font-size: 0.8rem; cursor: pointer; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-primary { background: #00FFFF; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 15px; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
+        .nav-item { text-align: center; color: #888; font-size: 0.7rem; cursor: pointer; }
         .nav-item.active { color: #00FFFF; }
+        .regla-item { margin-bottom: 10px; border-left: 3px solid #00FFFF; padding-left: 10px; }
     </style>
 </head>
 <body>
@@ -69,108 +29,90 @@
     <main>
         <section id="reglamento" class="section-content active">
             <div class="glass-card">
-                <h2>📋 Reglamento Oficial</h2>
-                <p>Art 1. Tolerancia de 15 minutos.</p>
-                <p>Art 2. 3 Retardos = 1 Falta.</p>
-                <p>Art 3. 3 Faltas = Baja automática.</p>
-                <a href="./reglamento.pdf" download="RIVERS_Reglamento_Oficial.pdf" style="text-decoration: none;">
-                    <button class="btn-primary" style="margin-top: 20px;">📥 Descargar PDF</button>
+                <h2 style="color: #00FFFF;">📋 Sección I - Asistencia</h2>
+                <div class="regla-item">
+                    [span_0](start_span)<strong>Art 1. Tolerancia:</strong> 15 minutos exactos tras el inicio.[span_0](end_span)
+                </div>
+                <div class="regla-item">
+                    [span_1](start_span)<strong>Art 2. Retardos:</strong> 3 retardos equivalen a 1 falta.[span_1](end_span)
+                </div>
+                <div class="regla-item">
+                    [span_2](start_span)<strong>Art 3. Bajas:</strong> La 3ra falta es baja automática e inmediata.[span_2](end_span)
+                </div>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 15px;">* Consulta el reglamento completo para temas de seguridad y equipo.</p>
+                <a href="./reglamento.pdf" download="RIVERS_Reglamento_Oficial.pdf">
+                    <button class="btn-primary">📥 Descargar PDF Completo</button>
                 </a>
             </div>
         </section>
 
         <section id="checkin" class="section-content">
             <div class="glass-card">
-                <h2>📱 Check-In QR</h2>
-                <label style="font-size: 0.8rem; color: #888;">Hora de Entrenamiento:</label>
-                <input type="time" id="startTime" value="16:45" style="width:100%; padding:15px; background:#1a1a1a; border:1px solid #333; color:white; border-radius:15px; margin-bottom: 20px;">
-                
-                <div id="reader" style="width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 15px;"></div>
-                
+                <h2>📱 Registro de Asistencia</h2>
+                <p>El escáner solo se activa en horario de entrenamiento.</p>
+                <div id="reader" style="width: 100%; border-radius: 15px; overflow: hidden;"></div>
                 <button class="btn-primary" id="startScanBtn">🎯 Iniciar Escaneo</button>
             </div>
         </section>
 
         <section id="dashboard" class="section-content">
             <div class="glass-card">
-                <h2>📊 Dashboard Público</h2>
-                <div style="text-align: center; padding: 50px 0; color: #555;">
-                    <p>No hay registros activos en este momento.</p>
-                </div>
+                <h2>📊 Estatus del Equipo</h2>
+                <p style="text-align: center; color: #555;">No hay registros recientes.</p>
             </div>
         </section>
 
         <section id="admin" class="section-content">
             <div class="glass-card">
-                <h2>🔐 Administración</h2>
-                <p style="color: #888;">Acceso restringido para coordinadores.</p>
+                <h2>🔐 Panel de Control</h2>
+                <p>Acceso exclusivo para Staff Técnico.</p>
             </div>
         </section>
     </main>
 
     <nav>
-        <div class="nav-item active" onclick="showSection('reglamento')">
+        <div class="nav-item active" onclick="showSection('reglamento', this)">
             <span>📋</span><p>Reglamento</p>
         </div>
-        <div class="nav-item" onclick="showSection('checkin')">
+        <div class="nav-item" onclick="showSection('checkin', this)">
             <span>📱</span><p>Check-In</p>
         </div>
-        <div class="nav-item" onclick="showSection('dashboard')">
+        <div class="nav-item" onclick="showSection('dashboard', this)">
             <span>📊</span><p>Dashboard</p>
         </div>
-        <div class="nav-item" onclick="showSection('admin')">
+        <div class="nav-item" onclick="showSection('admin', this)">
             <span>🔐</span><p>Admin</p>
         </div>
     </nav>
 
     <script>
-        // 1. FUNCIÓN DE NAVEGACIÓN (Corregida)
-        function showSection(sectionId) {
-            // Ocultar todas
-            document.querySelectorAll('.section-content').forEach(s => {
-                s.classList.remove('active');
-            });
-            // Mostrar la elegida
-            const target = document.getElementById(sectionId);
-            if (target) target.classList.add('active');
-
-            // Actualizar menú inferior
-            document.querySelectorAll('.nav-item').forEach(n => {
-                n.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
+        // NAVEGACIÓN
+        function showSection(sectionId, element) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
             
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            element.classList.add('active');
             window.scrollTo(0,0);
         }
 
-        // 2. VALIDACIÓN DE HORARIO (4:30 PM - 5:30 PM)
+        // BLOQUEO DE HORARIO (4:30 PM - 5:30 PM)
         document.getElementById('startScanBtn').addEventListener('click', function() {
             const ahora = new Date();
-            const horaActual = ahora.getHours();
-            const minutosActuales = ahora.getMinutes();
-            const totalMinutos = (horaActual * 60) + minutosActuales;
+            const minTotales = (ahora.getHours() * 60) + ahora.getMinutes();
+            const inicio = (16 * 60) + 30; // 16:30
+            const fin = (17 * 60) + 30;    // 17:30
 
-            // 16:30 (4:30 PM) a 17:30 (5:30 PM)
-            const inicio = (16 * 60) + 30;
-            const fin = (17 * 60) + 30;
-
-            if (totalMinutos < inicio || totalMinutos > fin) {
-                alert("⚠️ Registro cerrado. Solo disponible de 4:30 PM a 5:30 PM.");
-                return; 
+            if (minTotales < inicio || minTotales > fin) {
+                alert("⚠️ Acceso denegado. Registro disponible solo de 4:30 PM a 5:30 PM.");
+                return;
             }
-
-            // Aquí se dispararía tu cámara si ya tienes la librería html5-qrcode
-            console.log("Horario verificado. Iniciando escáner...");
-            if (typeof startScanner === "function") {
-                startScanner();
-            }
+            alert("Iniciando cámara...");
         });
 
-        // 3. REGISTRO PARA MODO OFFLINE (Service Worker)
+        // MODO OFFLINE
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(() => console.log("Modo Offline: Activo"))
-                .catch(err => console.log("Error de SW:", err));
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log("Error SW", err));
         }
     </script>
 </body>
