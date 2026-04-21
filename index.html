@@ -128,6 +128,19 @@ button:hover {
 body {
     color: #ffffff !important;
 }
+/* OCULTA TODAS LAS SECCIONES POR DEFECTO */
+main section {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* SOLO MUESTRA LA SECCIÓN QUE TENGA LA CLASE ACTIVE */
+main section.active {
+    display: block;
+    opacity: 1;
+}
+
     </style>
 
 </head>
