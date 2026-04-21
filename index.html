@@ -5,32 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RIVERS Tochito Club</title>
     
-    <style>
-        html {
-            scroll-behavior: smooth;
-            -webkit-tap-highlight-color: transparent;
-        }
+    <meta name="theme-color" content="#0A0A0A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <style>
+        /* ESTILOS BASE Y HACKS DE LEGIBILIDAD */
+        html { scroll-behavior: smooth !important; -webkit-tap-highlight-color: transparent; }
+        
         body {
             background-color: #0A0A0A;
             color: #f0f0f0;
             font-family: 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding-bottom: 80px; /* Espacio para la barra inferior */
+            padding-bottom: 90px;
         }
 
-        /* OCULTAR SECCIONES */
-        .section-content {
-            display: none; /* Todo apagado por defecto */
+        /* HEADER CON LOGO ACTUALIZADO */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(10, 10, 10, 0.85);
+            border-bottom: 2px solid #00FFFF;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+            backdrop-filter: blur(12px);
+        }
+        .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid #00FFFF;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        header h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: 1.5px; margin: 0; color: #fff; }
+
+        /* CONTENEDORES DE SECCIÓN */
+        main section { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        main section.active { display: block !important; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 28px;
+            padding: 22px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .section-content.active {
-            display: block !important; /* Solo la sección activa se ve */
+        /* REGLAMENTO: TEXTO BRILLANTE */
+        .section-content p, .section-content li {
+            color: #e5e7eb !important; 
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
         }
+        .regla-titulo { color: #00FFFF; font-weight: bold; margin-top: 20px; border-left: 3px solid #00FFFF; padding-left: 10px; }
 
-        /* DISEÑO DE LA BARRA INFERIOR */
+        /* BARRA INFERIOR RIVERS */
         .bottom-nav {
-            background: rgba(15, 15, 15, 0.98) !important;
+            background: rgba(15, 15, 15, 0.95) !important;
             backdrop-filter: blur(10px);
             border-top: 1px solid #00FFFF;
             position: fixed;
@@ -41,118 +82,129 @@
             padding: 10px 0;
             z-index: 1000;
         }
-
         .nav-item {
             background: transparent !important;
             color: #888 !important;
             border: none !important;
             text-align: center;
-            font-size: 12px;
+            flex: 1;
             cursor: pointer;
+            transition: 0.3s;
         }
+        .nav-item.active { color: #00FFFF !important; }
+        .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; }
+        .nav-item p { margin: 0; font-size: 10px; font-weight: 600; }
 
-        .nav-item.active {
-            color: #00FFFF !important;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
+        /* BOTONES */
         .btn-primary {
             background: #00FFFF;
             color: #000;
             border: none;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: bold;
+            padding: 16px;
+            border-radius: 18px;
+            font-weight: 800;
             width: 100%;
+            font-size: 1rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
         }
     </style>
 </head>
-
 <body>
-    <div id="status-bar" style="background: #000; color: #00FFFF; text-align: center; padding: 10px; border-bottom: 1px solid #00FFFF; font-family: monospace; font-size: 12px;">
-        [ RIVERS CONTROL: ACTIVO ]
-    </div>
 
-    <main class="max-w-md mx-auto px-4 py-6" style="max-width: 500px; margin: auto;">
-        
-        <div id="reglamento" class="section-content active">
+    <header>
+        <img src="logo.png" alt="RIVERS" class="logo-img">
+        <h1>RIVERS TOCHITO CLUB</h1>
+    </header>
+
+    <main>
+        <section id="reglamento" class="section-content active">
             <div class="glass-card">
-                <h2 style="color: #00FFFF;">📋 Reglamento Oficial</h2>
-                <div style="font-size: 14px; line-height: 1.6; color: #ccc;">
-                    <h3 style="color: #fff;">SECCIÓN I - ASISTENCIA</h3>
-                    <p><strong>Art 1.</strong> Tolerancia de 15 minutos.</p>
-                    <p><strong>Art 2.</strong> 3 Retardos = 1 Falta.</p>
-                    <p><strong>Art 3.</strong> 3 Faltas = Baja automática.</p>
+                <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 20px;">📋 Reglamento Oficial</h2>
+                
+                <div class="regla-titulo">SECCIÓN I - ASISTENCIA</div>
+                <p><strong>Art 1.</strong> Tolerancia de 15 min. Después se marca retardo.</p>
+                <p><strong>Art 2.</strong> 3 Retardos equivalen a 1 Falta técnica.</p>
+                <p><strong>Art 3.</strong> 3 Faltas injustificadas = <span style="color:#ff4d4d">Baja Automática</span>.</p>
+
+                <div class="regla-titulo">SECCIÓN II - EQUIPAMIENTO</div>
+                <p><strong>Art 4.</strong> Uso de calzado deportivo y shorts sin bolsas (obligatorio).</p>
+                <p><strong>Art 5.</strong> Protector bucal obligatorio en sesiones de contacto.</p>
+                <p><strong>Art 6.</strong> Prohibido el uso de joyería y uñas largas (postizas) por seguridad.</p>
+
+                <div class="regla-titulo">SECCIÓN III - DISCIPLINA</div>
+                <p><strong>Art 7.</strong> Respeto total a coaches, compañeras y oficiales.</p>
+                <p><strong>Art 8.</strong> Cuidar el equipo y material proporcionado por el club.</p>
+
+                <a href="./reglamento.pdf" download="RIVERS_Reglamento_Oficial.pdf" style="text-decoration: none;">
+                    <button class="btn-primary" style="margin-top: 20px;">📥 Descargar PDF Completo</button>
+                </a>
+            </div>
+        </section>
+
+        <section id="checkin" class="section-content">
+            <div class="glass-card">
+                <h2 style="color: #fff; margin-bottom: 20px;">📱 Check-In QR</h2>
+                <label style="font-size: 0.8rem; color: #888;">Hora de Entrenamiento:</label>
+                <input type="time" value="18:00" id="startTime" style="width:100%; padding:15px; background:#1a1a1a; border:1px solid #333; color:white; border-radius:15px; margin-bottom: 20px;">
+                
+                <div id="reader" style="width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 15px;"></div>
+                
+                <button class="btn-primary" id="startScanBtn">🎯 Iniciar Escaneo</button>
+            </div>
+        </section>
+
+        <section id="dashboard" class="section-content">
+            <div class="glass-card">
+                <h2 style="color: #fff;">📊 Dashboard Público</h2>
+                <div style="text-align: center; padding: 50px 0; color: #555;">
+                    <p>No hay registros activos en este momento.</p>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div id="checkin" class="section-content">
+        <section id="admin" class="section-content">
             <div class="glass-card">
-                <h2 style="color: #00FFFF;">📱 Check-In QR</h2>
-                <button class="btn-primary">🎯 Iniciar Escaneo</button>
-            </div>
-        </div>
-
-        <div id="dashboard" class="section-content">
-            <div class="glass-card">
-                <h2 style="color: #00FFFF;">📊 Dashboard</h2>
-                <p>No hay registros hoy.</p>
-            </div>
-        </div>
-
-        <div id="admin" class="section-content">
-            <div class="glass-card">
-                <h2 style="color: #00FFFF;">🔐 Panel Admin</h2>
+                <h2 style="color: #fff;">🔐 Panel Admin</h2>
+                <p style="font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus credenciales para gestionar jugadoras.</p>
                 <button class="btn-primary">🔓 Desbloquear Panel</button>
             </div>
-        </div>
+        </section>
     </main>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="showSection('reglamento')">
-            <span>📋</span><br>Reglamento
+            <span>📋</span><p>Reglamento</p>
         </div>
         <div class="nav-item" onclick="showSection('checkin')">
-            <span>📱</span><br>Check-In
+            <span>📱</span><p>Check-In</p>
         </div>
         <div class="nav-item" onclick="showSection('dashboard')">
-            <span>📊</span><br>Dashboard
+            <span>📊</span><p>Dashboard</p>
         </div>
         <div class="nav-item" onclick="showSection('admin')">
-            <span>🔐</span><br>Admin
+            <span>🔐</span><p>Admin</p>
         </div>
     </nav>
 
     <script>
         function showSection(sectionId) {
-            // 1. Esconder todas las secciones
-            document.querySelectorAll('.section-content').forEach(section => {
+            // Ocultar todas las secciones
+            document.querySelectorAll('main section').forEach(section => {
                 section.classList.remove('active');
             });
-
-            // 2. Mostrar la sección elegida
+            
+            // Mostrar la seleccionada
             const target = document.getElementById(sectionId);
-            if (target) {
-                target.classList.add('active');
-            }
+            if (target) target.classList.add('active');
 
-            // 3. Actualizar color de los botones
+            // Actualizar iconos del menú
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             event.currentTarget.classList.add('active');
 
-            // 4. Subir al inicio
-            window.scrollTo(0, 0);
+            window.scrollTo(0,0);
         }
     </script>
 </body>
