@@ -106,7 +106,54 @@
     <div class="nav-btn" onclick="navigate('view-stats', this)">📊</div>
     <div id="admin-tab" class="nav-btn" style="display:none;" onclick="navigate('view-admin', this)">⚙️</div>
 </nav>
+<script>
+// Registro del Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+                console.log('✅ SW registrado:', registration.scope);
+                
+                // Detectar actualizaciones
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Hay una nueva versión disponible
+                            if (confirm('🔄 Nueva versión disponible. ¿Actualizar ahora?')) {
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error('❌ SW registration failed:', error);
+            });
+    });
+    
+    // Recargar cuando el SW se active
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+        }
+    });
+}
 
+// Detectar modo offline/online
+window.addEventListener('online', () => {
+    console.log('🟢 Conexión restaurada');
+    // Opcional: mostrar notificación al usuario
+});
+
+window.addEventListener('offline', () => {
+    console.log('🔴 Sin conexión');
+    // Opcional: mostrar banner de offline
+});
+</script>
 <script>
     
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
