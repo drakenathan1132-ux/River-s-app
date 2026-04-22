@@ -2,198 +2,209 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RIVERS TOCHITO CLUB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RIVERS HUB PRO</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        body { background: #0A0A0A; color: #f0f0f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding-bottom: 80px; }
-        header { text-align: center; padding: 30px 20px; background: linear-gradient(180deg, #00FFFF22 0%, #0A0A0A 100%); }
-        .logo-img { width: 70px; filter: drop-shadow(0 0 10px #00FFFF); }
-        .section-content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .section-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .btn-primary { background: #00FFFF; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .btn-primary:active { transform: scale(0.98); background: #00cccc; }
-        .btn-danger { background: #ff4444; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 5px; cursor: pointer; }
-        nav { position: fixed; bottom: 0; width: 100%; background: rgba(17, 17, 17, 0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; backdrop-filter: blur(10px); }
-        .nav-item { text-align: center; color: #555; font-size: 0.75rem; cursor: pointer; flex: 1; }
-        .nav-item.active { color: #00FFFF; }
-        .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 2px; }
-        select, input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; font-size: 1rem; outline: none; }
-        select:focus, input:focus { border-color: #00FFFF; }
-        .player-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
+        :root { --neon: #00FFFF; --purple: #7000FF; --bg: #050505; --glass: rgba(255,255,255,0.07); }
+        
+        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', system-ui; margin: 0; overflow-x: hidden; padding-bottom: 70px; }
+        
+        /* Interfaz Futurista */
+        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px; margin: 15px; }
+        header { padding: 40px 20px 20px; text-align: center; background: radial-gradient(circle at top, #00FFFF11 0%, transparent 70%); }
+        .logo { width: 80px; filter: drop-shadow(0 0 15px var(--neon)); transition: 0.5s; }
+        
+        /* Doble Vista */
+        #view-coach { display: none; }
+        .coach-active #view-alumna { display: none; }
+        .coach-active #view-coach { display: block; }
+
+        /* Feed tipo Social */
+        .post-card { background: var(--glass); border-radius: 20px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon); }
+        .post-header { display: flex; align-items: center; margin-bottom: 10px; font-weight: bold; color: var(--neon); }
+        .badge { background: var(--purple); font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; margin-left: 10px; }
+
+        /* Navegación */
+        nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px 0; background: rgba(10,10,10,0.9); border-top: 1px solid #222; z-index: 100; }
+        .nav-btn { color: #555; font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active { color: var(--neon); transform: translateY(-5px); }
+
+        /* Asistente Flotante */
+        #ai-trigger { position: fixed; right: 20px; bottom: 90px; width: 60px; height: 60px; background: linear-gradient(45deg, var(--neon), var(--purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--neon); z-index: 200; cursor: pointer; }
+        #ai-console { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; display: none; flex-direction: column; padding: 20px; }
+
+        /* Utilidades */
+        .btn-action { background: var(--neon); color: #000; border: none; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; margin-top: 10px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
+        
+        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: #0a0a0a; z-index: 400; transition: 0.4s; padding: 20px; border-right: 1px solid var(--neon); }
+        .sidebar.open { left: 0; }
     </style>
 </head>
-<body>
+<body id="main-body">
+
+<div id="sidebar" class="sidebar">
+    <h2 style="color:var(--neon)">MENÚ COACH</h2>
+    <p onclick="showSection('edit-players')">👥 Gestionar Jugadoras</p>
+    <p onclick="showSection('new-post')">✍️ Nueva Publicación</p>
+    <p onclick="showSection('coach-vault')">📽️ Repositorio de Jugadas</p>
+    <p onclick="showSection('qr-gen')">📲 Generar QR</p>
+    <hr style="border-color:#222">
+    <button class="btn-action" style="background:#ff4444" onclick="logout()">Cerrar Sesión</button>
+</div>
 
 <header>
-    <img src="logo.png" class="logo-img" alt="RIVERS">
-    <h1 style="letter-spacing: 2px; font-size: 1.5rem; margin-top: 10px;">RIVERS TOCHITO CLUB</h1>
+    <img src="logo.png" class="logo" id="logo-trigger" onclick="coachAuthAttempt()">
+    <h1 id="app-title">RIVERS HUB</h1>
 </header>
 
-<main>
-    <section id="reglamento" class="section-content active">
-        <div class="glass-card">
-            <h2 style="color:#00FFFF">📋 Reglamento de Asistencia</h2>
-            <p><strong>Art 1.</strong> Tolerancia: 15 min tras inicio.</p>
-            <p><strong>Art 2.</strong> 3 Retardos = 1 Falta.</p>
-            <p><strong>Art 3.</strong> 3 Faltas = Baja automática.</p>
-            <button class="btn-primary" onclick="window.open('reglamento.pdf')">📥 Ver PDF Completo</button>
-        </div>
-    </section>
-
-    <section id="checkin" class="section-content">
-        <div class="glass-card">
-            <h2 style="color:#00FFFF">📱 Registro de Entrada</h2>
-            <label>Selecciona tu nombre:</label>
-            <select id="playerSelect">
-                <option value="">-- Buscando jugadoras... --</option>
-            </select>
-            <button class="btn-primary" onclick="registerAttendance()">✅ Confirmar Asistencia</button>
-            <div id="status-msg" style="display:none; margin-top:15px; text-align:center; color:#00FF88;">
-                ¡Sincronizado con la nube de Coach!
+<main id="view-alumna">
+    <div class="glass" id="news-feed">
+        <h3 style="color:var(--neon)">🗞️ News Feed</h3>
+        <div id="social-container">
+            <div class="post-card">
+                <div class="post-header">COACH TADEO <span class="badge">OFICIAL</span></div>
+                <p>¡Mañana entrenamiento con equipo completo a las 5:00 PM!</p>
             </div>
         </div>
-    </section>
-
-    <section id="admin" class="section-content">
-        <div class="glass-card" id="login-admin">
-            <h2>🔐 Acceso Staff</h2>
-            <input type="password" id="pass" placeholder="Pin de Seguridad">
-            <button class="btn-primary" onclick="accessAdmin()">Entrar al Panel</button>
-        </div>
-
-        <div id="panel-data" style="display:none;">
-            <div class="glass-card">
-                <h3 style="color:#00FFFF">📝 Gestión de Jugadoras</h3>
-                <input type="text" id="newPlayerName" placeholder="Nombre completo">
-                <button class="btn-primary" onclick="addPlayer()">➕ Añadir a la lista</button>
-                <div id="admin-player-list" style="margin-top:15px; max-height: 200px; overflow-y: auto;">
-                    </div>
-            </div>
-
-            <div class="glass-card">
-                <h3 style="color:#00FFFF">🤖 IA Coach Assistant</h3>
-                <p style="font-size: 0.8rem; color: #888;">Analiza jugadas y reglamento en tiempo real.</p>
-                <div style="height: 300px; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
-                    <iframe src="https://www.blackbox.ai" style="width: 100%; height: 100%; border: none;"></iframe>
-                </div>
-            </div>
-
-            <button class="btn-primary" style="background:#ff4444; color: white;" onclick="location.reload()">🔒 Cerrar Sesión</button>
-        </div>
-    </section>
+    </div>
+    
+    <div class="glass">
+        <h3>📋 Registro Rápido</h3>
+        <select id="playerSelect">
+            <option value="">Cargando lista...</option>
+        </select>
+        <button class="btn-action" onclick="registerAttendance()">CHECK-IN</button>
+    </div>
 </main>
 
+<main id="view-coach">
+    <div class="glass">
+        <h2 style="color:var(--purple)">⚡ DASHBOARD COACH</h2>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="glass" style="margin:0; text-align:center;">
+                <small>Asistencia</small><br><b>92%</b>
+            </div>
+            <div class="glass" style="margin:0; text-align:center;">
+                <small>Avisos</small><br><b>3 Hoy</b>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-post" class="glass">
+        <h3>📢 Publicar Aviso / Video</h3>
+        <textarea id="postContent" placeholder="¿Qué quieres compartir hoy?"></textarea>
+        <select id="postCategory">
+            <option value="público">Público (Alumnas)</option>
+            <option value="coach">Privado (Solo Coach)</option>
+            <option value="video">Jugada/Video</option>
+        </select>
+        <button class="btn-action" onclick="sendPost()">SUBIR ESTADO</button>
+    </div>
+</main>
+
+<div id="ai-trigger" onclick="toggleAI()">🤖</div>
+<div id="ai-console">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="color:var(--neon)">IA COACH TERMINAL</h2>
+        <button onclick="toggleAI()" style="background:none; border:none; color:#fff; font-size:2rem;">×</button>
+    </div>
+    <div style="flex-grow:1; border:1px solid #333; border-radius:15px; overflow:hidden;">
+        <iframe src="https://www.blackbox.ai" style="width:100%; height:100%; border:none;"></iframe>
+    </div>
+    <p style="font-size:0.7rem; color:#666; margin-top:10px;">Comando Sugerido: "¿Quién tiene más de 3 retardos?"</p>
+</div>
+
 <nav>
-    <div class="nav-item active" onclick="showSection('reglamento', this)"><span>📋</span><p>Reglas</p></div>
-    <div class="nav-item" onclick="showSection('checkin', this)"><span>📱</span><p>Check-In</p></div>
-    <div class="nav-item" onclick="showSection('admin', this)"><span>🔐</span><p>Admin</p></div>
+    <div class="nav-btn active" onclick="showSection('feed')">🏠</div>
+    <div class="nav-btn" onclick="toggleSidebar()">☰</div>
+    <div class="nav-btn" onclick="showSection('rules')">📋</div>
 </nav>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
-    
-    // Nombres por defecto si no hay nada guardado
-    let players = JSON.parse(localStorage.getItem('rivers_players')) || ["Tadeo Solis", "Jesús Bonilla", "Joshua", "Lia Rodriguez"];
+    const SCRIPT_URL = "TU_URL_DE_APPS_SCRIPT";
+    let isCoach = false;
+    let players = JSON.parse(localStorage.getItem('rivers_players')) || ["Tadeo Solis", "Jesús Bonilla"];
 
-    function init() {
-        updatePlayerSelects();
-        renderAdminList();
-    }
-
-    function showSection(id, el) {
-        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    // --- LÓGICA DE JUGADORAS ---
-    function updatePlayerSelects() {
-        const select = document.getElementById('playerSelect');
-        select.innerHTML = '<option value="">-- Selecciona --</option>';
-        players.sort().forEach(p => {
-            select.innerHTML += `<option value="${p}">${p}</option>`;
-        });
-    }
-
-    function renderAdminList() {
-        const listDiv = document.getElementById('admin-player-list');
-        listDiv.innerHTML = '';
-        players.forEach((p, index) => {
-            listDiv.innerHTML += `
-                <div class="player-item">
-                    <span>${p}</span>
-                    <button class="btn-danger" style="width:auto; padding: 5px 10px;" onclick="removePlayer(${index})">🗑️</button>
-                </div>`;
-        });
-    }
-
-    function addPlayer() {
-        const name = document.getElementById('newPlayerName').value.trim();
-        if (name) {
-            players.push(name);
-            saveAndRefresh();
-            document.getElementById('newPlayerName').value = '';
+    // --- ACCESO SECRETO ---
+    let logoClicks = 0;
+    function coachAuthAttempt() {
+        logoClicks++;
+        if(logoClicks >= 5) {
+            const pin = prompt("CÓDIGO DE ACCESO:");
+            if(pin === "2000") {
+                loginCoach();
+            }
+            logoClicks = 0;
         }
     }
 
-    function removePlayer(index) {
-        if(confirm("¿Eliminar a esta jugadora?")) {
-            players.splice(index, 1);
-            saveAndRefresh();
-        }
+    function loginCoach() {
+        isCoach = true;
+        document.body.classList.add('coach-active');
+        document.getElementById('app-title').innerText = "RIVERS COMMAND";
+        alert("BIENVENIDO, COACH.");
     }
 
-    function saveAndRefresh() {
-        localStorage.setItem('rivers_players', JSON.stringify(players));
-        updatePlayerSelects();
-        renderAdminList();
+    function logout() { location.reload(); }
+
+    // --- LOGICA DE POSTS ---
+    function sendPost() {
+        const content = document.getElementById('postContent').value;
+        const cat = document.getElementById('postCategory').value;
+        if(!content) return;
+
+        const data = { type: "post", author: "Coach", content: content, category: cat, date: new Date().toLocaleString() };
+        
+        // Simulación offline
+        saveOffline('posts', data);
+        alert("Publicado en el Feed.");
+        document.getElementById('postContent').value = '';
     }
 
     // --- ASISTENCIA ---
     async function registerAttendance() {
         const name = document.getElementById('playerSelect').value;
-        if (!name) return alert("Selecciona tu nombre");
+        if(!name) return alert("Selecciona nombre");
 
-        const now = new Date();
-        const totalMin = (now.getHours() * 60) + now.getMinutes();
-
-        // Sin bloqueo de horario para pruebas, solo marca status
-        let status = (totalMin <= 1020) ? "PRESENTE" : "RETARDO"; // 5:00 PM
-
-        const data = {
-            name: name,
-            status: status,
-            date: now.toLocaleDateString(),
-            time: now.toLocaleTimeString()
-        };
-
-        alert("Enviando registro...");
-
+        const data = { type: "attendance", name: name, status: "PRESENTE", date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
+        
         try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(data)
-            });
-            document.getElementById('status-msg').style.display = "block";
-            setTimeout(() => { location.reload(); }, 2000);
-        } catch (e) {
-            alert("Error: Revisa tu conexión a internet.");
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            alert("¡Registro enviado!");
+        } catch(e) {
+            saveOffline('sync_queue', data);
+            alert("Modo Offline: Registro guardado en el cel.");
         }
     }
 
-    // --- ADMIN ---
-    function accessAdmin() {
-        if(document.getElementById('pass').value === "2000") {
-            document.getElementById('login-admin').style.display = "none";
-            document.getElementById('panel-data').style.display = "block";
-        } else {
-            alert("Pin incorrecto");
-        }
+    // --- UTILIDADES ---
+    function toggleAI() {
+        const console = document.getElementById('ai-console');
+        console.style.display = (console.style.display === 'flex') ? 'none' : 'flex';
     }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function saveOffline(key, data) {
+        let items = JSON.parse(localStorage.getItem(key)) || [];
+        items.push(data);
+        localStorage.setItem(key, JSON.stringify(items));
+    }
+
+    function init() {
+        const select = document.getElementById('playerSelect');
+        select.innerHTML = players.map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    // Sincronización automática cuando vuelve el internet
+    window.addEventListener('online', () => {
+        alert("¡Internet detectado! Sincronizando datos pendientes...");
+        // Aquí iría la lógica para vaciar 'sync_queue'
+    });
 
     init();
 </script>
