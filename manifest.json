@@ -1,20 +1,75 @@
 {
-  "name": "RIVERS Tochito Club",
+  "name": "RIVERS Tochito Club - Sistema de Gestión",
   "short_name": "RIVERS",
+  "description": "Sistema de asistencia y gestión para RIVERS Tochito Club con QR dinámico y exportación CSV",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0A0A0A",
   "theme_color": "#0A0A0A",
+  "lang": "es-MX",
+  "dir": "ltr",
+  "categories": ["sports", "utilities", "productivity"],
   "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/apple-180x180-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-192x192-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/android-512x512-icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-home.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pantalla principal con QR"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Marcar Asistencia",
+      "short_name": "Asistencia",
+      "description": "Escanear QR para marcar asistencia",
+      "url": "/?action=scan",
+      "icons": [{ "src": "/android-192x192-icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Avisos",
+      "short_name": "Feed",
+      "description": "Muro de avisos del club",
+      "url": "/?action=feed",
+      "icons": [{ "src": "/android-192x192-icon.png", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
