@@ -5,72 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RIVERS TOCHITO CLUB</title>
     <style>
-        body { background: #0A0A0A; color: #f0f0f0; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
-        header { text-align: center; padding: 20px; background: linear-gradient(180deg, #00FFFF22 0%, #0A0A0A 100%); }
-        .logo-img { width: 60px; }
-        .section-content { display: none; padding: 20px; }
+        body { background: #0A0A0A; color: #f0f0f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding-bottom: 80px; }
+        header { text-align: center; padding: 30px 20px; background: linear-gradient(180deg, #00FFFF22 0%, #0A0A0A 100%); }
+        .logo-img { width: 70px; filter: drop-shadow(0 0 10px #00FFFF); }
+        .section-content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .section-content.active { display: block; }
-        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
-        .btn-primary { background: #00FFFF; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        nav { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
-        .nav-item { text-align: center; color: #555; font-size: 0.7rem; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .btn-primary { background: #00FFFF; color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-primary:active { transform: scale(0.98); background: #00cccc; }
+        .btn-danger { background: #ff4444; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 5px; cursor: pointer; }
+        nav { position: fixed; bottom: 0; width: 100%; background: rgba(17, 17, 17, 0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; backdrop-filter: blur(10px); }
+        .nav-item { text-align: center; color: #555; font-size: 0.75rem; cursor: pointer; flex: 1; }
         .nav-item.active { color: #00FFFF; }
-        select, input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; font-size: 1rem; }
+        .nav-item span { display: block; font-size: 1.4rem; margin-bottom: 2px; }
+        select, input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; font-size: 1rem; outline: none; }
+        select:focus, input:focus { border-color: #00FFFF; }
+        .player-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <header>
-    <img src="logo.png" class="logo-img">
-    <h1>RIVERS TOCHITO CLUB</h1>
+    <img src="logo.png" class="logo-img" alt="RIVERS">
+    <h1 style="letter-spacing: 2px; font-size: 1.5rem; margin-top: 10px;">RIVERS TOCHITO CLUB</h1>
 </header>
 
 <main>
     <section id="reglamento" class="section-content active">
         <div class="glass-card">
-            <h2 style="color:#00FFFF">📋 Sección I - Asistencia</h2>
-            <p><strong>Art 1. Tolerancia:</strong> 15 minutos exactos tras el inicio.</p>
-            <p><strong>Art 2. Retardos:</strong> 3 retardos equivalen a 1 falta.</p>
-            <p><strong>Art 3. Bajas:</strong> La 3ra falta es baja automática.</p>
-            <a href="./reglamento.pdf" download style="text-decoration:none;">
-                <button class="btn-primary">📥 Descargar PDF Completo</button>
-            </a>
+            <h2 style="color:#00FFFF">📋 Reglamento de Asistencia</h2>
+            <p><strong>Art 1.</strong> Tolerancia: 15 min tras inicio.</p>
+            <p><strong>Art 2.</strong> 3 Retardos = 1 Falta.</p>
+            <p><strong>Art 3.</strong> 3 Faltas = Baja automática.</p>
+            <button class="btn-primary" onclick="window.open('reglamento.pdf')">📥 Ver PDF Completo</button>
         </div>
     </section>
 
     <section id="checkin" class="section-content">
         <div class="glass-card">
-            <h2 style="color:#00FFFF">📱 Registro Manual</h2>
-            <p style="font-size:0.8rem; color:#888;">Selecciona tu nombre para registrar entrada.</p>
-            
-            <label>Nombre:</label>
+            <h2 style="color:#00FFFF">📱 Registro de Entrada</h2>
+            <label>Selecciona tu nombre:</label>
             <select id="playerSelect">
-                <option value="">-- Selecciona --</option>
-                <option value="Tadeo Solis">Tadeo Solis (Coach-1)</option>
-                <option value="Jesús Bonilla">Jesús Bonilla (Coach-2)</option>
-                <option value="Joshua">Joshua (Coach-3)</option>
-                <option value="Lia Rodriguez">Lia Rodriguez (Coach-4)</option>
-                </select>
-
+                <option value="">-- Buscando jugadoras... --</option>
+            </select>
             <button class="btn-primary" onclick="registerAttendance()">✅ Confirmar Asistencia</button>
-            
-            <div id="status-msg" style="display:none; margin-top:15px; text-align:center; color:#00FF88; font-weight:bold;">
-                ¡Registro enviado a la nube!
+            <div id="status-msg" style="display:none; margin-top:15px; text-align:center; color:#00FF88;">
+                ¡Sincronizado con la nube de Coach!
             </div>
         </div>
     </section>
 
     <section id="admin" class="section-content">
-        <div class="glass-card">
-            <h2>🔐 Panel de Control</h2>
-            <div id="login-admin">
-                <input type="password" id="pass" placeholder="Pin de Seguridad">
-                <button class="btn-primary" onclick="accessAdmin()">Entrar</button>
+        <div class="glass-card" id="login-admin">
+            <h2>🔐 Acceso Staff</h2>
+            <input type="password" id="pass" placeholder="Pin de Seguridad">
+            <button class="btn-primary" onclick="accessAdmin()">Entrar al Panel</button>
+        </div>
+
+        <div id="panel-data" style="display:none;">
+            <div class="glass-card">
+                <h3 style="color:#00FFFF">📝 Gestión de Jugadoras</h3>
+                <input type="text" id="newPlayerName" placeholder="Nombre completo">
+                <button class="btn-primary" onclick="addPlayer()">➕ Añadir a la lista</button>
+                <div id="admin-player-list" style="margin-top:15px; max-height: 200px; overflow-y: auto;">
+                    </div>
             </div>
-            <div id="panel-data" style="display:none;">
-                <p><strong>Acceso:</strong> Staff Técnico autorizado.</p>
-                <button class="btn-primary" style="background:#ff4444" onclick="location.reload()">Cerrar Sesión</button>
+
+            <div class="glass-card">
+                <h3 style="color:#00FFFF">🤖 IA Coach Assistant</h3>
+                <p style="font-size: 0.8rem; color: #888;">Analiza jugadas y reglamento en tiempo real.</p>
+                <div style="height: 300px; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+                    <iframe src="https://www.blackbox.ai" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
             </div>
+
+            <button class="btn-primary" style="background:#ff4444; color: white;" onclick="location.reload()">🔒 Cerrar Sesión</button>
         </div>
     </section>
 </main>
@@ -82,8 +92,15 @@
 </nav>
 
 <script>
-    // URL DE TU GOOGLE SHEETS
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
+    
+    // Nombres por defecto si no hay nada guardado
+    let players = JSON.parse(localStorage.getItem('rivers_players')) || ["Tadeo Solis", "Jesús Bonilla", "Joshua", "Lia Rodriguez"];
+
+    function init() {
+        updatePlayerSelects();
+        renderAdminList();
+    }
 
     function showSection(id, el) {
         document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
@@ -92,17 +109,59 @@
         el.classList.add('active');
     }
 
+    // --- LÓGICA DE JUGADORAS ---
+    function updatePlayerSelects() {
+        const select = document.getElementById('playerSelect');
+        select.innerHTML = '<option value="">-- Selecciona --</option>';
+        players.sort().forEach(p => {
+            select.innerHTML += `<option value="${p}">${p}</option>`;
+        });
+    }
+
+    function renderAdminList() {
+        const listDiv = document.getElementById('admin-player-list');
+        listDiv.innerHTML = '';
+        players.forEach((p, index) => {
+            listDiv.innerHTML += `
+                <div class="player-item">
+                    <span>${p}</span>
+                    <button class="btn-danger" style="width:auto; padding: 5px 10px;" onclick="removePlayer(${index})">🗑️</button>
+                </div>`;
+        });
+    }
+
+    function addPlayer() {
+        const name = document.getElementById('newPlayerName').value.trim();
+        if (name) {
+            players.push(name);
+            saveAndRefresh();
+            document.getElementById('newPlayerName').value = '';
+        }
+    }
+
+    function removePlayer(index) {
+        if(confirm("¿Eliminar a esta jugadora?")) {
+            players.splice(index, 1);
+            saveAndRefresh();
+        }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('rivers_players', JSON.stringify(players));
+        updatePlayerSelects();
+        renderAdminList();
+    }
+
+    // --- ASISTENCIA ---
     async function registerAttendance() {
         const name = document.getElementById('playerSelect').value;
-        if (!name) return alert("Selecciona un nombre");
+        if (!name) return alert("Selecciona tu nombre");
 
         const now = new Date();
-        const hour = now.getHours();
-        const min = now.getMinutes();
-        const totalMin = (hour * 60) + min;
+        const totalMin = (now.getHours() * 60) + now.getMinutes();
 
-        // Lógica: 5:00 PM es el límite (1020 min)
-        let status = (totalMin <= 1020) ? "PRESENTE" : "RETARDO";
+        // Sin bloqueo de horario para pruebas, solo marca status
+        let status = (totalMin <= 1020) ? "PRESENTE" : "RETARDO"; // 5:00 PM
 
         const data = {
             name: name,
@@ -111,7 +170,7 @@
             time: now.toLocaleTimeString()
         };
 
-        alert("Sincronizando con Google Sheets...");
+        alert("Enviando registro...");
 
         try {
             await fetch(SCRIPT_URL, {
@@ -120,14 +179,14 @@
                 body: JSON.stringify(data)
             });
             document.getElementById('status-msg').style.display = "block";
-            setTimeout(() => { location.reload(); }, 2500);
+            setTimeout(() => { location.reload(); }, 2000);
         } catch (e) {
-            alert("Error de conexión. Revisa el internet.");
+            alert("Error: Revisa tu conexión a internet.");
         }
     }
 
+    // --- ADMIN ---
     function accessAdmin() {
-        // Tu clave personalizada
         if(document.getElementById('pass').value === "2000") {
             document.getElementById('login-admin').style.display = "none";
             document.getElementById('panel-data').style.display = "block";
@@ -135,6 +194,8 @@
             alert("Pin incorrecto");
         }
     }
+
+    init();
 </script>
 </body>
 </html>
