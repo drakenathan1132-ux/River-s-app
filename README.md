@@ -334,4 +334,4 @@ Para reportar bugs o solicitar nuevas funcionalidades, contacta al desarrollador
 
 ---
 
-**Desarrollado con ❤️ para RIVERS Tochito Club** 🏈
+**Desarrollado con ❤️ para RIVERS Tochito Club** 🏈.
