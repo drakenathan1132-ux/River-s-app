@@ -1,11 +1,9 @@
+#!pip install pillow
+#!python generate-icons.py
 #!/usr/bin/env python3
 # ========================================
 # ICON GENERATOR - RIVERS TOCHITO CLUB
 # Genera todos los iconos optimizados desde una imagen base
-# ========================================
-
-from PIL import Image, ImageDraw
-import os
 
 # CONFIGURACIÓN
 SOURCE = 'logo-source.png'  # Tu logo original (mínimo 512x512)
