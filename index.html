@@ -4,147 +4,139 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RIVERS HUB PRO</title>
-    <link rel="manifest" href="manifest.json">
     <style>
-        :root { --neon: #00FFFF; --purple: #7000FF; --bg: #050505; --glass: rgba(255,255,255,0.07); }
-        body { background: var(--bg); color: #e0e0e0; font-family: sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
-        .glass { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px; margin: 15px; }
-        header { padding: 40px 20px 20px; text-align: center; background: radial-gradient(circle at top, #00FFFF11 0%, transparent 70%); }
-        .logo { width: 80px; filter: drop-shadow(0 0 15px var(--neon)); cursor: pointer; }
-        #view-coach, #view-rules, #view-admin-tools { display: none; }
-        .coach-active #view-alumna { display: none; }
-        .coach-active #view-coach { display: block; }
-        .post-card { background: var(--glass); border-radius: 20px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon); }
-        .badge { background: var(--purple); font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; margin-left: 10px; }
-        nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px 0; background: rgba(10,10,10,0.95); border-top: 1px solid #222; z-index: 100; }
-        .nav-btn { color: #555; font-size: 1.5rem; cursor: pointer; }
-        .nav-btn.active { color: var(--neon); }
-        #ai-trigger { position: fixed; right: 20px; bottom: 90px; width: 60px; height: 60px; background: linear-gradient(45deg, var(--neon), var(--purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--neon); z-index: 200; }
-        #ai-console { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; display: none; flex-direction: column; padding: 20px; }
-        .btn-action { background: var(--neon); color: #000; border: none; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; margin-top: 10px; }
-        input, select, textarea { width: 100%; background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
+        :root { --neon: #00FFFF; --purple: #7000FF; --bg: #050505; --glass: rgba(255,255,255,0.05); }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 90px; }
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px; padding: 20px; margin: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        header { padding: 50px 20px 30px; text-align: center; }
+        .logo { width: 90px; filter: drop-shadow(0 0 20px var(--neon)); cursor: pointer; }
+        
+        /* Animación de carga para el Feed */
+        .post-card { border-left: 4px solid var(--neon); background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 12px; animation: slideIn 0.4s ease; }
+        @keyframes slideIn { from { opacity:0; transform: translateX(-20px); } to { opacity:1; transform: translateX(0); } }
+
+        nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px 0; background: rgba(0,0,0,0.9); border-top: 1px solid #333; z-index: 1000; }
+        .nav-btn { color: #666; font-size: 1.5rem; transition: 0.3s; }
+        .nav-btn.active { color: var(--neon); transform: scale(1.2); }
+        
+        .btn-action { background: var(--neon); color: #000; border: none; padding: 18px; border-radius: 18px; font-weight: 900; width: 100%; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-action:active { transform: scale(0.95); background: #fff; }
+        
+        #view-coach, #view-rules { display: none; }
+        .coach-only { display: none; }
+        .is-coach .coach-only { display: block; }
     </style>
 </head>
-<body id="main-body">
+<body id="main">
 
 <header>
-    <img src="logo.png" class="logo" onclick="coachAuthAttempt()">
-    <h1 id="app-title" style="letter-spacing:2px;">RIVERS HUB</h1>
+    <img src="logo.png" class="logo" onclick="auth()">
+    <h1 id="title" style="letter-spacing:4px; font-size: 1.2rem; opacity: 0.7;">RIVERS HUB</h1>
 </header>
 
-<main id="view-alumna" class="page-content">
+<main id="view-home" class="page">
     <div class="glass">
-        <h3 style="color:var(--neon)">🗞️ Noticias del Club</h3>
-        <div id="social-container">
-            <div class="post-card">
-                <div style="color:var(--neon); font-weight:bold;">SISTEMA <span class="badge">ACTUALIZADO</span></div>
-                <p>App Rivers Pro v2.0 activada. Bienvenidas al nuevo Hub.</p>
-            </div>
-        </div>
+        <h2 style="color:var(--neon); margin-top:0;">🗞️ Feed del Club</h2>
+        <div id="feed-container">Cargando noticias...</div>
     </div>
     
     <div class="glass">
-        <h3>📱 Check-In</h3>
-        <select id="playerSelect"><option value="">Cargando lista...</option></select>
-        <button class="btn-action" onclick="registerAttendance()">REGISTRAR ENTRADA</button>
+        <h3>⏱️ Registro de Entrada</h3>
+        <select id="playerSelect" style="width:100%; padding:15px; border-radius:12px; background:#111; color:#fff; border:1px solid #333; margin-bottom:15px;"></select>
+        <button class="btn-action" onclick="checkIn()">REGISTRAR ASISTENCIA</button>
     </div>
 </main>
 
-<main id="view-rules" class="page-content">
+<main id="view-coach" class="page">
     <div class="glass">
-        <h2 style="color:var(--neon)">📋 Reglamento</h2>
-        <p><strong>Art 1.</strong> 15 min de tolerancia.</p>
-        <p><strong>Art 2.</strong> 3 retardos = 1 falta.</p>
-        <p><strong>Art 3.</strong> 3 faltas = baja.</p>
+        <h2 style="color:var(--purple)">📣 Publicar Mensaje</h2>
+        <textarea id="postMsg" style="width:100%; height:100px; background:#111; color:#fff; border:1px solid #333; border-radius:15px; padding:10px;" placeholder="¿Qué quieres decirle al equipo?"></textarea>
+        <button class="btn-action" style="background:var(--purple); color:#fff; margin-top:10px;" onclick="publish()">SUBIR AL FEED</button>
+    </div>
+    <div class="glass">
+        <h3>➕ Nueva Jugadora</h3>
+        <input type="text" id="newPlayerName" style="width:100%; padding:15px; background:#111; color:#fff; border:1px solid #333; border-radius:12px;" placeholder="Nombre de la alumna">
+        <button class="btn-action" style="margin-top:10px;" onclick="savePlayer()">GUARDAR EN SHEETS</button>
     </div>
 </main>
-
-<main id="view-coach" class="page-content">
-    <div class="glass">
-        <h2 style="color:var(--purple)">⚡ PANEL DE CONTROL</h2>
-        <textarea id="postContent" placeholder="Escribe un aviso para las alumnas..."></textarea>
-        <button class="btn-action" onclick="sendPost()">PUBLICAR AVISO</button>
-    </div>
-    <div class="glass" id="admin-players">
-        <h3>👥 Gestión de Jugadoras</h3>
-        <input type="text" id="newPlayer" placeholder="Nombre completo">
-        <button class="btn-action" style="background:var(--purple); color:white;" onclick="addPlayer()">AÑADIR JUGADORA</button>
-    </div>
-</header>
-
-<div id="ai-trigger" onclick="toggleAI()">🤖</div>
-<div id="ai-console">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="color:var(--neon)">IA COACH</h2>
-        <button onclick="toggleAI()" style="background:none; border:none; color:#fff; font-size:2rem;">×</button>
-    </div>
-    <iframe src="https://www.blackbox.ai" style="flex-grow:1; border:none; border-radius:15px; background:white;"></iframe>
-</div>
 
 <nav>
-    <div class="nav-btn active" onclick="navTo('view-alumna')">🏠</div>
-    <div class="nav-btn" onclick="navTo('view-rules')">📋</div>
-    <div class="nav-btn" onclick="logout()">🔒</div>
+    <div class="nav-btn active" onclick="show('view-home', this)">🏠</div>
+    <div id="coach-tab" class="nav-btn coach-only" onclick="show('view-coach', this)">⚡</div>
+    <div class="nav-btn" onclick="location.reload()">🔄</div>
 </nav>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
-    let players = JSON.parse(localStorage.getItem('rivers_players')) || ["Tadeo Solis", "Jesús Bonilla", "Joshua", "Lia Rodriguez"];
-    let logoClicks = 0;
+    const URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
+    let clicks = 0;
 
-    function coachAuthAttempt() {
-        logoClicks++;
-        if(logoClicks >= 5) {
-            if(prompt("PIN DE COACH:") === "2000") {
-                document.body.classList.add('coach-active');
-                document.getElementById('app-title').innerText = "RIVERS COMMAND";
-            }
-            logoClicks = 0;
-        }
-    }
-
-    function navTo(viewId) {
-        document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
-        document.getElementById(viewId).style.display = 'block';
-    }
-
-    async function registerAttendance() {
-        const name = document.getElementById('playerSelect').value;
-        if(!name) return alert("Selecciona nombre");
-        
-        const data = { type: "attendance", name: name, status: "PRESENTE", date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
-        
+    async function loadData() {
         try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            alert("Sincronizado.");
+            const res = await fetch(URL);
+            const data = await res.json();
+            
+            // Render Jugadoras
+            document.getElementById('playerSelect').innerHTML = data.players.map(p => `<option>${p}</option>`).join('');
+            
+            // Render Feed
+            document.getElementById('feed-container').innerHTML = data.feed.map(post => `
+                <div class="post-card">
+                    <small style="color:var(--neon)">${post.author} • ${post.date}</small>
+                    <p style="margin:5px 0;">${post.content}</p>
+                </div>
+            `).join('');
         } catch(e) {
-            alert("Guardado offline.");
+            document.getElementById('feed-container').innerText = "Error al conectar con la base de datos.";
         }
     }
 
-    function addPlayer() {
-        const name = document.getElementById('newPlayer').value;
-        if(name) {
-            players.push(name);
-            localStorage.setItem('rivers_players', JSON.stringify(players));
-            renderPlayers();
-            document.getElementById('newPlayer').value = '';
+    function auth() {
+        clicks++;
+        if(clicks >= 5) {
+            if(prompt("PIN:") === "2000") {
+                document.body.classList.add('is-coach');
+                document.getElementById('coach-tab').style.display = "block";
+                alert("Modo Coach Activo");
+            }
+            clicks = 0;
         }
     }
 
-    function renderPlayers() {
-        const select = document.getElementById('playerSelect');
-        select.innerHTML = players.sort().map(p => `<option value="${p}">${p}</option>`).join('');
+    async function checkIn() {
+        const name = document.getElementById('playerSelect').value;
+        const now = new Date();
+        
+        // El botón siempre funciona, pero tú verás la hora en el Sheet
+        const packet = { type: "attendance", name: name, status: "PRESENTE", date: now.toLocaleDateString(), time: now.toLocaleTimeString() };
+        await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(packet) });
+        alert("¡Listo! Tu asistencia se envió.");
     }
 
-    function toggleAI() {
-        const con = document.getElementById('ai-console');
-        con.style.display = (con.style.display === 'flex') ? 'none' : 'flex';
+    async function publish() {
+        const msg = document.getElementById('postMsg').value;
+        if(!msg) return;
+        const packet = { type: "post", author: "Coach Jesús", content: msg, category: "AVISO", date: new Date().toLocaleDateString() };
+        await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(packet) });
+        alert("Mensaje enviado al muro.");
+        location.reload();
     }
 
-    function logout() { location.reload(); }
-    
-    renderPlayers();
+    async function savePlayer() {
+        const name = document.getElementById('newPlayerName').value;
+        if(!name) return;
+        await fetch(URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"new_player", name: name}) });
+        alert("Jugadora guardada en la base de datos central.");
+        location.reload();
+    }
+
+    function show(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    loadData();
 </script>
 </body>
 </html>
