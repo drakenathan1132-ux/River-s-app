@@ -687,8 +687,36 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
               Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
-
 const adminManager = new AdminManager();
+
+function updateFaviconBadge(count) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    
+    // Dibujar círculo rojo
+    ctx.fillStyle = '#FF0000';
+    ctx.beginPath();
+    ctx.arc(24, 8, 8, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Número
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(count > 9 ? '9+' : count, 24, 12);
+    
+    // Actualizar favicon
+    const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    link.type = 'image/x-icon';
+    link.rel = 'icon';
+    link.href = canvas.toDataURL();
+    document.head.appendChild(link);
+}
+
+// Uso:
+updateFaviconBadge(3); // Muestra "3" en el favicon
 
 // ========================================
 // 7. INITIALIZATION
