@@ -4,62 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RIVERS COMMAND PRO</title>
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Rivers Hub">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="manifest" href="manifest.json">
-
     <style>
         :root { --neon: #00FFFF; --purple: #7000FF; --bg: #050505; --glass: rgba(255,255,255,0.05); }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
-        
-        /* Interfaz Glassmorphism */
-        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px; padding: 20px; margin: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        header { padding: 40px 20px 20px; text-align: center; }
-        .logo { width: 80px; filter: drop-shadow(0 0 15px var(--neon)); cursor: pointer; transition: 0.3s; }
-        .logo:active { transform: scale(0.9); }
-
-        /* Gráficas de Rendimiento */
-        .stat-container { margin-top: 10px; }
-        .stat-bar { height: 12px; background: #222; border-radius: 6px; overflow: hidden; margin: 8px 0; }
-        .stat-fill { height: 100%; background: var(--neon); width: 0%; transition: 1s ease-out; }
-
-        /* Componentes Pro */
-        .qr-box { background: white; padding: 15px; border-radius: 20px; display: inline-block; margin: 15px 0; animation: fadeIn 0.5s; }
-        .post-card { border-left: 4px solid var(--neon); background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 12px; }
-        
-        nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px 0; background: rgba(0,0,0,0.95); border-top: 1px solid #333; z-index: 1000; backdrop-filter: blur(10px); }
-        .nav-btn { color: #555; font-size: 1.6rem; cursor: pointer; transition: 0.3s; }
-        .nav-btn.active { color: var(--neon); transform: translateY(-5px); }
-        
-        .btn-action { background: var(--neon); color: #000; border: none; padding: 16px; border-radius: 16px; font-weight: 900; width: 100%; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-        .btn-action:active { transform: scale(0.98); opacity: 0.8; }
-        
-        .page { display: none; animation: slideUp 0.3s ease-out; }
-        input, select, textarea { width: 100%; padding: 15px; background: #111; color: #fff; border: 1px solid #333; border-radius: 14px; margin-bottom: 12px; box-sizing: border-box; font-size: 1rem; }
-        
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 90px; }
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin: 15px; }
+        header { padding: 30px; text-align: center; }
+        .logo { width: 70px; filter: drop-shadow(0 0 10px var(--neon)); cursor: pointer; }
+        nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px 0; background: #000; border-top: 1px solid #333; z-index: 100; }
+        .nav-btn { color: #555; font-size: 1.5rem; cursor: pointer; }
+        .nav-btn.active { color: var(--neon); }
+        .btn-action { background: var(--neon); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+        .page { display: none; }
+        select, textarea { width: 100%; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 10px; margin-bottom: 10px; }
+        .qr-box { background: #fff; padding: 10px; border-radius: 15px; display: inline-block; margin-top: 15px; }
     </style>
 </head>
 <body>
-
+    
 <header>
-    <img src="logo.png" class="logo" onclick="authTrigger()">
-    <h1 style="letter-spacing:3px; font-size: 1.1rem; color: var(--neon);">RIVERS COMMAND</h1>
+    <img src="logo.png" class="logo" onclick="auth()">
+    <h1 style="font-size: 1.2rem; color: var(--neon);">RIVERS COMMAND</h1>
 </header>
 
 <main id="view-home" class="page" style="display:block;">
     <div class="glass">
-        <h2 style="margin-top:0;">📜 Reglamento</h2>
-        <p style="font-size: 0.9rem; opacity: 0.8;">Art 1. 15 min de tolerancia.<br>Art 2. 3 retardos = 1 falta.<br>Art 3. 3 faltas = baja.</p>
+        <h2>📋 Reglamento</h2>
+        <p>1. 15 min de tolerancia.<br>2. 3 retardos = 1 falta.<br>3. 3 faltas = baja.</p>
     </div>
     <div class="glass">
-        <h3 style="color:var(--neon)">📣 Muro del Equipo</h3>
-        <div id="feed-container">Cargando avisos...</div>
+        <h3>📣 Muro</h3>
+        <div id="feed-container">Cargando...</div>
     </div>
 </main>
 
@@ -67,46 +45,59 @@
     <div class="glass">
         <h2>⏱️ Registro</h2>
         <select id="playerSelect"></select>
-        <button class="btn-action" onclick="sendAttendance()">REGISTRAR ENTRADA</button>
-    </div>
-    <div class="glass" style="text-align:center;">
-        <h3>🎴 Tu Identificador QR</h3>
-        <div id="qr-display" class="qr-box">
-            <p style="color:#000; font-size: 0.8rem;">Selecciona tu nombre</p>
-        </div>
-    </div>
-</main>
-
-<main id="view-stats" class="page">
-    <div class="glass">
-        <h2 style="color:var(--neon)">📊 Dashboard de Hoy</h2>
-        <div class="stat-container">
-            <p>Asistencias Confirmadas: <span id="stat-asist">0</span></p>
-            <div class="stat-bar"><div id="bar-asist" class="stat-fill"></div></div>
-            <p>Retardos Detectados: <span id="stat-ret">0</span></p>
-            <div class="stat-bar"><div id="bar-ret" class="stat-fill" style="background: #FFCC00;"></div></div>
-        </div>
-    </div>
-</main>
-
-<main id="view-admin" class="page">
-    <div class="glass">
-        <h2 style="color:var(--purple)">⚡ Rivers Admin</h2>
-        <button class="btn-action" style="background:#fff; margin-bottom:15px;" onclick="downloadExcel()">📥 EXPORTAR ASISTENCIAS (CSV)</button>
-        
-        <h3>Publicar en el Muro</h3>
-        <textarea id="adminMsg" placeholder="¿Qué quieres anunciar?"></textarea>
-        <button class="btn-action" style="background:var(--purple); color:#fff;" onclick="postToFeed()">PUBLICAR AHORA</button>
+        <button class="btn-action" onclick="send()">REGISTRAR</button>
+        <div id="qr-display" class="qr-box" style="display:none;"></div>
     </div>
 </main>
 
 <nav>
-    <div class="nav-btn active" onclick="navigate('view-home', this)">🏠</div>
-    <div class="nav-btn" onclick="navigate('view-check', this)">⏱️</div>
-    <div class="nav-btn" onclick="navigate('view-stats', this)">📊</div>
-    <div id="admin-tab" class="nav-btn" style="display:none;" onclick="navigate('view-admin', this)">⚙️</div>
+    <div class="nav-btn active" onclick="nav('view-home', this)">🏠</div>
+    <div class="nav-btn" onclick="nav('view-check', this)">⏱️</div>
+    <div id="admin-tab" class="nav-btn" style="display:none;" onclick="nav('view-admin', this)">⚙️</div>
 </nav>
+
 <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
+    let clicks = 0;
+
+    async function init() {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        const sel = document.getElementById('playerSelect');
+        sel.innerHTML = data.players.map(p => `<option value="${p}">${p}</option>`).join('');
+        document.getElementById('feed-container').innerHTML = data.feed.map(f => `<div><b>${f.author}:</b> ${f.content}</div>`).join('<hr>');
+        
+        sel.onchange = (e) => {
+            const qr = document.getElementById('qr-display');
+            qr.style.display = 'block';
+            qr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${e.target.value}">`;
+        };
+    }
+
+    async function send() {
+        const name = document.getElementById('playerSelect').value;
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:'attendance', name: name}) });
+        alert("Enviado");
+    }
+
+    function auth() {
+        clicks++;
+        if(clicks >= 5) {
+            if(prompt("PIN:") === "2000") document.getElementById('admin-tab').style.display = "block";
+            clicks = 0;
+        }
+    }
+
+    function nav(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    init();
+</script>
+    <script>
 // Registro del Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -153,79 +144,7 @@ window.addEventListener('offline', () => {
     console.log('🔴 Sin conexión');
     // Opcional: mostrar banner de offline
 });
-</script>
-<script>
-    
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
-    let appData = { players: [], feed: [] };
-    let authClicks = 0;
+    </script>
+</body>
+</html>
 
-    // Inicialización
-    async function init() {
-        try {
-            const response = await fetch(SCRIPT_URL);
-            appData = await response.json();
-            renderUI();
-        } catch (e) {
-            console.error("Error de conexión", e);
-            document.getElementById('feed-container').innerHTML = "Modo Offline - Datos locales cargados.";
-        }
-    }
-
-    function renderUI() {
-        // Cargar Jugadoras
-        const select = document.getElementById('playerSelect');
-        select.innerHTML = appData.players.map(p => `<option value="${p}">${p}</option>`).join('');
-        
-        // Listener para QR dinámico
-        select.addEventListener('change', (e) => {
-            const qrBox = document.getElementById('qr-display');
-            qrBox.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RIVERS_${e.target.value}" width="150">`;
-        });
-
-        // Cargar Feed
-        document.getElementById('feed-container').innerHTML = appData.feed.map(f => `
-            <div class="post-card">
-                <small style="color:var(--neon)">${f.author} • ${f.date}</small>
-                <p style="margin:5px 0;">${f.content}</p>
-            </div>
-        `).join('') || "Sin avisos recientes.";
-
-        updateStats();
-    }
-
-    function updateStats() {
-        const total = appData.players.length || 1;
-        const asist = Math.floor(Math.random() * total); // Simulación hasta conectar post real
-        document.getElementById('stat-asist').innerText = asist;
-        document.getElementById('bar-asist').style.width = (asist/total*100) + "%";
-    }
-
-    // Funciones de Comando
-    async function sendAttendance() {
-        const name = document.getElementById('playerSelect').value;
-        const now = new Date();
-        const data = { type: "attendance", name: name, date: now.toLocaleDateString(), time: now.toLocaleTimeString(), status: "PRESENTE" };
-        
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("¡Asistencia registrada, Jesús!");
-    }
-
-    function downloadExcel() {
-        let csv = "Jugadora,Fecha,Hora,Estatus\n";
-        appData.players.forEach(p => csv += `${p},${new Date().toLocaleDateString()},--,PENDIENTE\n`);
-        
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Rivers_Asistencias_${new Date().toLocaleDateString()}.csv`;
-        a.click();
-    }
-
-    // Seguridad (Easter Egg)
-    function authTrigger() {
-        authClicks++;
-        if(authClicks >= 5) {
-            if(prompt("PIN DE COMANDO:") === "2000") {
-                document.getElementById('admin
