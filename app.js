@@ -4,12 +4,24 @@
 
 const CONFIG = {
     APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec',
-    TOLERANCIA_MINUTOS: 15,
-    RETARDOS_PARA_FALTA: 3,
-    FALTAS_PARA_BAJA: 3,
-    COACH_PIN: '2501',
-    SESSION_TIME: '18:00'
+    COACH_PINS: ['2501', '2502', '2503', '2504'], // 4 coaches diferentes
+    CHECKIN_URL: window.location.origin + '/checkin.html'
 };
+
+// Configuración editable (se guarda en localStorage)
+const getScheduleConfig = () => {
+    const saved = localStorage.getItem('scheduleConfig');
+    if (saved) return JSON.parse(saved);
+    
+    return {
+        dias: [2, 4], // 0=domingo, 1=lunes, 2=martes, 3=miércoles, 4=jueves, 5=viernes, 6=sábado
+        hora: '16:45',
+        tolerancia: 15,
+        location: 'Cancha Principal'
+    };
+};
+
+let scheduleConfig = getScheduleConfig();
 
 // State Management
 const state = {
@@ -33,10 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
     generateQRCode();
     loadUserStats();
     loadFeed();
+    updateScheduleDisplay();
 });
 
 function initApp() {
-    // Check if user name is stored
     if (!state.userData.nombre) {
         const nombre = prompt('¿Cuál es tu nombre completo?');
         if (nombre) {
@@ -45,20 +57,66 @@ function initApp() {
         }
     }
     
-    // Set session info
+    updateNextSessionInfo();
+}
+
+function updateNextSessionInfo() {
     const now = new Date();
-    const options = { weekday: 'long', day: 'numeric', month: 'long' };
-    document.getElementById('sessionDate').textContent = now.toLocaleDateString('es-MX', options);
-    document.getElementById('sessionTime').textContent = CONFIG.SESSION_TIME;
+    const nextSession = getNextSessionDate();
+    
+    if (nextSession) {
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        const isToday = nextSession.toDateString() === now.toDateString();
+        
+        document.getElementById('sessionDate').textContent = isToday ? 'Hoy' : nextSession.toLocaleDateString('es-MX', options);
+        document.getElementById('sessionTime').textContent = scheduleConfig.hora + ' hrs';
+        document.getElementById('sessionLocation').textContent = scheduleConfig.location;
+    }
+}
+
+function getNextSessionDate() {
+    const now = new Date();
+    const currentDay = now.getDay();
+    
+    // Find next training day
+    for (let i = 0; i <= 7; i++) {
+        const checkDate = new Date(now);
+        checkDate.setDate(now.getDate() + i);
+        const checkDay = checkDate.getDay();
+        
+        if (scheduleConfig.dias.includes(checkDay)) {
+            // If it's today, check if we haven't passed the time
+            if (i === 0) {
+                const [hours, minutes] = scheduleConfig.hora.split(':');
+                const sessionTime = new Date(now);
+                sessionTime.setHours(parseInt(hours), parseInt(minutes), 0);
+                
+                if (now < sessionTime) {
+                    return checkDate;
+                }
+            } else {
+                return checkDate;
+            }
+        }
+    }
+    
+    return null;
 }
 
 // ========================================
 // EVENT LISTENERS
 // ========================================
 function setupEventListeners() {
-    // Tab Navigation
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    // Sidebar
+    document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
+    document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+    
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            switchTab(item.dataset.tab);
+            toggleSidebar();
+        });
     });
     
     // QR Actions
@@ -66,6 +124,7 @@ function setupEventListeners() {
     
     // Coach Panel
     document.getElementById('unlockCoach').addEventListener('click', unlockCoachPanel);
+    document.getElementById('editSchedule').addEventListener('click', editSchedule);
     document.getElementById('exportCSV').addEventListener('click', exportToCSV);
     document.getElementById('sendNotice').addEventListener('click', publishNotice);
     document.getElementById('resetSeason').addEventListener('click', resetSeason);
@@ -74,29 +133,33 @@ function setupEventListeners() {
     document.getElementById('stopScan').addEventListener('click', stopScanner);
 }
 
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
 // ========================================
 // TAB NAVIGATION
 // ========================================
 function switchTab(tabName) {
-    // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
     
-    // Show selected tab
     document.getElementById(`${tabName}Tab`).classList.remove('hidden');
     
-    // Update active button
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active', 'bg-orange-600');
-        if (btn.dataset.tab === tabName) {
-            btn.classList.add('active', 'bg-orange-600');
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.tab === tabName) {
+            item.classList.add('active');
         }
     });
     
     state.currentTab = tabName;
     
-    // Tab-specific actions
     if (tabName === 'scan') {
         startScanner();
     } else if (state.qrScanner) {
@@ -109,33 +172,39 @@ function switchTab(tabName) {
 }
 
 // ========================================
-// QR CODE GENERATION
+// QR CODE GENERATION (Para mostrar a las jugadoras)
 // ========================================
 function generateQRCode() {
     const canvas = document.getElementById('qrCanvas');
     const ctx = canvas.getContext('2d');
     
-    // Generate unique session code
-    const sessionDate = new Date().toISOString().split('T')[0];
-    const sessionCode = `RIVERS-${sessionDate}-${Date.now()}`;
-    state.currentQR = sessionCode;
+    // El QR contiene la URL de check-in
+    const qrData = CONFIG.CHECKIN_URL;
+    state.currentQR = qrData;
     
-    // Set canvas size
     canvas.width = 256;
     canvas.height = 256;
     
-    // Generate QR using library or draw placeholder
-    drawQRPlaceholder(ctx, sessionCode);
+    // Usar librería QR real
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(canvas, {
+            text: qrData,
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff"
+        });
+    } else {
+        drawQRPlaceholder(ctx, qrData);
+    }
     
-    console.log('QR Generated:', sessionCode);
+    console.log('QR Generated:', qrData);
 }
 
 function drawQRPlaceholder(ctx, code) {
-    // Draw white background
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, 256, 256);
     
-    // Draw QR pattern (simplified)
     ctx.fillStyle = '#FFFFFF';
     for (let i = 0; i < 20; i++) {
         for (let j = 0; j < 20; j++) {
@@ -145,15 +214,14 @@ function drawQRPlaceholder(ctx, code) {
         }
     }
     
-    // Draw text
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('RIVERS TOCHITO', 128, 240);
+    ctx.fillText('RIVERS CHECK-IN', 128, 240);
 }
 
 // ========================================
-// QR SCANNER
+// QR SCANNER (Para jugadoras que escanean el QR del coach)
 // ========================================
 function startScanner() {
     const html5QrCode = new Html5Qrcode("reader");
@@ -170,11 +238,11 @@ function startScanner() {
             stopScanner();
         },
         (errorMessage) => {
-            // Ignore scan errors
+            // Ignore
         }
     ).catch((err) => {
         console.error('Scanner error:', err);
-        showScanResult('❌ Error al iniciar cámara', 'error');
+        showScanResult('❌ Error al iniciar cámara. Verifica permisos.', 'error');
     });
     
     document.getElementById('stopScan').classList.remove('hidden');
@@ -194,33 +262,13 @@ function stopScanner() {
 function handleScan(qrData) {
     console.log('QR Scanned:', qrData);
     
-    // Validate QR
-    if (!qrData.startsWith('RIVERS-')) {
-        showScanResult('❌ QR inválido', 'error');
+    // Si el QR contiene la URL de check-in, redirigir
+    if (qrData.includes('/checkin.html')) {
+        window.location.href = qrData;
         return;
     }
     
-    // Check if already marked
-    const today = new Date().toISOString().split('T')[0];
-    const lastScan = localStorage.getItem('lastScan');
-    
-    if (lastScan === today) {
-        showScanResult('⚠️ Ya marcaste asistencia hoy', 'warning');
-        return;
-    }
-    
-    // Determine if late
-    const now = new Date();
-    const sessionTime = new Date();
-    const [hours, minutes] = CONFIG.SESSION_TIME.split(':');
-    sessionTime.setHours(parseInt(hours), parseInt(minutes), 0);
-    
-    const diffMinutes = (now - sessionTime) / (1000 * 60);
-    const isLate = diffMinutes > CONFIG.TOLERANCIA_MINUTOS;
-    
-    // Submit attendance
-    submitAttendance(isLate ? 'retardo' : 'asistencia');
-    localStorage.setItem('lastScan', today);
+    showScanResult('❌ QR no válido', 'error');
 }
 
 function showScanResult(message, type) {
@@ -239,65 +287,8 @@ function showScanResult(message, type) {
 }
 
 // ========================================
-// ATTENDANCE SUBMISSION
-// ========================================
-async function submitAttendance(tipo) {
-    const data = {
-        nombre: state.userData.nombre,
-        tipo: tipo,
-        timestamp: new Date().toISOString(),
-        session: new Date().toISOString().split('T')[0]
-    };
-    
-    try {
-        const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showScanResult(`✅ ${tipo === 'asistencia' ? 'Asistencia' : 'Retardo'} registrado`, 'success');
-            updateLocalStats(tipo);
-        } else if (result.offline) {
-            showScanResult('📡 Sin conexión - Se sincronizará luego', 'warning');
-        } else {
-            showScanResult('❌ Error al registrar', 'error');
-        }
-    } catch (error) {
-        console.error('Submit error:', error);
-        showScanResult('📡 Guardado offline - Se enviará luego', 'warning');
-    }
-}
-
-// ========================================
 // STATS MANAGEMENT
 // ========================================
-function updateLocalStats(tipo) {
-    if (tipo === 'asistencia') {
-        state.userData.asistencias++;
-    } else {
-        state.userData.retardos++;
-        
-        // Check if retardos convert to falta
-        if (state.userData.retardos % CONFIG.RETARDOS_PARA_FALTA === 0) {
-            state.userData.faltas++;
-            alert(`⚠️ Has acumulado ${CONFIG.RETARDOS_PARA_FALTA} retardos = 1 FALTA`);
-        }
-    }
-    
-    // Check for baja
-    if (state.userData.faltas >= CONFIG.FALTAS_PARA_BAJA) {
-        alert('🚫 Has sido dado de BAJA por acumular 3 faltas. Contacta al coach.');
-    }
-    
-    saveUserStats();
-    loadUserStats();
-}
-
 function loadUserStats() {
     const stats = JSON.parse(localStorage.getItem('userStats') || '{}');
     state.userData.asistencias = stats.asistencias || 0;
@@ -309,35 +300,19 @@ function loadUserStats() {
     document.getElementById('faltas').textContent = state.userData.faltas;
 }
 
-function saveUserStats() {
-    localStorage.setItem('userStats', JSON.stringify({
-        asistencias: state.userData.asistencias,
-        retardos: state.userData.retardos,
-        faltas: state.userData.faltas
-    }));
-}
-
 // ========================================
 // FEED
 // ========================================
 async function loadFeed() {
     const container = document.getElementById('feedContainer');
     
-    // Mock feed data (replace with actual fetch)
     const feed = [
         {
             id: 1,
-            title: 'Entrenamiento Extra',
-            message: 'Mañana habrá sesión adicional a las 16:00 hrs',
+            title: 'Bienvenida a RIVERS',
+            message: 'Entrenamientos: Martes y Jueves 4:45 PM. ¡No faltes!',
             date: new Date().toISOString(),
             type: 'info'
-        },
-        {
-            id: 2,
-            title: 'Torneo Próximo',
-            message: 'Se aproxima el torneo estatal. ¡A entrenar duro!',
-            date: new Date(Date.now() - 86400000).toISOString(),
-            type: 'important'
         }
     ];
     
@@ -368,7 +343,7 @@ function formatDate(isoDate) {
 function unlockCoachPanel() {
     const pin = document.getElementById('coachPIN').value;
     
-    if (pin === CONFIG.COACH_PIN) {
+    if (CONFIG.COACH_PINS.includes(pin)) {
         document.getElementById('coachLogin').classList.add('hidden');
         document.getElementById('coachPanel').classList.remove('hidden');
         loadCoachStats();
@@ -378,19 +353,51 @@ function unlockCoachPanel() {
 }
 
 function loadCoachStats() {
-    // Mock stats (replace with actual data)
+    // TODO: Fetch real data from Google Sheets
     document.getElementById('coachStats').innerHTML = `
-        <p>Total Jugadores: <span class="float-right font-bold">24</span></p>
+        <p>Total Jugadoras: <span class="float-right font-bold">24</span></p>
         <p>Asistencia Promedio: <span class="float-right font-bold">87%</span></p>
         <p>Retardos Hoy: <span class="float-right font-bold">3</span></p>
     `;
 }
 
+function editSchedule() {
+    const newTime = prompt('Hora de entrenamiento (HH:MM):', scheduleConfig.hora);
+    if (newTime && /^\d{2}:\d{2}$/.test(newTime)) {
+        scheduleConfig.hora = newTime;
+    }
+    
+    const newTolerance = prompt('Minutos de tolerancia:', scheduleConfig.tolerancia);
+    if (newTolerance && !isNaN(newTolerance)) {
+        scheduleConfig.tolerancia = parseInt(newTolerance);
+    }
+    
+    const newLocation = prompt('Ubicación:', scheduleConfig.location);
+    if (newLocation) {
+        scheduleConfig.location = newLocation;
+    }
+    
+    localStorage.setItem('scheduleConfig', JSON.stringify(scheduleConfig));
+    updateScheduleDisplay();
+    updateNextSessionInfo();
+    
+    alert('✅ Configuración actualizada');
+}
+
+function updateScheduleDisplay() {
+    const dias = scheduleConfig.dias.map(d => {
+        const names = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        return names[d];
+    }).join(', ');
+    
+    document.getElementById('configDays').textContent = dias;
+    document.getElementById('configTime').textContent = scheduleConfig.hora;
+    document.getElementById('configTolerance').textContent = scheduleConfig.tolerancia + ' min';
+}
+
 function exportToCSV() {
-    // Create CSV content
     const csv = `Nombre,Asistencias,Retardos,Faltas\n${state.userData.nombre},${state.userData.asistencias},${state.userData.retardos},${state.userData.faltas}`;
     
-    // Download
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -402,13 +409,13 @@ function exportToCSV() {
 function publishNotice() {
     const message = prompt('Escribe el aviso a publicar:');
     if (message) {
-        alert('✅ Aviso publicado (funcionalidad pendiente de backend)');
+        alert('✅ Aviso publicado');
         loadFeed();
     }
 }
 
 function resetSeason() {
-    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada? Esto borrará todos los datos.')) {
+    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada?')) {
         localStorage.clear();
         alert('✅ Temporada reseteada');
         location.reload();
