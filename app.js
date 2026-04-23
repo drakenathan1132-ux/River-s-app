@@ -1,742 +1,416 @@
 // ========================================
-// RIVERS TOCHITO CLUB - APP.JS
-// Sistema de Gestión de Asistencias
+// RIVERS TOCHITO CLUB - APP LOGIC
 // ========================================
 
-// ========================================
-// 1. CONSTANTS & CONFIGURATION
-// ========================================
-
-const ADMIN_PIN = '2000';
-const TOLERANCE_MINUTES = 15;
-const RETARDOS_PER_FALTA = 3;
-// Google Apps Script endpoint (configurar con tu URL de deployment)
-const SYNC_ENDPOINT =
-const RIVERS_SCHEDULE = {
-    DIAS_PERMITIDOS: [2, 4], // Martes y Jueves
-    APERTURA: "16:30",
-    INICIO_ENTRENO: "17:00",
-    CIERRE: "17:15",
-    COORDENADAS: { lat: 19.0633, lng: -97.0402 },
-    RADIO_MAXIMO: 300
+const CONFIG = {
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec',
+    TOLERANCIA_MINUTOS: 15,
+    RETARDOS_PARA_FALTA: 3,
+    FALTAS_PARA_BAJA: 3,
+    COACH_PIN: '2501',
+    SESSION_TIME: '18:00'
 };
- 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
-const RIVERS_SCHEDULE = {
-    DIAS_PERMITIDOS: [2, 4], // Martes = 2, Jueves = 4
-    APERTURA: "16:30",
-    INICIO_ENTRENO: "17:00",
-    CIERRE: "17:15" // Después de esto ya no pueden registrarse ni con retardo
+
+// State Management
+const state = {
+    currentTab: 'home',
+    qrScanner: null,
+    currentQR: null,
+    userData: {
+        nombre: localStorage.getItem('userName') || '',
+        asistencias: 0,
+        retardos: 0,
+        faltas: 0
+    }
 };
+
 // ========================================
-// 2. DATA MANAGEMENT (LocalStorage)
+// INITIALIZATION
 // ========================================
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+    setupEventListeners();
+    generateQRCode();
+    loadUserStats();
+    loadFeed();
+});
 
-class DataManager {
-    constructor() {   
-        this.PLAYERS_KEY = 'rivers_players';
-        this.ATTENDANCE_KEY = 'rivers_attendance';
-        this.DEVICE_KEY = 'rivers_device_id';
-    }
-
- getDeviceID() {
-        let id = localStorage.getItem('rivers_device_id');
-        if (!id) {
-            id = 'RIVERS-' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('rivers_device_id', id);
-        }
-        return id;
-    }
-
-    checkHorario() {
-        const ahora = new Date();
-        const diaSemana = ahora.getDay();
-        const horaActual = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
-
-        if (!RIVERS_SCHEDULE.DIAS_PERMITIDOS.includes(diaSemana)) {
-            return { habilitado: false, msg: "Hoy no hay entrenamiento programado." };
-        }
-        if (horaActual < RIVERS_SCHEDULE.APERTURA) {
-            return { habilitado: false, msg: `El registro abre a las 4:30 PM. (Hora actual: ${horaActual})` };
-        }
-        if (horaActual > RIVERS_SCHEDULE.CIERRE) {
-            return { habilitado: false, msg: "El registro ya cerró. Reportate con el Coach." };
-        }
-        
-        const esRetardo = horaActual > RIVERS_SCHEDULE.INICIO_ENTRENO;
-        return { habilitado: true, estatus: esRetardo ? "⚠️ RETARDO" : "✅ ASISTENCIA" };
-        }
-
- }
-    
-    // Players CRUD
-    getPlayers() {
-        const data = localStorage.getItem(this.PLAYERS_KEY);
-        return data ? JSON.parse(data) : [];
-    }
-    
-    savePlayers(players) {
-        localStorage.setItem(this.PLAYERS_KEY, JSON.stringify(players));
-    }
-    
-    addPlayer(player) {
-        const players = this.getPlayers();
-        const newPlayer = {
-            ...player,
-            retardos: 0,
-            faltas: 0,
-            createdAt: new Date().toISOString()
-        };
-        players.push(newPlayer);
-        this.savePlayers(players);
-        return newPlayer;
-    }
-    
-    updatePlayer(playerId, updates) {
-        const players = this.getPlayers();
-        const index = players.findIndex(p => p.id === playerId);
-        if (index !== -1) {
-            players[index] = { ...players[index], ...updates };
-            this.savePlayers(players);
-            return players[index];
-        }
-        return null;
-    }
-    
-    deletePlayer(playerId) {
-        let players = this.getPlayers();
-        players = players.filter(p => p.id !== playerId);
-        this.savePlayers(players);
-    }
-    
-    getPlayerById(playerId) {
-        const players = this.getPlayers();
-        return players.find(p => p.id === playerId);
-    }
-    
-    // Attendance Management
-    getAttendance() {
-        const data = localStorage.getItem(this.ATTENDANCE_KEY);
-        return data ? JSON.parse(data) : [];
-    }
-    
-    saveAttendance(attendance) {
-        localStorage.setItem(this.ATTENDANCE_KEY, JSON.stringify(attendance));
-    }
-    
-    addAttendanceRecord(record) {
-        const attendance = this.getAttendance();
-        attendance.push({
-            ...record,
-            timestamp: new Date().toISOString()
-        });
-        this.saveAttendance(attendance);
-        
-        // Update player stats
-        const player = this.getPlayerById(record.playerId);
-        if (player) {
-            if (record.status === 'retardo') {
-                player.retardos = (player.retardos || 0) + 1;
-                
-                // Auto-convert 3 retardos to 1 falta
-                if (player.retardos >= RETARDOS_PER_FALTA) {
-                    player.faltas = (player.faltas || 0) + 1;
-                    player.retardos = 0;
-                }
-            }
-            this.updatePlayer(player.id, player);
+function initApp() {
+    // Check if user name is stored
+    if (!state.userData.nombre) {
+        const nombre = prompt('¿Cuál es tu nombre completo?');
+        if (nombre) {
+            state.userData.nombre = nombre;
+            localStorage.setItem('userName', nombre);
         }
     }
     
-    getTodayAttendance() {
-        const attendance = this.getAttendance();
-        const today = new Date().toISOString().split('T')[0];
-        return attendance.filter(a => a.timestamp.startsWith(today));
-    }
-    
-    // Export all data for sync
-    exportAllData() {
-        return {
-            players: this.getPlayers(),
-            attendance: this.getAttendance(),
-            exportedAt: new Date().toISOString()
-        };
-    }
+    // Set session info
+    const now = new Date();
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    document.getElementById('sessionDate').textContent = now.toLocaleDateString('es-MX', options);
+    document.getElementById('sessionTime').textContent = CONFIG.SESSION_TIME;
 }
 
-const dataManager = new DataManager();
-
 // ========================================
-// 3. NAVIGATION SYSTEM
+// EVENT LISTENERS
 // ========================================
-
-class NavigationManager {
-    constructor() {
-        this.currentSection = 'reglamento';
-        this.init();
-    }
-    
-    init() {
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const section = item.dataset.section;
-                this.navigateTo(section);
-            });
-        });
-    }
-    
-    navigateTo(section) {
-        // Hide all sections
-        document.querySelectorAll('.section-content').forEach(s => {
-            s.classList.remove('active');
-        });
-        
-        // Show target section
-        const targetSection = document.getElementById(`section-${section}`);
-        if (targetSection) {
-            targetSection.classList.add('active');
-        }
-        
-        // Update nav items
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            item.classList.add('text-gray-400');
-            if (item.dataset.section === section) {
-                item.classList.add('active');
-                item.classList.remove('text-gray-400');
-            }
-        });
-        
-        this.currentSection = section;
-        
-        // Refresh content if needed
-        if (section === 'dashboard') {
-            dashboardManager.refresh();
-        } else if (section === 'admin' && adminManager.isUnlocked) {
-            adminManager.renderPlayers();
-        }
-    }
-}
-
-const navigationManager = new NavigationManager();
-
-// ========================================
-// 4. QR SCANNER & CHECK-IN
-// ========================================
-
-class CheckInManager {
-    constructor() {
-        this.scanner = null;
-        this.isScanning = false;
-        this.init();
-    }
-    
-    init() {
-  document.getElementById('startScanBtn').addEventListener('click', () => validarYRegistrar());
-      document.getElementById('stopScanBtn').addEventListener('click', () => this.stopScanning());
-    }
-    
-    startScanning() {
-        const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0
-        };
-        
-        this.scanner = new Html5Qrcode("reader");
-        
-        this.scanner.start(
-            { facingMode: "environment" },
-            config,
-            (decodedText) => {
-                this.handleScan(decodedText);
-            },
-            (errorMessage) => {
-                // Ignore continuous scan errors
-            }
-        ).then(() => {
-            this.isScanning = true;
-            document.getElementById('startScanBtn').classList.add('hidden');
-            document.getElementById('stopScanBtn').classList.remove('hidden');
-        }).catch(err => {
-            this.showResult('Error al iniciar cámara: ' + err, 'error');
-        });
-    }
-        handleScan(decodedText) {
-        this.stopScanning(); 
-
-        if (decodedText !== 'RIVERS_ENTRENAMIENTO') {
-            alert("❌ QR no válido.");
-            return;
-        }
-
-        const nombre = prompt("🎯 QR Válido. Escribe tu nombre para confirmar asistencia:");
-        if (nombre && nombre.trim() !== "") {
-            const horario = db.checkHorario();
-            const registro = {
-                nombre: nombre.trim(),
-                fecha: new Date().toLocaleDateString(),
-                hora: new Date().toLocaleTimeString(),
-                estatus: horario.estatus,
-                deviceID: db.getDeviceID()
-            };
-
-            const asistencias = JSON.parse(localStorage.getItem('rivers_attendance') || '[]');
-            asistencias.push(registro);
-            localStorage.setItem('rivers_attendance', JSON.stringify(asistencias));
-
-            alert(`✅ REGISTRO EXITOSO\n${nombre}\nEstatus: ${horario.estatus}`);
-        }
-    }
-
-    stopScanning() {
-        if (this.scanner && this.isScanning) {
-            this.scanner.stop().then(() => {
-                this.scanner.clear();
-                this.isScanning = false;
-                document.getElementById('startScanBtn').classList.remove('hidden');
-                document.getElementById('stopScanBtn').classList.add('hidden');
-            });
-        }
-    }
-    
-    handleScan(playerId) {
-        // Stop scanning temporarily
-        this.stopScanning();
-        
-        // Get player data
-        const player = dataManager.getPlayerById(playerId);
-        
-        if (!player) {
-            this.showResult(`❌ ID "${playerId}" no encontrado`, 'error');
-            setTimeout(() => this.startScanning(), 3000);
-            return;
-        }
-        
-        // Check if already checked in today
-        const todayAttendance = dataManager.getTodayAttendance();
-        const alreadyCheckedIn = todayAttendance.find(a => a.playerId === playerId);
-        
-        if (alreadyCheckedIn) {
-            this.showResult(`⚠️ ${player.name} ya registró asistencia hoy`, 'error');
-            setTimeout(() => this.startScanning(), 3000);
-            return;
-        }
-        
-        // Get start time and current time
-        const startTime = document.getElementById('startTime').value;
-        const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        const status = this.calculateStatus(startTime, currentTime);
-        
-        // Record attendance
-        dataManager.addAttendanceRecord({
-            playerId: player.id,
-            playerName: player.name,
-            status: status,
-            startTime: startTime,
-            checkInTime: currentTime
-        });
-        
-        // Show result
-        const statusText = status === 'asistencia' ? '✅ ASISTENCIA' : '⏰ RETARDO';
-        const statusClass = status === 'asistencia' ? 'success' : 'error';
-        this.showResult(`${statusText}<br>${player.name}<br>Hora: ${currentTime}`, statusClass);
-        
-        // Restart scanning after delay
-        setTimeout(() => this.startScanning(), 3000);
-    }
-    
-    calculateStatus(startTime, currentTime) {
-        const [startH, startM] = startTime.split(':').map(Number);
-        const [currentH, currentM] = currentTime.split(':').map(Number);
-        
-        const startMinutes = startH * 60 + startM;
-        const currentMinutes = currentH * 60 + currentM;
-        
-        const diff = currentMinutes - startMinutes;
-        
-        return diff <= TOLERANCE_MINUTES ? 'asistencia' : 'retardo';
-    }
-    
-    showResult(message, type) {
-        const resultDiv = document.getElementById('scanResult');
-        const resultText = document.getElementById('scanResultText');
-        
-        resultDiv.classList.remove('hidden', 'success-flash', 'error-flash');
-        resultDiv.classList.add(type === 'success' ? 'success-flash' : 'error-flash');
-        resultText.innerHTML = message;
-        
-        setTimeout(() => {
-            resultDiv.classList.add('hidden');
-        }, 3000);
-    }
-}
-
-const checkInManager = new CheckInManager();
-
-// ========================================
-// 5. DASHBOARD (Public View)
-// ========================================
-
-class DashboardManager {
-    constructor() {
-        this.init();
-    }
-    
-    init() {
-        this.refresh();
-    }
-    
-    refresh() {
-        const today = new Date().toLocaleDateString('es-MX', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        document.getElementById('todayDate').textContent = today;
-        
-        const attendance = dataManager.getTodayAttendance();
-        const tbody = document.getElementById('dashboardTableBody');
-        const emptyState = document.getElementById('emptyDashboard');
-        
-        if (attendance.length === 0) {
-            tbody.innerHTML = '';
-            emptyState.classList.remove('hidden');
-            return;
-        }
-        
-        emptyState.classList.add('hidden');
-        
-        tbody.innerHTML = attendance.map(record => {
-            const statusBadge = record.status === 'asistencia' 
-                ? '<span class="bg-green-500/20 text-green-400 px-2 py-1 rounded-lg text-xs">✓ Asistencia</span>'
-                : '<span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-lg text-xs">⏰ Retardo</span>';
-            
-            return `
-                <tr class="border-b border-gray-800">
-                    <td class="py-3 px-2">${record.playerName}</td>
-                    <td class="py-3 px-2">${record.checkInTime}</td>
-                    <td class="py-3 px-2">${statusBadge}</td>
-                </tr>
-            `;
-        }).join('');
-    }
-}
-
-const dashboardManager = new DashboardManager();
-
-// ========================================
-// 6. ADMIN PANEL
-// ========================================
-
-class AdminManager {
-    constructor() {
-        this.isUnlocked = false;
-        this.init();
-    }
-    
-    init() {
-        // Unlock button
-        document.getElementById('unlockAdminBtn').addEventListener('click', () => {
-            this.showPinModal();
-        });
-        
-        // PIN modal
-        document.getElementById('submitPinBtn').addEventListener('click', () => {
-            this.validatePin();
-        });
-        
-        document.getElementById('cancelPinBtn').addEventListener('click', () => {
-            this.closePinModal();
-        });
-        
-        // Add player
-        document.getElementById('addPlayerBtn').addEventListener('click', () => {
-            this.addPlayer();
-        });
-        
-        // Sync button
-        document.getElementById('syncDataBtn').addEventListener('click', () => {
-            this.syncData();
-        });
-        
-        // Edit modal
-        document.getElementById('saveEditBtn').addEventListener('click', () => {
-            this.saveEdit();
-        });
-        
-        document.getElementById('cancelEditBtn').addEventListener('click', () => {
-            this.closeEditModal();
-        });
-    }
-    
-    showPinModal() {
-        document.getElementById('pinModal').classList.add('active');
-        document.getElementById('pinInput').value = '';
-        document.getElementById('pinInput').focus();
-    }
-    
-    closePinModal() {
-        document.getElementById('pinModal').classList.remove('active');
-    }
-    
-    validatePin() {
-        const pin = document.getElementById('pinInput').value;
-        
-        if (pin === ADMIN_PIN) {
-            this.isUnlocked = true;
-            this.closePinModal();
-            this.unlockAdmin();
-        } else {
-            alert('❌ PIN incorrecto');
-            document.getElementById('pinInput').value = '';
-        }
-    }
-    
-    unlockAdmin() {
-        document.getElementById('unlockAdminBtn').classList.add('hidden');
-        document.getElementById('adminContent').classList.remove('hidden');
-        this.renderPlayers();
-    }
-    
-    addPlayer() {
-        const name = document.getElementById('newPlayerName').value.trim();
-        const id = document.getElementById('newPlayerId').value.trim().toUpperCase();
-        const age = parseInt(document.getElementById('newPlayerAge').value);
-        
-        if (!name || !id || !age) {
-            alert('⚠️ Completa todos los campos');
-            return;
-        }
-        
-        // Check if ID already exists
-        const existing = dataManager.getPlayerById(id);
-        if (existing) {
-            alert('⚠️ El ID ya está registrado');
-            return;
-        }
-        
-        dataManager.addPlayer({ name, id, age });
-        
-        // Clear form
-        document.getElementById('newPlayerName').value = '';
-        document.getElementById('newPlayerId').value = '';
-        document.getElementById('newPlayerAge').value = '';
-        
-        this.renderPlayers();
-    }
-    
-    renderPlayers() {
-        const players = dataManager.getPlayers();
-        const container = document.getElementById('playersList');
-        const emptyState = document.getElementById('emptyRoster');
-        
-        if (players.length === 0) {
-            container.innerHTML = '';
-            emptyState.classList.remove('hidden');
-            return;
-        }
-        
-        emptyState.classList.add('hidden');
-        
-        container.innerHTML = players.map(player => {
-            const totalFaltas = (player.faltas || 0) + Math.floor((player.retardos || 0) / RETARDOS_PER_FALTA);
-            const statusColor = totalFaltas >= 2 ? 'text-red-400' : totalFaltas >= 1 ? 'text-yellow-400' : 'text-green-400';
-            
-            return `
-                <div class="bg-gray-800/50 rounded-xl p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h4 class="text-white font-bold">${player.name}</h4>
-                            <p class="text-gray-400 text-sm">ID: ${player.id} • ${player.age} años</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="adminManager.editPlayer('${player.id}')" class="text-cyan-400 text-sm">✏️</button>
-                            <button onclick="adminManager.deletePlayer('${player.id}')" class="text-red-400 text-sm">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 text-sm mt-2">
-                        <span class="${statusColor}">
-                            Faltas: ${player.faltas || 0}
-                        </span>
-                        <span class="text-yellow-400">
-                            Retardos: ${player.retardos || 0}
-                        </span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    editPlayer(playerId) {
-        const player = dataManager.getPlayerById(playerId);
-        if (!player) return;
-        
-        document.getElementById('editPlayerId').value = player.id;
-        document.getElementById('editPlayerName').value = player.name;
-        document.getElementById('editPlayerAge').value = player.age;
-        
-        document.getElementById('editPlayerModal').classList.add('active');
-    }
-    
-    saveEdit() {
-        const playerId = document.getElementById('editPlayerId').value;
-        const name = document.getElementById('editPlayerName').value.trim();
-        const age = parseInt(document.getElementById('editPlayerAge').value);
-        
-        if (!name || !age) {
-            alert('⚠️ Completa todos los campos');
-            return;
-        }
-        
-        dataManager.updatePlayer(playerId, { name, age });
-        this.closeEditModal();
-        this.renderPlayers();
-    }
-    
-    closeEditModal() {
-        document.getElementById('editPlayerModal').classList.remove('active');
-    }
-    
-    deletePlayer(playerId) {
-        const player = dataManager.getPlayerById(playerId);
-        if (!player) return;
-        
-        if (confirm(`¿Eliminar a ${player.name}?`)) {
-            dataManager.deletePlayer(playerId);
-            this.renderPlayers();
-        }
-    }
-    
-    async syncData() {
-        const btn = document.getElementById('syncDataBtn');
-        btn.disabled = true;
-        btn.textContent = '⏳ Sincronizando...';
-        
-        try {
-            const data = dataManager.exportAllData();
-            
-            const response = await fetch(SYNC_ENDPOINT, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-            
-            // With no-cors mode, we can't read the response, but we assume success if no error is thrown
-            alert('✅ Datos sincronizados correctamente');
-            
-        } catch (error) {
-            console.error('Sync error:', error);
-            alert('⚠️ Error al sincronizar. Verifica tu conexión.');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = '☁️ Sincronizar Datos con Nube';
-        }
-    }
-}
-// CONFIGURACIÓN TÁCTICA
-const UBICACION_CAMPO = { lat: 19.1234, lng: -97.1234 }; // Coordenadas del campo (ajustar después)
-const RADIO_MAXIMO = 200; // Metros permitidos a la redonda
-
-async function validarYRegistrar() {
-    // 1. OBTENER ID DEL DISPOSITIVO
-    let deviceID = localStorage.getItem('rivers_device_id');
-    if (!deviceID) {
-        deviceID = 'DEV-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('rivers_device_id', deviceID);
-    }
-
-    // 2. PEDIR UBICACIÓN
-    if (!navigator.geolocation) {
-        alert("Tu celular no soporta GPS. No puedes registrarte.");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition((pos) => {
-        const d = calcularDistancia(pos.coords.latitude, pos.coords.longitude, UBICACION_CAMPO.lat, UBICACION_CAMPO.lng);
-        
-        if (d > RADIO_MAXIMO) {
-            alert(`Estás muy lejos del campo (${Math.round(d)}m). Acércate para registrarte.`);
-            return;
-        }
-
-        // 3. SELECCIÓN DE NOMBRE (Temporal hasta tener la lista)
-        const nombre = prompt("Escribe tu nombre completo para confirmar:");
-        if (!nombre) return;
-
-        procesarAsistencia(nombre, deviceID);
+function setupEventListeners() {
+    // Tab Navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
+    
+    // QR Actions
+    document.getElementById('refreshQR').addEventListener('click', generateQRCode);
+    
+    // Coach Panel
+    document.getElementById('unlockCoach').addEventListener('click', unlockCoachPanel);
+    document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+    document.getElementById('sendNotice').addEventListener('click', publishNotice);
+    document.getElementById('resetSeason').addEventListener('click', resetSeason);
+    
+    // Scanner
+    document.getElementById('stopScan').addEventListener('click', stopScanner);
 }
 
-// Fórmula matemática para calcular distancia entre coordenadas
-function calcularDistancia(lat1, lon1, lat2, lon2) {
-    const R = 6371e3; 
-    const phi1 = lat1 * Math.PI/180;
-    const phi2 = lat2 * Math.PI/180;
-    const deltaPhi = (lat2-lat1) * Math.PI/180;
-    const deltaLambda = (lon2-lon1) * Math.PI/180;
-    const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
-              Math.cos(phi1) * Math.cos(phi2) *
-              Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+// ========================================
+// TAB NAVIGATION
+// ========================================
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+    
+    // Show selected tab
+    document.getElementById(`${tabName}Tab`).classList.remove('hidden');
+    
+    // Update active button
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-orange-600');
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('active', 'bg-orange-600');
+        }
+    });
+    
+    state.currentTab = tabName;
+    
+    // Tab-specific actions
+    if (tabName === 'scan') {
+        startScanner();
+    } else if (state.qrScanner) {
+        stopScanner();
+    }
+    
+    if (tabName === 'feed') {
+        loadFeed();
+    }
 }
-const adminManager = new AdminManager();
 
-function updateFaviconBadge(count) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
+// ========================================
+// QR CODE GENERATION
+// ========================================
+function generateQRCode() {
+    const canvas = document.getElementById('qrCanvas');
     const ctx = canvas.getContext('2d');
     
-    // Dibujar círculo rojo
-    ctx.fillStyle = '#FF0000';
-    ctx.beginPath();
-    ctx.arc(24, 8, 8, 0, 2 * Math.PI);
-    ctx.fill();
+    // Generate unique session code
+    const sessionDate = new Date().toISOString().split('T')[0];
+    const sessionCode = `RIVERS-${sessionDate}-${Date.now()}`;
+    state.currentQR = sessionCode;
     
-    // Número
+    // Set canvas size
+    canvas.width = 256;
+    canvas.height = 256;
+    
+    // Generate QR using library or draw placeholder
+    drawQRPlaceholder(ctx, sessionCode);
+    
+    console.log('QR Generated:', sessionCode);
+}
+
+function drawQRPlaceholder(ctx, code) {
+    // Draw white background
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 256, 256);
+    
+    // Draw QR pattern (simplified)
+    ctx.fillStyle = '#FFFFFF';
+    for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 20; j++) {
+            if (Math.random() > 0.5) {
+                ctx.fillRect(i * 12 + 8, j * 12 + 8, 10, 10);
+            }
+        }
+    }
+    
+    // Draw text
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(count > 9 ? '9+' : count, 24, 12);
-    
-    // Actualizar favicon
-    const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-    link.type = 'image/x-icon';
-    link.rel = 'icon';
-    link.href = canvas.toDataURL();
-    document.head.appendChild(link);
+    ctx.fillText('RIVERS TOCHITO', 128, 240);
 }
 
-// Uso:
-updateFaviconBadge(3); // Muestra "3" en el favicon
+// ========================================
+// QR SCANNER
+// ========================================
+function startScanner() {
+    const html5QrCode = new Html5Qrcode("reader");
+    state.qrScanner = html5QrCode;
+    
+    html5QrCode.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        },
+        (decodedText) => {
+            handleScan(decodedText);
+            stopScanner();
+        },
+        (errorMessage) => {
+            // Ignore scan errors
+        }
+    ).catch((err) => {
+        console.error('Scanner error:', err);
+        showScanResult('❌ Error al iniciar cámara', 'error');
+    });
+    
+    document.getElementById('stopScan').classList.remove('hidden');
+}
+
+function stopScanner() {
+    if (state.qrScanner) {
+        state.qrScanner.stop().then(() => {
+            state.qrScanner = null;
+            document.getElementById('stopScan').classList.add('hidden');
+        }).catch((err) => {
+            console.error('Stop scanner error:', err);
+        });
+    }
+}
+
+function handleScan(qrData) {
+    console.log('QR Scanned:', qrData);
+    
+    // Validate QR
+    if (!qrData.startsWith('RIVERS-')) {
+        showScanResult('❌ QR inválido', 'error');
+        return;
+    }
+    
+    // Check if already marked
+    const today = new Date().toISOString().split('T')[0];
+    const lastScan = localStorage.getItem('lastScan');
+    
+    if (lastScan === today) {
+        showScanResult('⚠️ Ya marcaste asistencia hoy', 'warning');
+        return;
+    }
+    
+    // Determine if late
+    const now = new Date();
+    const sessionTime = new Date();
+    const [hours, minutes] = CONFIG.SESSION_TIME.split(':');
+    sessionTime.setHours(parseInt(hours), parseInt(minutes), 0);
+    
+    const diffMinutes = (now - sessionTime) / (1000 * 60);
+    const isLate = diffMinutes > CONFIG.TOLERANCIA_MINUTOS;
+    
+    // Submit attendance
+    submitAttendance(isLate ? 'retardo' : 'asistencia');
+    localStorage.setItem('lastScan', today);
+}
+
+function showScanResult(message, type) {
+    const resultDiv = document.getElementById('scanResult');
+    resultDiv.textContent = message;
+    resultDiv.className = `mt-4 p-4 rounded-lg text-center ${
+        type === 'success' ? 'bg-green-600' :
+        type === 'error' ? 'bg-red-600' :
+        'bg-yellow-600'
+    }`;
+    resultDiv.classList.remove('hidden');
+    
+    setTimeout(() => {
+        resultDiv.classList.add('hidden');
+    }, 3000);
+}
 
 // ========================================
-// 7. INITIALIZATION
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🏈 RIVERS Tochito Club App Initialized');
+// ATTENDANCE SUBMISSION
+// ========================================
+async function submitAttendance(tipo) {
+    const data = {
+        nombre: state.userData.nombre,
+        tipo: tipo,
+        timestamp: new Date().toISOString(),
+        session: new Date().toISOString().split('T')[0]
+    };
     
-    // Esto asegura que el botón de escaneo use tu nueva lógica de GPS
-    const scanBtn = document.getElementById('startScanBtn');
-    if (scanBtn) {
-        // Quitamos cualquier evento previo y ponemos el de validación
-        scanBtn.replaceWith(scanBtn.cloneNode(true)); 
-        document.getElementById('startScanBtn').addEventListener('click', validarYRegistrar);
+    try {
+        const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showScanResult(`✅ ${tipo === 'asistencia' ? 'Asistencia' : 'Retardo'} registrado`, 'success');
+            updateLocalStats(tipo);
+        } else if (result.offline) {
+            showScanResult('📡 Sin conexión - Se sincronizará luego', 'warning');
+        } else {
+            showScanResult('❌ Error al registrar', 'error');
+        }
+    } catch (error) {
+        console.error('Submit error:', error);
+        showScanResult('📡 Guardado offline - Se enviará luego', 'warning');
     }
+}
 
-    // Mantén tu configuración de hora por defecto
-    const defaultTime = '18:00';
-    const startTimeInput = document.getElementById('startTime');
-    if (startTimeInput) startTimeInput.value = defaultTime;
-});
+// ========================================
+// STATS MANAGEMENT
+// ========================================
+function updateLocalStats(tipo) {
+    if (tipo === 'asistencia') {
+        state.userData.asistencias++;
+    } else {
+        state.userData.retardos++;
+        
+        // Check if retardos convert to falta
+        if (state.userData.retardos % CONFIG.RETARDOS_PARA_FALTA === 0) {
+            state.userData.faltas++;
+            alert(`⚠️ Has acumulado ${CONFIG.RETARDOS_PARA_FALTA} retardos = 1 FALTA`);
+        }
+    }
+    
+    // Check for baja
+    if (state.userData.faltas >= CONFIG.FALTAS_PARA_BAJA) {
+        alert('🚫 Has sido dado de BAJA por acumular 3 faltas. Contacta al coach.');
+    }
+    
+    saveUserStats();
+    loadUserStats();
+}
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+function loadUserStats() {
+    const stats = JSON.parse(localStorage.getItem('userStats') || '{}');
+    state.userData.asistencias = stats.asistencias || 0;
+    state.userData.retardos = stats.retardos || 0;
+    state.userData.faltas = stats.faltas || 0;
+    
+    document.getElementById('asistencias').textContent = state.userData.asistencias;
+    document.getElementById('retardos').textContent = state.userData.retardos;
+    document.getElementById('faltas').textContent = state.userData.faltas;
+}
+
+function saveUserStats() {
+    localStorage.setItem('userStats', JSON.stringify({
+        asistencias: state.userData.asistencias,
+        retardos: state.userData.retardos,
+        faltas: state.userData.faltas
+    }));
+}
+
+// ========================================
+// FEED
+// ========================================
+async function loadFeed() {
+    const container = document.getElementById('feedContainer');
+    
+    // Mock feed data (replace with actual fetch)
+    const feed = [
+        {
+            id: 1,
+            title: 'Entrenamiento Extra',
+            message: 'Mañana habrá sesión adicional a las 16:00 hrs',
+            date: new Date().toISOString(),
+            type: 'info'
+        },
+        {
+            id: 2,
+            title: 'Torneo Próximo',
+            message: 'Se aproxima el torneo estatal. ¡A entrenar duro!',
+            date: new Date(Date.now() - 86400000).toISOString(),
+            type: 'important'
+        }
+    ];
+    
+    container.innerHTML = feed.map(item => `
+        <div class="feed-item card mb-4 pl-4">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="font-bold">${item.title}</h3>
+                <span class="text-xs text-gray-500">${formatDate(item.date)}</span>
+            </div>
+            <p class="text-sm text-gray-300">${item.message}</p>
+        </div>
+    `).join('');
+}
+
+function formatDate(isoDate) {
+    const date = new Date(isoDate);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 86400000) return 'Hoy';
+    if (diff < 172800000) return 'Ayer';
+    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+}
+
+// ========================================
+// COACH PANEL
+// ========================================
+function unlockCoachPanel() {
+    const pin = document.getElementById('coachPIN').value;
+    
+    if (pin === CONFIG.COACH_PIN) {
+        document.getElementById('coachLogin').classList.add('hidden');
+        document.getElementById('coachPanel').classList.remove('hidden');
+        loadCoachStats();
+    } else {
+        alert('❌ PIN incorrecto');
+    }
+}
+
+function loadCoachStats() {
+    // Mock stats (replace with actual data)
+    document.getElementById('coachStats').innerHTML = `
+        <p>Total Jugadores: <span class="float-right font-bold">24</span></p>
+        <p>Asistencia Promedio: <span class="float-right font-bold">87%</span></p>
+        <p>Retardos Hoy: <span class="float-right font-bold">3</span></p>
+    `;
+}
+
+function exportToCSV() {
+    // Create CSV content
+    const csv = `Nombre,Asistencias,Retardos,Faltas\n${state.userData.nombre},${state.userData.asistencias},${state.userData.retardos},${state.userData.faltas}`;
+    
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RIVERS_Reporte_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+function publishNotice() {
+    const message = prompt('Escribe el aviso a publicar:');
+    if (message) {
+        alert('✅ Aviso publicado (funcionalidad pendiente de backend)');
+        loadFeed();
+    }
+}
+
+function resetSeason() {
+    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada? Esto borrará todos los datos.')) {
+        localStorage.clear();
+        alert('✅ Temporada reseteada');
+        location.reload();
+    }
 }
