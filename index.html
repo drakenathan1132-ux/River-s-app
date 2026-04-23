@@ -1,150 +1,377 @@
+---
+
+## 📄 **index.html** (Completo con todas las funcionalidades)
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RIVERS COMMAND PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Sistema de gestión de asistencias para RIVERS Tochito Club">
+    <meta name="theme-color" content="#0A0A0A">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="manifest" href="manifest.json">
+    
+    <title>RIVERS Tochito Club</title>
+    
+    <!-- PWA Links -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/apple-180x180-icon.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- QR Code Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
     <style>
-        :root { --neon: #00FFFF; --purple: #7000FF; --bg: #050505; --glass: rgba(255,255,255,0.05); }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 90px; }
-        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 20px; margin: 15px; }
-        header { padding: 30px; text-align: center; }
-        .logo { width: 70px; filter: drop-shadow(0 0 10px var(--neon)); cursor: pointer; }
-        nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px 0; background: #000; border-top: 1px solid #333; z-index: 100; }
-        .nav-btn { color: #555; font-size: 1.5rem; cursor: pointer; }
-        .nav-btn.active { color: var(--neon); }
-        .btn-action { background: var(--neon); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
-        .page { display: none; }
-        select, textarea { width: 100%; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 10px; margin-bottom: 10px; }
-        .qr-box { background: #fff; padding: 10px; border-radius: 15px; display: inline-block; margin-top: 15px; }
+        :root {
+            --primary: #ff6600;
+            --primary-dark: #cc5200;
+            --bg-dark: #0A0A0A;
+            --bg-card: #1a1a1a;
+            --text-light: #ffffff;
+            --text-muted: #999999;
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1a1a1a 100%);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        #reader {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-online {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+            color: white;
+        }
+        
+        /* Feed Styles */
+        .feed-item {
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s;
+        }
+        
+        .feed-item:hover {
+            border-left-width: 6px;
+            background: rgba(255, 102, 0, 0.05);
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body>
+<body class="gradient-bg">
     
-<header>
-    <img src="logo.png" class="logo" onclick="auth()">
-    <h1 style="font-size: 1.2rem; color: var(--neon);">RIVERS COMMAND</h1>
-</header>
-
-<main id="view-home" class="page" style="display:block;">
-    <div class="glass">
-        <h2>📋 Reglamento</h2>
-        <p>1. 15 min de tolerancia.<br>2. 3 retardos = 1 falta.<br>3. 3 faltas = baja.</p>
-    </div>
-    <div class="glass">
-        <h3>📣 Muro</h3>
-        <div id="feed-container">Cargando...</div>
-    </div>
-</main>
-
-<main id="view-check" class="page">
-    <div class="glass">
-        <h2>⏱️ Registro</h2>
-        <select id="playerSelect"></select>
-        <button class="btn-action" onclick="send()">REGISTRAR</button>
-        <div id="qr-display" class="qr-box" style="display:none;"></div>
-    </div>
-</main>
-
-<nav>
-    <div class="nav-btn active" onclick="nav('view-home', this)">🏠</div>
-    <div class="nav-btn" onclick="nav('view-check', this)">⏱️</div>
-    <div id="admin-tab" class="nav-btn" style="display:none;" onclick="nav('view-admin', this)">⚙️</div>
-</nav>
-
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
-    let clicks = 0;
-
-    async function init() {
-        const res = await fetch(SCRIPT_URL);
-        const data = await res.json();
-        const sel = document.getElementById('playerSelect');
-        sel.innerHTML = data.players.map(p => `<option value="${p}">${p}</option>`).join('');
-        document.getElementById('feed-container').innerHTML = data.feed.map(f => `<div><b>${f.author}:</b> ${f.content}</div>`).join('<hr>');
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-black bg-opacity-90 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="/logo.png" alt="RIVERS Logo" class="w-10 h-10 rounded-full">
+                <div>
+                    <h1 class="text-xl font-bold">RIVERS</h1>
+                    <p class="text-xs text-gray-400">Tochito Club</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="statusBadge" class="status-badge status-online">Online</span>
+                <button id="menuBtn" class="p-2 hover:bg-gray-800 rounded-lg transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Navigation Tabs -->
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-16 z-40">
+        <div class="container mx-auto px-4 flex gap-2 overflow-x-auto py-2">
+            <button class="tab-btn active px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="home">
+                🏠 Inicio
+            </button>
+            <button class="tab-btn px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="scan">
+                📷 Escanear
+            </button>
+            <button class="tab-btn px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="feed">
+                📢 Avisos
+            </button>
+            <button class="tab-btn px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="coach">
+                👨‍💼 Coach
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 pb-24">
         
-        sel.onchange = (e) => {
-            const qr = document.getElementById('qr-display');
-            qr.style.display = 'block';
-            qr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${e.target.value}">`;
-        };
-    }
-
-    async function send() {
-        const name = document.getElementById('playerSelect').value;
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:'attendance', name: name}) });
-        alert("Enviado");
-    }
-
-    function auth() {
-        clicks++;
-        if(clicks >= 5) {
-            if(prompt("PIN:") === "2000") document.getElementById('admin-tab').style.display = "block";
-            clicks = 0;
-        }
-    }
-
-    function nav(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    init();
-</script>
-    <script>
-// Registro del Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-                console.log('✅ SW registrado:', registration.scope);
+        <!-- HOME TAB -->
+        <div id="homeTab" class="tab-content fade-in">
+            <div class="card mb-6">
+                <h2 class="text-2xl font-bold mb-4">Próxima Sesión</h2>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-3xl font-bold text-orange-500" id="sessionDate">Hoy</p>
+                        <p class="text-gray-400" id="sessionTime">18:00 hrs</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-400">Lugar</p>
+                        <p class="font-semibold">Cancha Principal</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-6 text-center">
+                <h3 class="text-xl font-bold mb-4">Código QR de Asistencia</h3>
+                <div class="qr-container mx-auto" id="qrContainer">
+                    <canvas id="qrCanvas"></canvas>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">Escanea este código para marcar tu asistencia</p>
+                <button id="refreshQR" class="mt-4 btn-primary text-white px-6 py-2 rounded-full">
+                    🔄 Generar Nuevo QR
+                </button>
+            </div>
+            
+            <div class="card">
+                <h3 class="text-lg font-bold mb-3">📊 Tus Estadísticas</h3>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-3xl font-bold text-green-500" id="asistencias">0</p>
+                        <p class="text-xs text-gray-400">Asistencias</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-bold text-yellow-500" id="retardos">0</p>
+                        <p class="text-xs text-gray-400">Retardos</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-bold text-red-500" id="faltas">0</p>
+                        <p class="text-xs text-gray-400">Faltas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SCAN TAB -->
+        <div id="scanTab" class="tab-content hidden">
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4">Escanear QR de Asistencia</h2>
+                <div id="reader" class="mb-4"></div>
+                <div id="scanResult" class="hidden mt-4 p-4 rounded-lg text-center"></div>
+                <button id="stopScan" class="w-full btn-primary text-white py-3 rounded-lg mt-4 hidden">
+                    Detener Escáner
+                </button>
+            </div>
+        </div>
+        
+        <!-- FEED TAB -->
+        <div id="feedTab" class="tab-content hidden">
+            <div class="card mb-4">
+                <h2 class="text-2xl font-bold mb-4">📢 Muro de Avisos</h2>
+                <div id="feedContainer">
+                    <div class="text-center py-8">
+                        <div class="spinner mx-auto mb-4"></div>
+                        <p class="text-gray-400">Cargando avisos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- COACH TAB -->
+        <div id="coachTab" class="tab-content hidden">
+            <div class="card mb-4">
+                <h2 class="text-2xl font-bold mb-4">👨‍💼 Panel de Coach</h2>
                 
-                // Detectar actualizaciones
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // Hay una nueva versión disponible
-                            if (confirm('🔄 Nueva versión disponible. ¿Actualizar ahora?')) {
-                                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                window.location.reload();
-                            }
-                        }
-                    });
-                });
-            })
-            .catch((error) => {
-                console.error('❌ SW registration failed:', error);
-            });
-    });
+                <div id="coachLogin" class="text-center py-8">
+                    <p class="text-gray-400 mb-4">Ingresa el PIN para acceder</p>
+                    <input type="password" id="coachPIN" placeholder="PIN de 4 dígitos" 
+                           class="bg-gray-800 px-4 py-3 rounded-lg text-center text-2xl tracking-widest w-48 mx-auto block mb-4">
+                    <button id="unlockCoach" class="btn-primary text-white px-8 py-3 rounded-lg">
+                        Desbloquear
+                    </button>
+                </div>
+                
+                <div id="coachPanel" class="hidden">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <button class="bg-blue-600 text-white p-4 rounded-lg" id="exportCSV">
+                            📥 Exportar CSV
+                        </button>
+                        <button class="bg-green-600 text-white p-4 rounded-lg" id="viewStats">
+                            📊 Estadísticas
+                        </button>
+                        <button class="bg-yellow-600 text-white p-4 rounded-lg" id="sendNotice">
+                            📢 Publicar Aviso
+                        </button>
+                        <button class="bg-red-600 text-white p-4 rounded-lg" id="resetSeason">
+                            🔄 Reset Temporada
+                        </button>
+                    </div>
+                    
+                    <div class="card bg-gray-800">
+                        <h3 class="font-bold mb-3">Resumen General</h3>
+                        <div id="coachStats" class="text-sm space-y-2">
+                            <p>Total Jugadores: <span class="float-right font-bold">0</span></p>
+                            <p>Asistencia Promedio: <span class="float-right font-bold">0%</span></p>
+                            <p>Retardos Hoy: <span class="float-right font-bold">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </main>
     
-    // Recargar cuando el SW se active
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
+    <!-- Footer -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 backdrop-blur-md border-t border-gray-800 py-3">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-xs text-gray-400">
+                RIVERS Tochito Club © 2025 | 
+                <a href="/reglamento.pdf" class="text-orange-500 hover:underline" target="_blank">Reglamento</a>
+            </p>
+        </div>
+    </footer>
+    
+    <!-- App Script -->
+    <script src="/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('✅ SW registrado:', registration.scope);
+                        
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    if (confirm('🔄 Nueva versión disponible. ¿Actualizar ahora?')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ SW registration failed:', error);
+                    });
+            });
+            
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
         }
-    });
-}
-
-// Detectar modo offline/online
-window.addEventListener('online', () => {
-    console.log('🟢 Conexión restaurada');
-    // Opcional: mostrar notificación al usuario
-});
-
-window.addEventListener('offline', () => {
-    console.log('🔴 Sin conexión');
-    // Opcional: mostrar banner de offline
-});
+        
+        // Detectar modo offline/online
+        window.addEventListener('online', () => {
+            console.log('🟢 Conexión restaurada');
+            document.getElementById('statusBadge').textContent = 'Online';
+            document.getElementById('statusBadge').className = 'status-badge status-online';
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('🔴 Sin conexión');
+            document.getElementById('statusBadge').textContent = 'Offline';
+            document.getElementById('statusBadge').className = 'status-badge status-offline';
+        });
     </script>
 </body>
 </html>
-
