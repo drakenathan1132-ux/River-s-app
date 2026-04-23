@@ -1,182 +1,373 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>RIVERS Command Hub</title>
+    <meta name="description" content="Sistema de gestión de asistencias para RIVERS Tochito Club">
+    <meta name="theme-color" content="#0A0A0A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>RIVERS Tochito Club</title>
+    
+    <!-- PWA Links -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/apple-180x180-icon.png">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- QR Code Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
     <style>
-        :root { 
-            --primary-blue: #1e40af; 
-            --accent-red: #dc2626; 
-            --bg-dark: #050505; 
-        }
-        body { background: var(--bg-dark); color: white; font-family: 'Inter', sans-serif; }
-        
-        .glass { 
-            background: rgba(255,255,255,0.03); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            border-radius: 24px; 
+        :root {
+            --primary: #ff6600;
+            --primary-dark: #cc5200;
+            --bg-dark: #0A0A0A;
+            --bg-card: #1a1a1a;
+            --text-light: #ffffff;
+            --text-muted: #999999;
         }
         
-        /* Botones con efecto de pulso y escala */
-        .btn-rivers {
-            background: linear-gradient(135deg, var(--primary-blue), #3b82f6);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
-        .btn-rivers:active { transform: scale(0.92); filter: brightness(1.2); }
-
-        #sidebar {
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: #0a0a0a; z-index: 100; transition: 0.4s ease;
-            border-right: 1px solid #222;
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
         }
-        #sidebar.open { left: 0; }
-        .tab-content { display: none; animation: slideUp 0.4s ease; }
-        .tab-content.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; } }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1a1a1a 100%);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        #reader {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-online {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+            color: white;
+        }
+        
+        /* Feed Styles */
+        .feed-item {
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s;
+        }
+        
+        .feed-item:hover {
+            border-left-width: 6px;
+            background: rgba(255, 102, 0, 0.05);
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body>
-
-    <div id="sidebar" class="p-6">
-        <img src="/logo.png" class="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-blue-500">
-        <nav class="space-y-4">
-            <button onclick="navTo('home')" class="w-full text-left p-4 hover:bg-blue-900/20 rounded-xl">🏠 Inicio</button>
-            <button onclick="navTo('feed')" class="w-full text-left p-4 hover:bg-blue-900/20 rounded-xl">📢 Avisos</button>
-            <button onclick="navTo('coach')" class="w-full text-left p-4 hover:bg-red-900/20 rounded-xl border-t border-white/5 mt-4 pt-4">👨‍💼 Panel Coach</button>
-        </nav>
-    </div>
-
-    <header class="p-4 flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-md z-50">
-        <button onclick="toggleMenu()" class="p-2 bg-white/5 rounded-full">
-            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-        <span class="text-xs font-bold tracking-widest text-blue-500 uppercase">Rivers Hub</span>
+<body class="gradient-bg">
+    
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-black bg-opacity-90 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="/logo.png" alt="RIVERS Logo" class="w-10 h-10 rounded-full">
+                <div>
+                    <h1 class="text-xl font-bold">RIVERS</h1>
+                    <p class="text-xs text-gray-400">Tochito Club</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="statusBadge" class="status-badge status-online">Online</span>
+                <button id="menuBtn" class="p-2 hover:bg-gray-800 rounded-lg transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
     </header>
-
-    <main class="p-5 max-w-md mx-auto">
+    
+    <!-- Navigation Tabs -->
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-16 z-40">
+        <div class="container mx-auto px-4 flex gap-2 overflow-x-auto py-2">
+            <button class="tab-btn active px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="home">
+                🏠 Inicio
+            </button>
+            <button class="tab-btn px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="scan">
+                📷 Escanear
+            </button>
+            <button class="tab-btn px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="feed">
+                📢 Avisos
+            </button>
+            <button class="tab-btn px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap" data-tab="coach">
+                👨‍💼 Coach
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 pb-24">
         
-        <section id="checkinMode" class="tab-content">
-            <div class="glass p-8 text-center border-blue-500/30 border-2">
-                <h2 class="text-2xl font-bold mb-2">Pase de Lista</h2>
-                <p id="timeStatus" class="text-xs mb-6 text-gray-400 font-mono"></p>
+        <!-- HOME TAB -->
+        <div id="homeTab" class="tab-content fade-in">
+            <div class="card mb-6">
+                <h2 class="text-2xl font-bold mb-4">Próxima Sesión</h2>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-3xl font-bold text-orange-500" id="sessionDate">Hoy</p>
+                        <p class="text-gray-400" id="sessionTime">18:00 hrs</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-400">Lugar</p>
+                        <p class="font-semibold">Cancha Principal</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-6 text-center">
+                <h3 class="text-xl font-bold mb-4">Código QR de Asistencia</h3>
+                <div class="qr-container mx-auto" id="qrContainer">
+                    <canvas id="qrCanvas"></canvas>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">Escanea este código para marcar tu asistencia</p>
+                <button id="refreshQR" class="mt-4 btn-primary text-white px-6 py-2 rounded-full">
+                    🔄 Generar Nuevo QR
+                </button>
+            </div>
+            
+            <div class="card">
+                <h3 class="text-lg font-bold mb-3">📊 Tus Estadísticas</h3>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-3xl font-bold text-green-500" id="asistencias">0</p>
+                        <p class="text-xs text-gray-400">Asistencias</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-bold text-yellow-500" id="retardos">0</p>
+                        <p class="text-xs text-gray-400">Retardos</p>
+                    </div>
+                    <div>
+                        <p class="text-3xl font-bold text-red-500" id="faltas">0</p>
+                        <p class="text-xs text-gray-400">Faltas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SCAN TAB -->
+        <div id="scanTab" class="tab-content hidden">
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4">Escanear QR de Asistencia</h2>
+                <div id="reader" class="mb-4"></div>
+                <div id="scanResult" class="hidden mt-4 p-4 rounded-lg text-center"></div>
+                <button id="stopScan" class="w-full btn-primary text-white py-3 rounded-lg mt-4 hidden">
+                    Detener Escáner
+                </button>
+            </div>
+        </div>
+        
+        <!-- FEED TAB -->
+        <div id="feedTab" class="tab-content hidden">
+            <div class="card mb-4">
+                <h2 class="text-2xl font-bold mb-4">📢 Muro de Avisos</h2>
+                <div id="feedContainer">
+                    <div class="text-center py-8">
+                        <div class="spinner mx-auto mb-4"></div>
+                        <p class="text-gray-400">Cargando avisos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- COACH TAB -->
+        <div id="coachTab" class="tab-content hidden">
+            <div class="card mb-4">
+                <h2 class="text-2xl font-bold mb-4">👨‍💼 Panel de Coach</h2>
                 
-                <div id="checkinForm">
-                    <select id="playerList" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl mb-4 text-white outline-none"></select>
-                    <button id="submitBtn" onclick="processAttendance()" class="btn-rivers w-full py-4 rounded-2xl font-black tracking-tighter">REGISTRAR ENTRADA</button>
+                <div id="coachLogin" class="text-center py-8">
+                    <p class="text-gray-400 mb-4">Ingresa el PIN para acceder</p>
+                    <input type="password" id="coachPIN" placeholder="PIN de 4 dígitos" 
+                           class="bg-gray-800 px-4 py-3 rounded-lg text-center text-2xl tracking-widest w-48 mx-auto block mb-4">
+                    <button id="unlockCoach" class="btn-primary text-white px-8 py-3 rounded-lg">
+                        Desbloquear
+                    </button>
                 </div>
-                <div id="lockMessage" class="hidden text-red-500 font-bold p-4">🔒 REGISTRO CERRADO</div>
-            </div>
-        </section>
-
-        <section id="home" class="tab-content active">
-            <div class="glass p-6 mb-6 overflow-hidden relative">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-600/20 blur-3xl"></div>
-                <p class="text-[10px] text-blue-400 font-bold uppercase mb-1">Próxima Sesión</p>
-                <p id="displayDay" class="text-3xl font-black italic">MARTES Y JUEVES</p>
-                <p class="text-sm text-gray-400">16:45 hrs • Campo Principal</p>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div class="glass p-5 text-center"><p id="stat-asist" class="text-2xl font-bold text-blue-400">0</p><p class="text-[10px] text-gray-500 uppercase">Entrenos</p></div>
-                <div class="glass p-5 text-center"><p id="stat-falt" class="text-2xl font-bold text-red-500">0</p><p class="text-[10px] text-gray-500 uppercase">Faltas</p></div>
-            </div>
-        </section>
-
-        <section id="coach" class="tab-content">
-            <div id="coachLogin" class="glass p-8 text-center">
-                <p class="text-gray-400 mb-4">Acceso de Mando</p>
-                <input type="password" id="coachPIN" placeholder="PIN" class="w-full bg-black/50 border border-white/10 p-4 rounded-2xl text-center text-xl mb-4 outline-none">
-                <button onclick="validateCoach()" class="w-full bg-white text-black p-4 rounded-2xl font-bold hover:bg-gray-200">ENTRAR</button>
-            </div>
-            <div id="adminPanel" class="hidden space-y-4">
-                <div class="glass p-6 border-red-500/20 border">
-                    <h3 class="font-bold text-red-500 mb-4 uppercase text-sm tracking-widest">Controles de Admin</h3>
-                    <button class="w-full p-4 bg-white/5 rounded-xl text-left text-sm mb-2">📊 Ver Lista de Asistencia</button>
-                    <button class="w-full p-4 bg-white/5 rounded-xl text-left text-sm mb-2">📢 Publicar Aviso</button>
-                    <button onclick="logoutCoach()" class="w-full p-4 text-gray-500 text-xs">Cerrar Sesión</button>
+                
+                <div id="coachPanel" class="hidden">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <button class="bg-blue-600 text-white p-4 rounded-lg" id="exportCSV">
+                            📥 Exportar CSV
+                        </button>
+                        <button class="bg-green-600 text-white p-4 rounded-lg" id="viewStats">
+                            📊 Estadísticas
+                        </button>
+                        <button class="bg-yellow-600 text-white p-4 rounded-lg" id="sendNotice">
+                            📢 Publicar Aviso
+                        </button>
+                        <button class="bg-red-600 text-white p-4 rounded-lg" id="resetSeason">
+                            🔄 Reset Temporada
+                        </button>
+                    </div>
+                    
+                    <div class="card bg-gray-800">
+                        <h3 class="font-bold mb-3">Resumen General</h3>
+                        <div id="coachStats" class="text-sm space-y-2">
+                            <p>Total Jugadores: <span class="float-right font-bold">0</span></p>
+                            <p>Asistencia Promedio: <span class="float-right font-bold">0%</span></p>
+                            <p>Retardos Hoy: <span class="float-right font-bold">0</span></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
-    </main>
-
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec";
+        </div>
         
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
-        function navTo(id) { 
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(document.getElementById('sidebar').classList.contains('open')) toggleMenu();
-        }
-
-        // LÓGICA DE SEGURIDAD
-        window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            if(params.has('mode')) navTo('checkinMode');
+    </main>
+    
+    <!-- Footer -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 backdrop-blur-md border-t border-gray-800 py-3">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-xs text-gray-400">
+                RIVERS Tochito Club © 2025 | 
+                <a href="/reglamento.pdf" class="text-orange-500 hover:underline" target="_blank">Reglamento</a>
+            </p>
+        </div>
+    </footer>
+    
+    <!-- App Script -->
+    <script src="/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('✅ SW registrado:', registration.scope);
+                        
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    if (confirm('🔄 Nueva versión disponible. ¿Actualizar ahora?')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ SW registration failed:', error);
+                    });
+            });
             
-            checkTimeLock();
-            loadPlayers();
-        };
-
-        function checkTimeLock() {
-            const now = new Date();
-            const hour = now.getHours();
-            const min = now.getMinutes();
-            const timeVal = hour * 100 + min;
-
-            // Bloqueo: 16:00 (1600) a 17:30 (1730)
-            if(timeVal < 1600 || timeVal > 1730) {
-                document.getElementById('checkinForm').classList.add('hidden');
-                document.getElementById('lockMessage').classList.remove('hidden');
-            }
-            document.getElementById('timeStatus').innerText = `Ventana de registro: 16:00 - 17:30`;
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
         }
-
-        async function processAttendance() {
-            const player = document.getElementById('playerList').value;
-            const deviceId = localStorage.getItem('rivers_device_id') || crypto.randomUUID();
-            localStorage.setItem('rivers_device_id', deviceId);
-
-            const lastCheck = localStorage.getItem('last_checkin_date');
-            const today = new Date().toLocaleDateString();
-
-            if(lastCheck === today) {
-                alert("❌ Este teléfono ya registró una asistencia hoy.");
-                return;
-            }
-
-            // ENVIAR A GOOGLE SHEETS
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Necesario para Apps Script si no hay CORS configurado
-                    body: JSON.stringify({ player, deviceId, date: today })
-                });
-                localStorage.setItem('last_checkin_date', today);
-                alert(`✅ ¡Listo ${player}! Tu asistencia fue enviada al Coach.`);
-                navTo('home');
-            } catch (e) {
-                alert("Error de conexión. Intenta de nuevo.");
-            }
-        }
-
-        function validateCoach() {
-            const pin = document.getElementById('coachPIN').value;
-            const pinsValidos = ["2000", "1234", "5566", "9900"]; // Los 4 PINs para los 4 coaches
-            if(pinsValidos.includes(pin)) {
-                document.getElementById('coachLogin').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-            } else { alert("PIN Incorrecto"); }
-        }
-
-        function loadPlayers() {
-            const players = ["Andrea S.", "Regina M.", "Valeria G.", "Sofía L."]; // Esto debería venir de tu Sheet
-            document.getElementById('playerList').innerHTML = players.map(p => `<option value="${p}">${p}</option>`).join('');
-        }
+        
+        // Detectar modo offline/online
+        window.addEventListener('online', () => {
+            console.log('🟢 Conexión restaurada');
+            document.getElementById('statusBadge').textContent = 'Online';
+            document.getElementById('statusBadge').className = 'status-badge status-online';
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('🔴 Sin conexión');
+            document.getElementById('statusBadge').textContent = 'Offline';
+            document.getElementById('statusBadge').className = 'status-badge status-offline';
+        });
     </script>
 </body>
 </html>
