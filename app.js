@@ -1,20 +1,15 @@
-// ========================================
-// RIVERS TOCHITO CLUB - APP LOGIC
-// ========================================
-
 const CONFIG = {
     APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec',
-    COACH_PINS: ['2501', '2502', '2503', '2504'], // 4 coaches diferentes
+    COACH_PINS: ['2501', '2502', '2503', '2504'],
     CHECKIN_URL: window.location.origin + '/checkin.html'
 };
 
-// Configuración editable (se guarda en localStorage)
 const getScheduleConfig = () => {
     const saved = localStorage.getItem('scheduleConfig');
     if (saved) return JSON.parse(saved);
     
     return {
-        dias: [2, 4], // 0=domingo, 1=lunes, 2=martes, 3=miércoles, 4=jueves, 5=viernes, 6=sábado
+        dias: [2, 4],
         hora: '16:45',
         tolerancia: 15,
         location: 'Cancha Principal'
@@ -23,7 +18,6 @@ const getScheduleConfig = () => {
 
 let scheduleConfig = getScheduleConfig();
 
-// State Management
 const state = {
     currentTab: 'home',
     qrScanner: null,
@@ -36,9 +30,6 @@ const state = {
     }
 };
 
-// ========================================
-// INITIALIZATION
-// ========================================
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
@@ -76,16 +67,13 @@ function updateNextSessionInfo() {
 
 function getNextSessionDate() {
     const now = new Date();
-    const currentDay = now.getDay();
     
-    // Find next training day
     for (let i = 0; i <= 7; i++) {
         const checkDate = new Date(now);
         checkDate.setDate(now.getDate() + i);
         const checkDay = checkDate.getDay();
         
         if (scheduleConfig.dias.includes(checkDay)) {
-            // If it's today, check if we haven't passed the time
             if (i === 0) {
                 const [hours, minutes] = scheduleConfig.hora.split(':');
                 const sessionTime = new Date(now);
@@ -103,15 +91,10 @@ function getNextSessionDate() {
     return null;
 }
 
-// ========================================
-// EVENT LISTENERS
-// ========================================
 function setupEventListeners() {
-    // Sidebar
     document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
     document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
     
-    // Navigation
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', () => {
             switchTab(item.dataset.tab);
@@ -119,17 +102,14 @@ function setupEventListeners() {
         });
     });
     
-    // QR Actions
     document.getElementById('refreshQR').addEventListener('click', generateQRCode);
     
-    // Coach Panel
     document.getElementById('unlockCoach').addEventListener('click', unlockCoachPanel);
     document.getElementById('editSchedule').addEventListener('click', editSchedule);
     document.getElementById('exportCSV').addEventListener('click', exportToCSV);
     document.getElementById('sendNotice').addEventListener('click', publishNotice);
     document.getElementById('resetSeason').addEventListener('click', resetSeason);
     
-    // Scanner
     document.getElementById('stopScan').addEventListener('click', stopScanner);
 }
 
@@ -141,9 +121,6 @@ function toggleSidebar() {
     overlay.classList.toggle('active');
 }
 
-// ========================================
-// TAB NAVIGATION
-// ========================================
 function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
@@ -171,58 +148,26 @@ function switchTab(tabName) {
     }
 }
 
-// ========================================
-// QR CODE GENERATION (Para mostrar a las jugadoras)
-// ========================================
 function generateQRCode() {
-    const canvas = document.getElementById('qrCanvas');
-    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('qrContainer');
+    container.innerHTML = '';
     
-    // El QR contiene la URL de check-in
-    const qrData = CONFIG.CHECKIN_URL;
-    state.currentQR = qrData;
+    const qrDiv = document.createElement('div');
+    container.appendChild(qrDiv);
     
-    canvas.width = 256;
-    canvas.height = 256;
+    new QRCode(qrDiv, {
+        text: CONFIG.CHECKIN_URL,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
     
-    // Usar librería QR real
-    if (typeof QRCode !== 'undefined') {
-        new QRCode(canvas, {
-            text: qrData,
-            width: 256,
-            height: 256,
-            colorDark: "#000000",
-            colorLight: "#ffffff"
-        });
-    } else {
-        drawQRPlaceholder(ctx, qrData);
-    }
-    
-    console.log('QR Generated:', qrData);
+    state.currentQR = CONFIG.CHECKIN_URL;
+    console.log('QR Real Generated:', CONFIG.CHECKIN_URL);
 }
 
-function drawQRPlaceholder(ctx, code) {
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 256, 256);
-    
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < 20; i++) {
-        for (let j = 0; j < 20; j++) {
-            if (Math.random() > 0.5) {
-                ctx.fillRect(i * 12 + 8, j * 12 + 8, 10, 10);
-            }
-        }
-    }
-    
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('RIVERS CHECK-IN', 128, 240);
-}
-
-// ========================================
-// QR SCANNER (Para jugadoras que escanean el QR del coach)
-// ========================================
 function startScanner() {
     const html5QrCode = new Html5Qrcode("reader");
     state.qrScanner = html5QrCode;
@@ -237,9 +182,7 @@ function startScanner() {
             handleScan(decodedText);
             stopScanner();
         },
-        (errorMessage) => {
-            // Ignore
-        }
+        (errorMessage) => {}
     ).catch((err) => {
         console.error('Scanner error:', err);
         showScanResult('❌ Error al iniciar cámara. Verifica permisos.', 'error');
@@ -262,7 +205,6 @@ function stopScanner() {
 function handleScan(qrData) {
     console.log('QR Scanned:', qrData);
     
-    // Si el QR contiene la URL de check-in, redirigir
     if (qrData.includes('/checkin.html')) {
         window.location.href = qrData;
         return;
@@ -286,9 +228,6 @@ function showScanResult(message, type) {
     }, 3000);
 }
 
-// ========================================
-// STATS MANAGEMENT
-// ========================================
 function loadUserStats() {
     const stats = JSON.parse(localStorage.getItem('userStats') || '{}');
     state.userData.asistencias = stats.asistencias || 0;
@@ -300,9 +239,6 @@ function loadUserStats() {
     document.getElementById('faltas').textContent = state.userData.faltas;
 }
 
-// ========================================
-// FEED
-// ========================================
 async function loadFeed() {
     const container = document.getElementById('feedContainer');
     
@@ -337,9 +273,6 @@ function formatDate(isoDate) {
     return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 }
 
-// ========================================
-// COACH PANEL
-// ========================================
 function unlockCoachPanel() {
     const pin = document.getElementById('coachPIN').value;
     
@@ -353,7 +286,6 @@ function unlockCoachPanel() {
 }
 
 function loadCoachStats() {
-    // TODO: Fetch real data from Google Sheets
     document.getElementById('coachStats').innerHTML = `
         <p>Total Jugadoras: <span class="float-right font-bold">24</span></p>
         <p>Asistencia Promedio: <span class="float-right font-bold">87%</span></p>
