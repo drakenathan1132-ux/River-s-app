@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0A0A0A">
+    <title>Check-In RIVERS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary-cyan: #00D9FF;
+            --primary-pink: #FF006E;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0A0A0A 0%, #1a1a1a 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-pink));
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #2a2a2a;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-cyan);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+        }
+        
+        .player-btn {
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .player-btn:hover {
+            background: #3a3a3a;
+            border-color: var(--primary-cyan);
+        }
+        
+        .player-btn.selected {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--primary-pink);
+        }
+        
+        input[type="text"] {
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--primary-cyan);
+        }
+        
+        .status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .status-success { background: #10b981; }
+        .status-late { background: #f59e0b; }
+        .status-error { background: #ef4444; }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary-cyan);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="text-center mb-6">
+            <img src="/logo.png" alt="RIVERS" class="w-20 h-20 rounded-full mx-auto mb-4">
+            <h1 class="text-2xl font-bold mb-2">Check-In de Asistencia</h1>
+            <p class="text-gray-400 text-sm" id="sessionInfo">Cargando...</p>
+        </div>
+        
+        <!-- Vista de selección de jugadora -->
+        <div id="selectView">
+            <h3 class="font-semibold mb-3">Selecciona tu nombre:</h3>
+            <div id="playerList">
+                <div class="spinner"></div>
+            </div>
+            <button id="newPlayerBtn" class="btn-secondary">
+                ➕ Soy nueva - Agregar mi nombre
+            </button>
+        </div>
+        
+        <!-- Vista de agregar nuevo nombre -->
+        <div id="addView" class="hidden">
+            <h3 class="font-semibold mb-3">Bienvenida a RIVERS 🏈</h3>
+            <p class="text-sm text-gray-400 mb-4">Ingresa tu nombre completo:</p>
+            <input type="text" id="newPlayerName" placeholder="Ej: María González" autocomplete="name">
+            <button id="saveNewPlayer" class="btn-primary">
+                ✓ Guardar y Registrar Asistencia
+            </button>
+            <button id="backToList" class="btn-secondary">
+                ← Volver a la lista
+            </button>
+        </div>
+        
+        <!-- Vista de confirmación -->
+        <div id="confirmView" class="hidden">
+            <div class="text-center">
+                <div id="statusIcon" class="text-6xl mb-4">⏳</div>
+                <h3 class="text-xl font-bold mb-2" id="statusTitle">Procesando...</h3>
+                <p class="text-gray-400" id="statusMessage"></p>
+                <div class="status hidden" id="statusBadge"></div>
+            </div>
+        </div>
+        
+        <p class="text-xs text-gray-500 text-center mt-6">
+            RIVERS Tochito Club © 2025
+        </p>
+    </div>
+    
+    <script>
+        const CONFIG = {
+            APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec',
+            CHECKIN_START: '16:00',
+            CHECKIN_END: '17:30',
+            SESSION_TIME: '16:45',
+            TOLERANCE: 15,
+        };
+        
+        let selectedPlayer = null;
+        let deviceId = getOrCreateDeviceId();
+        let playersList = [];
+        
+        // ========================================
+        // INIT
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkSchedule()) return;
+            
+            loadPlayers();
+            
+            document.getElementById('newPlayerBtn').addEventListener('click', showAddView);
+            document.getElementById('backToList').addEventListener('click', showSelectView);
+            document.getElementById('saveNewPlayer').addEventListener('click', saveNewPlayer);
+        });
+        
+        function checkSchedule() {
+            const now = new Date();
+            const [startHour, startMin] = CONFIG.CHECKIN_START.split(':');
+            const [endHour, endMin] = CONFIG.CHECKIN_END.split(':');
+            
+            const startTime = new Date(now);
+            startTime.setHours(parseInt(startHour), parseInt(startMin), 0);
+            
+            const endTime = new Date(now);
+            endTime.setHours(parseInt(endHour), parseInt(endMin), 0);
+            
+            document.getElementById('sessionInfo').textContent = 
+                `Sesión hoy ${CONFIG.SESSION_TIME} hrs | Tolerancia: ${CONFIG.TOLERANCE} min`;
+            
+            if (now < startTime) {
+                showError(`⏰ El check-in abre a las ${CONFIG.CHECKIN_START}`);
+                return false;
+            }
+            
+            if (now > endTime) {
+                showError(`⏰ El check-in cerró a las ${CONFIG.CHECKIN_END}`);
+                return false;
+            }
+            
+            const lastCheckin = localStorage.getItem(`checkin_${deviceId}`);
+            const today = now.toISOString().split('T')[0];
+            
+            if (lastCheckin === today) {
+                showError('✅ Ya registraste tu asistencia hoy');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        async function loadPlayers() {
+            const container = document.getElementById('playerList');
+            
+            try {
+                // Intentar cargar desde Google Sheets
+                const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=getPlayers`);
+                const data = await response.json();
+                
+                if (data.success && data.players) {
+                    playersList = data.players.sort();
+                }
+            } catch (error) {
+                console.log('No se pudieron cargar jugadoras del servidor');
+            }
+            
+            // Si no hay jugadoras en el servidor, usar lista local
+            if (playersList.length === 0) {
+                playersList = getLocalPlayers();
+            }
+            
+            if (playersList.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Aún no hay jugadoras registradas.<br>Sé la primera en unirte 🎉</p>';
+                return;
+            }
+            
+            container.innerHTML = playersList.map(player => `
+                <div class="player-btn" data-player="${player}">
+                    <div class="font-semibold">${player}</div>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.player-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectPlayer(btn.dataset.player, btn));
+            });
+        }
+        
+        function selectPlayer(playerName, btnElement) {
+            document.querySelectorAll('.player-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            btnElement.classList.add('selected');
+            selectedPlayer = playerName;
+            
+            let confirmBtn = document.getElementById('confirmBtn');
+            if (!confirmBtn) {
+                confirmBtn = document.createElement('button');
+                confirmBtn.id = 'confirmBtn';
+                confirmBtn.className = 'btn-primary';
+                confirmBtn.textContent = '✓ Confirmar Asistencia';
+                confirmBtn.addEventListener('click', submitCheckin);
+                document.getElementById('playerList').insertAdjacentElement('afterend', confirmBtn);
+            }
+        }
+        
+        function showAddView() {
+            document.getElementById('selectView').classList.add('hidden');
+            document.getElementById('addView').classList.remove('hidden');
+            document.getElementById('newPlayerName').focus();
+        }
+        
+        function showSelectView() {
+            document.getElementById('addView').classList.add('hidden');
+            document.getElementById('selectView').classList.remove('hidden');
+        }
+        
+        async function saveNewPlayer() {
+            const name = document.getElementById('newPlayerName').value.trim();
+            
+            if (!name) {
+                alert('Por favor ingresa tu nombre completo');
+                return;
+            }
+            
+            if (name.length < 5) {
+                alert('Ingresa tu nombre completo (nombre y apellido)');
+                return;
+            }
+            
+            // Verificar que no exista
+            if (playersList.some(p => p.toLowerCase() === name.toLowerCase())) {
+                alert('Este nombre ya está registrado. Selecciónalo de la lista.');
+                showSelectView();
+                return;
+            }
+            
+            selectedPlayer = name;
+            
+            // Guardar localmente
+            playersList.push(name);
+            saveLocalPlayers(playersList);
+            
+            // Enviar a servidor para guardar en Google Sheets
+            try {
+                await fetch(CONFIG.APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'addPlayer',
+                        nombre: name
+                    })
+                });
+            } catch (error) {
+                console.log('Error guardando en servidor, pero continuamos');
+            }
+            
+            // Registrar asistencia
+            submitCheckin();
+        }
+        
+        async function submitCheckin() {
+            if (!selectedPlayer) {
+                alert('Selecciona tu nombre primero');
+                return;
+            }
+            
+            document.getElementById('selectView').classList.add('hidden');
+            document.getElementById('addView').classList.add('hidden');
+            document.getElementById('confirmView').classList.remove('hidden');
+            
+            const now = new Date();
+            const [sessionHour, sessionMin] = CONFIG.SESSION_TIME.split(':');
+            const sessionTime = new Date(now);
+            sessionTime.setHours(parseInt(sessionHour), parseInt(sessionMin), 0);
+            
+            const diffMinutes = (now - sessionTime) / (1000 * 60);
+            const isLate = diffMinutes > CONFIG.TOLERANCE;
+            
+            const data = {
+                action: 'checkin',
+                nombre: selectedPlayer,
+                tipo: isLate ? 'retardo' : 'asistencia',
+                timestamp: now.toISOString(),
+                session: now.toISOString().split('T')[0],
+                deviceId: deviceId,
+                diffMinutes: Math.round(diffMinutes)
+            };
+            
+            try {
+                const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    localStorage.setItem(`checkin_${deviceId}`, data.session);
+                    showSuccess(isLate);
+                } else {
+                    showError('Error al registrar. Intenta de nuevo.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Sin conexión. Verifica tu internet.');
+            }
+        }
+        
+        function showSuccess(isLate) {
+            document.getElementById('statusIcon').textContent = isLate ? '⚠️' : '✅';
+            document.getElementById('statusTitle').textContent = isLate ? 'Retardo Registrado' : '¡Asistencia Confirmada!';
+            document.getElementById('statusMessage').textContent = 
+                isLate 
+                    ? `${selectedPlayer}, llegaste tarde. 3 retardos = 1 falta.` 
+                    : `${selectedPlayer}, tu asistencia se registró correctamente.`;
+            
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = isLate ? 'RETARDO' : 'A TIEMPO';
+            badge.className = `status ${isLate ? 'status-late' : 'status-success'}`;
+            badge.classList.remove('hidden');
+            
+            setTimeout(() => {
+                window.close();
+            }, 3000);
+        }
+        
+        function showError(message) {
+            document.getElementById('selectView').classList.add('hidden');
+            document.getElementById('addView').classList.add('hidden');
+            document.getElementById('confirmView').classList.remove('hidden');
+            document.getElementById('statusIcon').textContent = '❌';
+            document.getElementById('statusTitle').textContent = 'No Disponible';
+            document.getElementById('statusMessage').textContent = message;
+        }
+        
+        function getOrCreateDeviceId() {
+            let id = localStorage.getItem('deviceId');
+            if (!id) {
+                id = 'DEV-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('deviceId', id);
+            }
+            return id;
+        }
+        
+        function getLocalPlayers() {
+            const saved = localStorage.getItem('riverPlayers');
+            return saved ? JSON.parse(saved) : [];
+        }
+        
+        function saveLocalPlayers(players) {
+            localStorage.setItem('riverPlayers', JSON.stringify(players));
+        }
+    </script>
+</body>
+</html>
