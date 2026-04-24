@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-   <scriptsrc="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
-    </script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -19,6 +17,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
         :root {
@@ -94,7 +93,6 @@
             display: none !important;
         }
         
-        /* Sidebar Menu */
         .sidebar {
             position: fixed;
             top: 0;
@@ -194,10 +192,8 @@
 </head>
 <body class="gradient-bg">
     
-    <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="p-6 border-b border-gray-800">
             <div class="flex items-center gap-3">
@@ -233,7 +229,6 @@
         </div>
     </aside>
     
-    <!-- Header -->
     <header class="sticky top-0 z-50 bg-black bg-opacity-90 backdrop-blur-md border-b border-gray-800">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <button id="menuBtn" class="p-2 hover:bg-gray-800 rounded-lg transition">
@@ -251,10 +246,8 @@
         </div>
     </header>
     
-    <!-- Main Content -->
     <main class="container mx-auto px-4 py-6 pb-24">
         
-        <!-- HOME TAB -->
         <div id="homeTab" class="tab-content fade-in">
             <div class="card mb-6">
                 <h2 class="text-2xl font-bold mb-4">Próxima Sesión</h2>
@@ -272,9 +265,7 @@
             
             <div class="card mb-6 text-center">
                 <h3 class="text-xl font-bold mb-4">Código QR de Asistencia</h3>
-                <div class="qr-container mx-auto" id="qrContainer">
-                    <canvas id="qrCanvas"></canvas>
-                </div>
+                <div class="qr-container mx-auto" id="qrContainer"></div>
                 <p class="text-sm text-gray-400 mt-4">Las jugadoras escanean este QR para marcar asistencia</p>
                 <button id="refreshQR" class="mt-4 btn-primary text-white px-6 py-3 rounded-full font-semibold">
                     🔄 Generar Nuevo QR
@@ -300,7 +291,6 @@
             </div>
         </div>
         
-        <!-- SCAN TAB -->
         <div id="scanTab" class="tab-content hidden">
             <div class="card">
                 <h2 class="text-2xl font-bold mb-4">Escanear QR del Coach</h2>
@@ -312,7 +302,6 @@
             </div>
         </div>
         
-        <!-- FEED TAB -->
         <div id="feedTab" class="tab-content hidden">
             <div class="card mb-4">
                 <h2 class="text-2xl font-bold mb-4">📢 Muro de Avisos</h2>
@@ -325,7 +314,6 @@
             </div>
         </div>
         
-        <!-- COACH TAB -->
         <div id="coachTab" class="tab-content hidden">
             <div class="card mb-4">
                 <h2 class="text-2xl font-bold mb-4">👨‍💼 Panel de Coach</h2>
@@ -378,7 +366,6 @@
         
     </main>
     
-    <!-- Footer -->
     <footer class="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 backdrop-blur-md border-t border-gray-800 py-3">
         <div class="container mx-auto px-4 text-center">
             <p class="text-xs text-gray-400">
@@ -390,7 +377,6 @@
     
     <script src="/app.js"></script>
     
-    <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
