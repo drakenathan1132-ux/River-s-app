@@ -147,7 +147,6 @@
             <p class="text-gray-400 text-sm" id="sessionInfo">Cargando...</p>
         </div>
         
-        <!-- Vista de selección de jugadora -->
         <div id="selectView">
             <h3 class="font-semibold mb-3">Selecciona tu nombre:</h3>
             <div id="playerList">
@@ -158,7 +157,6 @@
             </button>
         </div>
         
-        <!-- Vista de agregar nuevo nombre -->
         <div id="addView" class="hidden">
             <h3 class="font-semibold mb-3">Bienvenida a RIVERS 🏈</h3>
             <p class="text-sm text-gray-400 mb-4">Ingresa tu nombre completo:</p>
@@ -171,7 +169,6 @@
             </button>
         </div>
         
-        <!-- Vista de confirmación -->
         <div id="confirmView" class="hidden">
             <div class="text-center">
                 <div id="statusIcon" class="text-6xl mb-4">⏳</div>
@@ -199,9 +196,6 @@
         let deviceId = getOrCreateDeviceId();
         let playersList = [];
         
-        // ========================================
-        // INIT
-        // ========================================
         document.addEventListener('DOMContentLoaded', () => {
             if (!checkSchedule()) return;
             
@@ -251,7 +245,6 @@
             const container = document.getElementById('playerList');
             
             try {
-                // Intentar cargar desde Google Sheets
                 const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=getPlayers`);
                 const data = await response.json();
                 
@@ -262,7 +255,6 @@
                 console.log('No se pudieron cargar jugadoras del servidor');
             }
             
-            // Si no hay jugadoras en el servidor, usar lista local
             if (playersList.length === 0) {
                 playersList = getLocalPlayers();
             }
@@ -326,7 +318,6 @@
                 return;
             }
             
-            // Verificar que no exista
             if (playersList.some(p => p.toLowerCase() === name.toLowerCase())) {
                 alert('Este nombre ya está registrado. Selecciónalo de la lista.');
                 showSelectView();
@@ -335,11 +326,9 @@
             
             selectedPlayer = name;
             
-            // Guardar localmente
             playersList.push(name);
             saveLocalPlayers(playersList);
             
-            // Enviar a servidor para guardar en Google Sheets
             try {
                 await fetch(CONFIG.APPS_SCRIPT_URL, {
                     method: 'POST',
@@ -354,7 +343,6 @@
                 console.log('Error guardando en servidor, pero continuamos');
             }
             
-            // Registrar asistencia
             submitCheckin();
         }
         
