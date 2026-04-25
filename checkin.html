@@ -185,7 +185,7 @@
     
     <script>
         const CONFIG = {
-            APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec',
+            SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
             CHECKIN_START: '16:00',
             CHECKIN_END: '17:30',
             SESSION_TIME: '16:45',
@@ -245,17 +245,13 @@
             const container = document.getElementById('playerList');
             
             try {
-                const response = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=getPlayers`);
+                const response = await fetch(CONFIG.SHEETBEST_URL);
                 const data = await response.json();
                 
-                if (data.success && data.players) {
-                    playersList = data.players.sort();
-                }
+                const uniquePlayers = [...new Set(data.map(row => row.nombre))].filter(Boolean).sort();
+                playersList = uniquePlayers;
             } catch (error) {
                 console.log('No se pudieron cargar jugadoras del servidor');
-            }
-            
-            if (playersList.length === 0) {
                 playersList = getLocalPlayers();
             }
             
@@ -329,20 +325,6 @@
             playersList.push(name);
             saveLocalPlayers(playersList);
             
-            try {
-                await fetch(CONFIG.APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'addPlayer',
-                        nombre: name
-                    })
-                });
-            } catch (error) {
-                console.log('Error guardando en servidor, pero continuamos');
-            }
-            
             submitCheckin();
         }
         
@@ -365,7 +347,6 @@
             const isLate = diffMinutes > CONFIG.TOLERANCE;
             
             const data = {
-                action: 'checkin',
                 nombre: selectedPlayer,
                 tipo: isLate ? 'retardo' : 'asistencia',
                 timestamp: now.toISOString(),
@@ -375,16 +356,13 @@
             };
             
             try {
-                const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+                const response = await fetch(CONFIG.SHEETBEST_URL, {
                     method: 'POST',
-                    mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 
-                const result = await response.json();
-                
-                if (result.success) {
+                if (response.ok) {
                     localStorage.setItem(`checkin_${deviceId}`, data.session);
                     showSuccess(isLate);
                 } else {
