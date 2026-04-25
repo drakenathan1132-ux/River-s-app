@@ -1,5 +1,5 @@
 const CONFIG = {
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec',
+    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
     COACH_PINS: ['2501', '2502', '2503', '2504'],
     CHECKIN_URL: window.location.origin + '/checkin.html'
 };
@@ -285,12 +285,33 @@ function unlockCoachPanel() {
     }
 }
 
-function loadCoachStats() {
-    document.getElementById('coachStats').innerHTML = `
-        <p>Total Jugadoras: <span class="float-right font-bold">24</span></p>
-        <p>Asistencia Promedio: <span class="float-right font-bold">87%</span></p>
-        <p>Retardos Hoy: <span class="float-right font-bold">3</span></p>
-    `;
+async function loadCoachStats() {
+    try {
+        const response = await fetch(CONFIG.SHEETBEST_URL);
+        const data = await response.json();
+        
+        const totalJugadoras = new Set(data.map(row => row.nombre)).size;
+        const today = new Date().toISOString().split('T')[0];
+        const todayRecords = data.filter(row => row.session === today);
+        const retardosHoy = todayRecords.filter(row => row.tipo === 'retardo').length;
+        
+        const asistenciaPromedio = totalJugadoras > 0 
+            ? Math.round((todayRecords.filter(r => r.tipo === 'asistencia').length / totalJugadoras) * 100) 
+            : 0;
+        
+        document.getElementById('coachStats').innerHTML = `
+            <p>Total Jugadoras: <span class="float-right font-bold">${totalJugadoras}</span></p>
+            <p>Asistencia Promedio: <span class="float-right font-bold">${asistenciaPromedio}%</span></p>
+            <p>Retardos Hoy: <span class="float-right font-bold">${retardosHoy}</span></p>
+        `;
+    } catch (error) {
+        console.error('Error loading stats:', error);
+        document.getElementById('coachStats').innerHTML = `
+            <p>Total Jugadoras: <span class="float-right font-bold">0</span></p>
+            <p>Asistencia Promedio: <span class="float-right font-bold">0%</span></p>
+            <p>Retardos Hoy: <span class="float-right font-bold">0</span></p>
+        `;
+    }
 }
 
 function editSchedule() {
@@ -327,15 +348,28 @@ function updateScheduleDisplay() {
     document.getElementById('configTolerance').textContent = scheduleConfig.tolerancia + ' min';
 }
 
-function exportToCSV() {
-    const csv = `Nombre,Asistencias,Retardos,Faltas\n${state.userData.nombre},${state.userData.asistencias},${state.userData.retardos},${state.userData.faltas}`;
-    
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `RIVERS_Reporte_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+async function exportToCSV() {
+    try {
+        const response = await fetch(CONFIG.SHEETBEST_URL);
+        const data = await response.json();
+        
+        let csv = 'Nombre,Tipo,Fecha,Hora,Sesión\n';
+        data.forEach(row => {
+            csv += `${row.nombre},${row.tipo},${row.timestamp},${row.diffMinutes || 0},${row.session}\n`;
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `RIVERS_Asistencias_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        
+        alert('✅ CSV descargado');
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('❌ Error al exportar. Verifica tu conexión.');
+    }
 }
 
 function publishNotice() {
@@ -347,9 +381,9 @@ function publishNotice() {
 }
 
 function resetSeason() {
-    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada?')) {
+    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada? Esto borrará todos los datos.')) {
         localStorage.clear();
         alert('✅ Temporada reseteada');
         location.reload();
     }
-}
+        }
