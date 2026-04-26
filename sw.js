@@ -8,14 +8,16 @@ const CACHE_NAME = `rivers-tochito-${CACHE_VERSION}`;
 const CACHE_RUNTIME = `runtime-${CACHE_VERSION}`;
 const OFFLINE_QUEUE = 'offline-queue';
 
-// Apps Script endpoint
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_4wK-gG4yhXQUNUWYV8r2OjMcxETNWNnWXsI-m7nPBOCZPZkKg14F9OMcNrt-_vTjtA/exec';
+// Dominios permitidos para SheetBest API
+const ALLOWED_API_HOSTS = [
+    'api.sheetbest.com'
+];
 
-// Assets críticos para caché estático
 const STATIC_ASSETS = [
     './',
     './index.html',
     './app.js',
+    './checkin.html',
     './manifest.json',
     './logo.png',
     './apple-180x180-icon.png',
@@ -25,15 +27,12 @@ const STATIC_ASSETS = [
     './offline.html'
 ];
 
-// CDN resources
 const CDN_RESOURCES = [
     'https://cdn.tailwindcss.com',
-    'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+    'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
 ];
 
-// ========================================
-// INSTALL
-// ========================================
 self.addEventListener('install', (event) => {
     console.log(`[SW] Installing ${CACHE_VERSION}...`);
     
@@ -61,9 +60,6 @@ self.addEventListener('install', (event) => {
     self.skipWaiting();
 });
 
-// ========================================
-// ACTIVATE
-// ========================================
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating...');
     
@@ -86,45 +82,45 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// ========================================
-// FETCH
-// ========================================
 self.addEventListener('fetch', (event) => {
     const { request } = event;
-    const url = new URL(request.url);
     
-    if (url.href.includes('script.google.com')) {
-        event.respondWith(handleAppsScriptRequest(request));
+    // Validación segura de URL
+    let url;
+    try {
+        url = new URL(request.url);
+    } catch (error) {
+        console.error('[SW] Invalid URL:', request.url);
         return;
     }
     
-    if (CDN_RESOURCES.some((cdn) => request.url.includes(cdn))) {
+    // 1. Peticiones a API permitidas: NETWORK-FIRST
+    if (ALLOWED_API_HOSTS.includes(url.hostname)) {
+        event.respondWith(handleApiRequest(request));
+        return;
+    }
+    
+    // 2. CDN resources: STALE-WHILE-REVALIDATE
+    if (CDN_RESOURCES.some((cdn) => request.url.startsWith(cdn))) {
         event.respondWith(staleWhileRevalidate(request, CACHE_RUNTIME));
         return;
     }
     
-    if (STATIC_ASSETS.some((asset) => request.url.endsWith(asset))) {
+    // 3. Assets estáticos: CACHE-FIRST
+    if (url.origin === self.location.origin) {
         event.respondWith(cacheFirst(request, CACHE_NAME));
         return;
     }
     
-    if (request.mode === 'navigate') {
-        event.respondWith(networkFirst(request, CACHE_NAME));
-        return;
-    }
-    
+    // 4. Otros: NETWORK
     event.respondWith(fetch(request).catch(() => caches.match(request)));
 });
 
-// ========================================
-// ESTRATEGIA: Apps Script
-// ========================================
-async function handleAppsScriptRequest(request) {
+async function handleApiRequest(request) {
     try {
         const response = await fetch(request, {
             mode: 'cors',
-            credentials: 'omit',
-            redirect: 'follow'
+            credentials: 'omit'
         });
         
         if (response.ok) {
@@ -135,10 +131,10 @@ async function handleAppsScriptRequest(request) {
             return response;
         }
         
-        throw new Error(`Apps Script error: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
         
     } catch (error) {
-        console.error('[SW] Apps Script request failed:', error);
+        console.error('[SW] API request failed:', error);
         
         if (request.method === 'POST') {
             await addToOfflineQueue(request);
@@ -147,7 +143,7 @@ async function handleAppsScriptRequest(request) {
                 JSON.stringify({
                     success: false,
                     offline: true,
-                    message: 'Sin conexión. Tu asistencia se guardó localmente y se enviará cuando vuelvas online.'
+                    message: 'Sin conexión. Se guardó localmente.'
                 }),
                 {
                     status: 202,
@@ -165,7 +161,7 @@ async function handleAppsScriptRequest(request) {
             JSON.stringify({
                 success: false,
                 offline: true,
-                message: 'Sin conexión y no hay datos en caché.'
+                message: 'Sin conexión.'
             }),
             {
                 status: 503,
@@ -175,9 +171,6 @@ async function handleAppsScriptRequest(request) {
     }
 }
 
-// ========================================
-// ESTRATEGIA: Cache-First
-// ========================================
 async function cacheFirst(request, cacheName) {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
@@ -198,30 +191,6 @@ async function cacheFirst(request, cacheName) {
     return response;
 }
 
-// ========================================
-// ESTRATEGIA: Network-First
-// ========================================
-async function networkFirst(request, cacheName) {
-    try {
-        const response = await fetch(request);
-        if (response.ok) {
-            const cache = await caches.open(cacheName);
-            cache.put(request, response.clone());
-        }
-        return response;
-    } catch (error) {
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) {
-            return cachedResponse;
-        }
-        
-        return caches.match('./offline.html') || new Response('Offline', { status: 503 });
-    }
-}
-
-// ========================================
-// ESTRATEGIA: Stale-While-Revalidate
-// ========================================
 async function staleWhileRevalidate(request, cacheName) {
     const cachedResponse = await caches.match(request);
     
@@ -237,9 +206,6 @@ async function staleWhileRevalidate(request, cacheName) {
     return cachedResponse || fetchPromise;
 }
 
-// ========================================
-// BACKGROUND SYNC
-// ========================================
 self.addEventListener('sync', (event) => {
     if (event.tag === 'sync-offline-queue') {
         event.waitUntil(processOfflineQueue());
@@ -296,9 +262,6 @@ async function addToOfflineQueue(request) {
     }
 }
 
-// ========================================
-// IndexedDB
-// ========================================
 function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('RiversTochitoDB', 1);
@@ -324,9 +287,6 @@ async function initOfflineQueue() {
     }
 }
 
-// ========================================
-// UTILITY
-// ========================================
 async function limitCacheSize(cacheName, maxItems) {
     const cache = await caches.open(cacheName);
     const keys = await cache.keys();
@@ -338,9 +298,6 @@ async function limitCacheSize(cacheName, maxItems) {
     }
 }
 
-// ========================================
-// MESSAGE HANDLER
-// ========================================
 self.addEventListener('message', (event) => {
     const { type, data } = event.data || {};
     
@@ -362,32 +319,9 @@ self.addEventListener('message', (event) => {
                 })
             );
             break;
-            
-        case 'GET_QUEUE_SIZE':
-            event.waitUntil(
-                openDB().then((db) => {
-                    const tx = db.transaction(OFFLINE_QUEUE, 'readonly');
-                    return tx.objectStore(OFFLINE_QUEUE).count();
-                }).then((count) => {
-                    event.ports[0].postMessage({ queueSize: count });
-                })
-            );
-            break;
-            
-        case 'UNLOCK_COACH_MODE':
-            if (data.pin === '2501') {
-                event.ports[0].postMessage({
-                    unlocked: true,
-                    features: ['export_csv', 'bulk_delete', 'reset_season']
-                });
-            }
-            break;
     }
 });
 
-// ========================================
-// PUSH NOTIFICATIONS
-// ========================================
 self.addEventListener('push', (event) => {
     const data = event.data ? event.data.json() : {};
     const title = data.title || 'RIVERS Tochito Club';
