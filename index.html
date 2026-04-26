@@ -15,9 +15,19 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" href="/apple-180x180-icon.png">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Tailwind CSS con SRI -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography" crossorigin="anonymous"></script>
+    
+    <!-- HTML5 QR Code Scanner con SRI -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" 
+            integrity="sha384-/t+9nqJOCNZzHfPnJCQQRGfmOaLoJ7RwA4vfvLfDRAZJFZqFr2Y3B3g1DIZvvbPJ" 
+            crossorigin="anonymous"></script>
+    
+    <!-- QR Code Generator con SRI -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" 
+            integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" 
+            crossorigin="anonymous" 
+            referrerpolicy="no-referrer"></script>
     
     <style>
         :root {
@@ -214,10 +224,6 @@
                 <span class="text-2xl">📷</span>
                 <span class="font-medium">Escanear</span>
             </div>
-            <div class="nav-item" data-tab="feed">
-                <span class="text-2xl">📢</span>
-                <span class="font-medium">Avisos</span>
-            </div>
             <div class="nav-item" data-tab="coach">
                 <span class="text-2xl">👨‍💼</span>
                 <span class="font-medium">Coach Panel</span>
@@ -248,6 +254,7 @@
     
     <main class="container mx-auto px-4 py-6 pb-24">
         
+        <!-- HOME TAB - Ahora con Avisos primero -->
         <div id="homeTab" class="tab-content fade-in">
             <div class="card mb-6">
                 <h2 class="text-2xl font-bold mb-4">Próxima Sesión</h2>
@@ -263,13 +270,15 @@
                 </div>
             </div>
             
-            <div class="card mb-6 text-center">
-                <h3 class="text-xl font-bold mb-4">Código QR de Asistencia</h3>
-                <div class="qr-container mx-auto" id="qrContainer"></div>
-                <p class="text-sm text-gray-400 mt-4">Las jugadoras escanean este QR para marcar asistencia</p>
-                <button id="refreshQR" class="mt-4 btn-primary text-white px-6 py-3 rounded-full font-semibold">
-                    🔄 Generar Nuevo QR
-                </button>
+            <!-- AVISOS AHORA ESTÁN AQUÍ -->
+            <div class="card mb-6">
+                <h2 class="text-2xl font-bold mb-4">📢 Avisos del Club</h2>
+                <div id="feedContainer">
+                    <div class="text-center py-8">
+                        <div class="spinner mx-auto mb-4"></div>
+                        <p class="text-gray-400">Cargando avisos...</p>
+                    </div>
+                </div>
             </div>
             
             <div class="card">
@@ -291,6 +300,7 @@
             </div>
         </div>
         
+        <!-- SCAN TAB -->
         <div id="scanTab" class="tab-content hidden">
             <div class="card">
                 <h2 class="text-2xl font-bold mb-4">Escanear QR del Coach</h2>
@@ -302,18 +312,7 @@
             </div>
         </div>
         
-        <div id="feedTab" class="tab-content hidden">
-            <div class="card mb-4">
-                <h2 class="text-2xl font-bold mb-4">📢 Muro de Avisos</h2>
-                <div id="feedContainer">
-                    <div class="text-center py-8">
-                        <div class="spinner mx-auto mb-4"></div>
-                        <p class="text-gray-400">Cargando avisos...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
+        <!-- COACH TAB - Ahora incluye el QR -->
         <div id="coachTab" class="tab-content hidden">
             <div class="card mb-4">
                 <h2 class="text-2xl font-bold mb-4">👨‍💼 Panel de Coach</h2>
@@ -328,6 +327,16 @@
                 </div>
                 
                 <div id="coachPanel" class="hidden">
+                    <!-- QR AHORA ESTÁ AQUÍ -->
+                    <div class="card bg-gray-900 mb-6 text-center">
+                        <h3 class="text-xl font-bold mb-4">🔒 Código QR de Asistencia</h3>
+                        <div class="qr-container mx-auto" id="qrContainer"></div>
+                        <p class="text-sm text-gray-400 mt-4">Las jugadoras escanean este QR en el campo</p>
+                        <button id="refreshQR" class="mt-4 btn-primary text-white px-6 py-3 rounded-full font-semibold">
+                            🔄 Generar Nuevo QR
+                        </button>
+                    </div>
+                    
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <button class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 rounded-lg font-semibold shadow-lg" id="editSchedule">
                             📅 Editar Horarios
@@ -427,4 +436,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
