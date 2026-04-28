@@ -386,5 +386,4 @@ function resetSeason() {
         alert('✅ Temporada reseteada');
         location.reload();
     }
-                               }
-                                                                 
+}
