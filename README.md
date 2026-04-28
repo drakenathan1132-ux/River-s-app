@@ -165,11 +165,16 @@ function handleScan(qrData) {
 
 📊 Uso del Sistema
 Para Jugadoras
+
 Instalar PWA:
+
 Android: Chrome → Menú → "Agregar a pantalla de inicio"
+
 iOS: Safari → Compartir → "Agregar a pantalla de inicio"
+
 Marcar Asistencia:
-Ir al campo
+
+Ir al campo 
 Tab "Escanear" → Escanear QR del coach
 Redirige a /checkin.html → Seleccionar nombre → Confirmar
 Primera Vez:
@@ -179,14 +184,21 @@ Se guarda automáticamente en Google Sheets
 Para Coaches
 Acceder al Panel:
 Tab "Coach Panel"
-Ingresar PIN (2501, 2502, 2503 o 2504)
+Ingresar PIN.
+
 Funciones Disponibles:
 🔒 Generar QR: Código para que jugadoras escaneen
+
 📅 Editar Horarios: Cambiar días/hora sin tocar código
+
 📥 Exportar CSV: Descargar todas las asistencias
+
 📢 Publicar Avisos: Comunicados en muro principal
+
 🔄 Reset Temporada: Limpiar datos de temporada anterior
+
 🧪 Pruebas y Verificación
+
 Test de Conexión Google Sheets
 Método 1: Consola del Navegador (F12)
 
@@ -203,6 +215,7 @@ fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
 Método 2: Botón de Test en Coach Panel
 Funcionalidad incluida en app.js (botón "🔌 Test Conexión")
 Test de Geolocalización
+
 ``Javascript
 // Pegar en consola del navegador
 navigator.geolocation.getCurrentPosition(
@@ -211,29 +224,40 @@ navigator.geolocation.getCurrentPosition(
 );``
 
 🐛 Troubleshooting
+
 ❌ "QR no válido" al escanear
 Causa: URL del QR no coincide con dominio permitido
 Solución: Verificar que el QR apunte a https://riversapp.vercel.app/checkin.html
+
 ❌ "Fuera de rango" en check-in
 Causa: Coordenadas GPS incorrectas en CONFIG
 Solución: Actualizar TARGET_LAT y TARGET_LON con coordenadas reales del campo
+
 ❌ Service Worker no actualiza
 Solución:
 Chrome DevTools → Application → Service Workers
 Click "Unregister"
 Recargar página (Ctrl+Shift+R)
+
 ❌ Datos no llegan a Google Sheets
 Verificar:
+
 URL de SheetBest correcta en CONFIG.SHEETBEST_URL
 Permisos de la Sheet (público o con enlace compartido)
 Test de conexión desde consola (ver sección Pruebas)
 
 📝 Roadmap
+
 [ ] Notificaciones Push cuando se publican avisos
+
 [ ] Modo oscuro/claro
+
 [ ] Exportación PDF de estadísticas individuales
+
 [ ] Integración con WhatsApp para recordatorios
+
 [ ] Dashboard administrativo con gráficas
+
 [ ] Sistema de multas automáticas
 
 ``📄 Licencia
