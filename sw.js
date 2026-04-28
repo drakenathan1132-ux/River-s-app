@@ -1,336 +1,382 @@
-// ========================================
-// RIVERS TOCHITO CLUB - SERVICE WORKER PRO
-// Network-First + Offline Queue + Easter Eggs
-// ========================================
+// ============================================================================
+// RIVERS TOCHITO CLUB - SERVICE WORKER
+// Versión 3.0 - PWA Offline-First con Background Sync
+// ============================================================================
 
-const CACHE_VERSION = 'v2.1.0';
-const CACHE_NAME = `rivers-tochito-${CACHE_VERSION}`;
-const CACHE_RUNTIME = `runtime-${CACHE_VERSION}`;
-const OFFLINE_QUEUE = 'offline-queue';
-
-// Dominios permitidos para SheetBest API
-const ALLOWED_API_HOSTS = [
-    'api.sheetbest.com'
-];
+const CACHE_VERSION = 'rivers-v3.0.0';
+const CACHE_STATIC = `${CACHE_VERSION}-static`;
+const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
+const CACHE_IMAGES = `${CACHE_VERSION}-images`;
 
 const STATIC_ASSETS = [
-    './',
-    './index.html',
-    './app.js',
-    './checkin.html',
-    './manifest.json',
-    './logo.png',
-    './apple-180x180-icon.png',
-    './android-192x192-icon.png',
-    './android-512x512-icon.png',
-    './reglamento.pdf',
-    './offline.html'
-];
-
-const CDN_RESOURCES = [
+    '/',
+    '/index.html',
+    '/checkin.html',
+    '/app.js',
+    '/manifest.json',
+    '/offline.html',
     'https://cdn.tailwindcss.com',
     'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
 ];
 
+const OFFLINE_PAGE = '/offline.html';
+const MAX_CACHE_SIZE = 50;
+
+// ============================================================================
+// INSTALL - Cachear archivos estáticos
+// ============================================================================
+
 self.addEventListener('install', (event) => {
-    console.log(`[SW] Installing ${CACHE_VERSION}...`);
+    console.log('[SW] Installing Service Worker...', CACHE_VERSION);
     
     event.waitUntil(
-        Promise.all([
-            caches.open(CACHE_NAME).then((cache) => {
-                return cache.addAll(STATIC_ASSETS).catch((err) => {
-                    console.warn('[SW] Some assets failed to cache:', err);
-                    return Promise.resolve();
-                });
-            }),
-            caches.open(CACHE_RUNTIME).then((cache) => {
-                return Promise.all(
-                    CDN_RESOURCES.map((url) => {
-                        return fetch(url, { mode: 'cors' })
-                            .then((response) => cache.put(url, response))
-                            .catch((err) => console.warn(`[SW] CDN cache failed for ${url}:`, err));
-                    })
-                );
-            }),
-            initOfflineQueue()
-        ])
+        caches.open(CACHE_STATIC)
+            .then((cache) => {
+                console.log('[SW] Caching static assets');
+                return cache.addAll(STATIC_ASSETS.map(url => new Request(url, {
+                    cache: 'reload'
+                })));
+            })
+            .then(() => self.skipWaiting())
+            .catch((error) => {
+                console.error('[SW] Error caching static assets:', error);
+            })
     );
-    
-    self.skipWaiting();
 });
 
+// ============================================================================
+// ACTIVATE - Limpiar cachés viejos
+// ============================================================================
+
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activating...');
+    console.log('[SW] Activating Service Worker...', CACHE_VERSION);
     
     event.waitUntil(
-        Promise.all([
-            caches.keys().then((cacheNames) => {
+        caches.keys()
+            .then((cacheNames) => {
                 return Promise.all(
-                    cacheNames
-                        .filter((name) => name.startsWith('rivers-tochito-') && name !== CACHE_NAME)
-                        .map((name) => {
-                            console.log('[SW] Deleting old cache:', name);
-                            return caches.delete(name);
-                        })
+                    cacheNames.map((cacheName) => {
+                        if (!cacheName.startsWith(CACHE_VERSION)) {
+                            console.log('[SW] Deleting old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
                 );
-            }),
-            limitCacheSize(CACHE_RUNTIME, 50)
-        ])
+            })
+            .then(() => self.clients.claim())
     );
-    
-    self.clients.claim();
 });
+
+// ============================================================================
+// FETCH - Estrategia híbrida
+// ============================================================================
 
 self.addEventListener('fetch', (event) => {
     const { request } = event;
+    const url = new URL(request.url);
     
-    // Validación segura de URL
-    let url;
-    try {
-        url = new URL(request.url);
-    } catch (error) {
-        console.error('[SW] Invalid URL:', request.url);
+    // Ignorar requests no-HTTP
+    if (!request.url.startsWith('http')) {
         return;
     }
     
-    // 1. Peticiones a API permitidas: NETWORK-FIRST
-    if (ALLOWED_API_HOSTS.includes(url.hostname)) {
-        event.respondWith(handleApiRequest(request));
+    // Ignorar requests de Chrome Extensions
+    if (url.protocol === 'chrome-extension:') {
         return;
     }
     
-    // 2. CDN resources: STALE-WHILE-REVALIDATE
-    if (CDN_RESOURCES.some((cdn) => request.url.startsWith(cdn))) {
-        event.respondWith(staleWhileRevalidate(request, CACHE_RUNTIME));
+    // ===== GOOGLE SHEETS API - Network First =====
+    if (url.hostname === 'sheets.googleapis.com' || 
+        url.hostname === 'www.googleapis.com' ||
+        url.hostname.includes('sheetbest.com')) {
+        event.respondWith(networkFirstStrategy(request));
         return;
     }
     
-    // 3. Assets estáticos: CACHE-FIRST
-    if (url.origin === self.location.origin) {
-        event.respondWith(cacheFirst(request, CACHE_NAME));
+    // ===== APIs externas - Network First =====
+    if (url.pathname.includes('/api/') || request.method === 'POST') {
+        event.respondWith(networkFirstStrategy(request));
         return;
     }
     
-    // 4. Otros: NETWORK
-    event.respondWith(fetch(request).catch(() => caches.match(request)));
+    // ===== Imágenes - Cache First =====
+    if (request.destination === 'image') {
+        event.respondWith(cacheFirstStrategy(request, CACHE_IMAGES));
+        return;
+    }
+    
+    // ===== Assets estáticos - Cache First =====
+    if (url.pathname.endsWith('.js') || 
+        url.pathname.endsWith('.css') ||
+        url.pathname.endsWith('.json') ||
+        url.pathname.endsWith('.woff2') ||
+        url.pathname.endsWith('.woff')) {
+        event.respondWith(cacheFirstStrategy(request, CACHE_STATIC));
+        return;
+    }
+    
+    // ===== HTML - Network First con fallback offline =====
+    if (request.destination === 'document' || 
+        request.headers.get('accept').includes('text/html')) {
+        event.respondWith(networkFirstWithOfflineFallback(request));
+        return;
+    }
+    
+    // ===== Default - Network First =====
+    event.respondWith(networkFirstStrategy(request));
 });
 
-async function handleApiRequest(request) {
+// ============================================================================
+// ESTRATEGIAS DE CACHÉ
+// ============================================================================
+
+// Cache First - Para assets estáticos e imágenes
+async function cacheFirstStrategy(request, cacheName) {
     try {
-        const response = await fetch(request, {
-            mode: 'cors',
-            credentials: 'omit'
-        });
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match(request);
         
-        if (response.ok) {
-            if (request.method === 'GET') {
-                const cache = await caches.open(CACHE_RUNTIME);
-                cache.put(request, response.clone());
-            }
-            return response;
-        }
-        
-        throw new Error(`API error: ${response.status}`);
-        
-    } catch (error) {
-        console.error('[SW] API request failed:', error);
-        
-        if (request.method === 'POST') {
-            await addToOfflineQueue(request);
+        if (cachedResponse) {
+            // Actualizar en background
+            fetch(request)
+                .then(response => {
+                    if (response && response.status === 200) {
+                        cache.put(request, response.clone());
+                    }
+                })
+                .catch(() => {
+                    // Silent fail
+                });
             
-            return new Response(
-                JSON.stringify({
-                    success: false,
-                    offline: true,
-                    message: 'Sin conexión. Se guardó localmente.'
-                }),
-                {
-                    status: 202,
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
+            return cachedResponse;
         }
+        
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse && networkResponse.status === 200) {
+            cache.put(request, networkResponse.clone());
+            limitCacheSize(cacheName, MAX_CACHE_SIZE);
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        console.error('[SW] Cache First Error:', error);
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) return cachedResponse;
+        throw error;
+    }
+}
+
+// Network First - Para APIs y contenido dinámico
+async function networkFirstStrategy(request) {
+    try {
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse && networkResponse.status === 200) {
+            const cache = await caches.open(CACHE_DYNAMIC);
+            cache.put(request, networkResponse.clone());
+            limitCacheSize(CACHE_DYNAMIC, MAX_CACHE_SIZE);
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        console.log('[SW] Network failed, trying cache:', request.url);
         
         const cachedResponse = await caches.match(request);
         if (cachedResponse) {
             return cachedResponse;
         }
         
-        return new Response(
-            JSON.stringify({
-                success: false,
-                offline: true,
-                message: 'Sin conexión.'
-            }),
-            {
-                status: 503,
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
-    }
-}
-
-async function cacheFirst(request, cacheName) {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-        fetch(request).then((response) => {
-            if (response.ok) {
-                caches.open(cacheName).then((cache) => cache.put(request, response));
-            }
-        }).catch(() => {});
+        // Si es POST y falló, guardar en IndexedDB para retry
+        if (request.method === 'POST') {
+            await saveFailedRequest(request);
+        }
         
-        return cachedResponse;
+        throw error;
     }
-    
-    const response = await fetch(request);
-    if (response.ok) {
-        const cache = await caches.open(cacheName);
-        cache.put(request, response.clone());
-    }
-    return response;
 }
 
-async function staleWhileRevalidate(request, cacheName) {
-    const cachedResponse = await caches.match(request);
-    
-    const fetchPromise = fetch(request).then((response) => {
-        if (response.ok) {
-            caches.open(cacheName).then((cache) => {
-                cache.put(request, response.clone());
-            });
+// Network First con Offline Fallback - Para páginas HTML
+async function networkFirstWithOfflineFallback(request) {
+    try {
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse && networkResponse.status === 200) {
+            const cache = await caches.open(CACHE_DYNAMIC);
+            cache.put(request, networkResponse.clone());
         }
-        return response;
-    }).catch(() => cachedResponse);
-    
-    return cachedResponse || fetchPromise;
+        
+        return networkResponse;
+    } catch (error) {
+        console.log('[SW] Network failed, trying cache or offline page');
+        
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        const offlinePage = await caches.match(OFFLINE_PAGE);
+        if (offlinePage) {
+            return offlinePage;
+        }
+        
+        return new Response('Offline - No hay conexión', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({
+                'Content-Type': 'text/html'
+            })
+        });
+    }
 }
 
-self.addEventListener('sync', (event) => {
-    if (event.tag === 'sync-offline-queue') {
-        event.waitUntil(processOfflineQueue());
-    }
-});
+// ============================================================================
+// UTILIDADES
+// ============================================================================
 
-async function processOfflineQueue() {
-    const db = await openDB();
-    const tx = db.transaction(OFFLINE_QUEUE, 'readonly');
-    const store = tx.objectStore(OFFLINE_QUEUE);
-    const requests = await store.getAll();
+// Limitar tamaño del caché
+async function limitCacheSize(cacheName, maxItems) {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
     
-    console.log(`[SW] Processing ${requests.length} queued requests...`);
-    
-    for (const item of requests) {
-        try {
-            const response = await fetch(item.url, {
-                method: item.method,
-                headers: item.headers,
-                body: item.body
-            });
-            
-            if (response.ok) {
-                const deleteTx = db.transaction(OFFLINE_QUEUE, 'readwrite');
-                await deleteTx.objectStore(OFFLINE_QUEUE).delete(item.id);
-                console.log(`[SW] Synced request ${item.id}`);
-            }
-        } catch (error) {
-            console.error(`[SW] Failed to sync request ${item.id}:`, error);
+    if (keys.length > maxItems) {
+        const deleteCount = keys.length - maxItems;
+        for (let i = 0; i < deleteCount; i++) {
+            await cache.delete(keys[i]);
         }
     }
 }
 
-async function addToOfflineQueue(request) {
-    const db = await openDB();
-    const tx = db.transaction(OFFLINE_QUEUE, 'readwrite');
-    const store = tx.objectStore(OFFLINE_QUEUE);
-    
-    const body = request.method === 'POST' ? await request.clone().text() : null;
-    
-    await store.add({
-        id: Date.now(),
-        url: request.url,
-        method: request.method,
-        headers: Object.fromEntries(request.headers.entries()),
-        body: body,
-        timestamp: Date.now()
-    });
-    
-    console.log('[SW] Request added to offline queue');
-    
-    if ('sync' in self.registration) {
-        await self.registration.sync.register('sync-offline-queue');
+// Guardar requests fallidos para retry
+async function saveFailedRequest(request) {
+    try {
+        const db = await openDB();
+        const tx = db.transaction(['failedRequests'], 'readwrite');
+        const store = tx.objectStore('failedRequests');
+        
+        const requestData = {
+            url: request.url,
+            method: request.method,
+            headers: Object.fromEntries(request.headers.entries()),
+            body: await request.clone().text(),
+            timestamp: Date.now()
+        };
+        
+        await store.add(requestData);
+        console.log('[SW] Saved failed request for retry');
+    } catch (error) {
+        console.error('[SW] Error saving failed request:', error);
     }
 }
 
+// Abrir IndexedDB
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('RiversTochitoDB', 1);
+        const request = indexedDB.open('RiversDB', 1);
         
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve(request.result);
         
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            if (!db.objectStoreNames.contains(OFFLINE_QUEUE)) {
-                db.createObjectStore(OFFLINE_QUEUE, { keyPath: 'id' });
+            
+            if (!db.objectStoreNames.contains('failedRequests')) {
+                db.createObjectStore('failedRequests', { 
+                    keyPath: 'id', 
+                    autoIncrement: true 
+                });
             }
         };
     });
 }
 
-async function initOfflineQueue() {
-    try {
-        await openDB();
-        console.log('[SW] IndexedDB initialized');
-    } catch (error) {
-        console.error('[SW] IndexedDB init failed:', error);
-    }
-}
+// ============================================================================
+// BACKGROUND SYNC - Retry requests fallidos
+// ============================================================================
 
-async function limitCacheSize(cacheName, maxItems) {
-    const cache = await caches.open(cacheName);
-    const keys = await cache.keys();
+self.addEventListener('sync', (event) => {
+    console.log('[SW] Background Sync triggered:', event.tag);
     
-    if (keys.length > maxItems) {
-        const keysToDelete = keys.slice(0, keys.length - maxItems);
-        await Promise.all(keysToDelete.map((key) => cache.delete(key)));
-        console.log(`[SW] Trimmed ${keysToDelete.length} items from ${cacheName}`);
-    }
-}
-
-self.addEventListener('message', (event) => {
-    const { type, data } = event.data || {};
-    
-    switch (type) {
-        case 'SKIP_WAITING':
-            self.skipWaiting();
-            break;
-            
-        case 'CACHE_URLS':
-            event.waitUntil(
-                caches.open(CACHE_NAME).then((cache) => cache.addAll(data.urls))
-            );
-            break;
-            
-        case 'CLEAR_CACHE':
-            event.waitUntil(
-                caches.keys().then((names) => {
-                    return Promise.all(names.map((name) => caches.delete(name)));
-                })
-            );
-            break;
+    if (event.tag === 'sync-attendance') {
+        event.waitUntil(retryFailedRequests());
     }
 });
 
+async function retryFailedRequests() {
+    try {
+        const db = await openDB();
+        const tx = db.transaction(['failedRequests'], 'readonly');
+        const store = tx.objectStore('failedRequests');
+        const requests = await store.getAll();
+        
+        console.log(`[SW] Retrying ${requests.length} failed requests`);
+        
+        for (const requestData of requests) {
+            try {
+                const response = await fetch(requestData.url, {
+                    method: requestData.method,
+                    headers: requestData.headers,
+                    body: requestData.body
+                });
+                
+                if (response.ok) {
+                    const deleteTx = db.transaction(['failedRequests'], 'readwrite');
+                    const deleteStore = deleteTx.objectStore('failedRequests');
+                    await deleteStore.delete(requestData.id);
+                    console.log('[SW] Successfully retried request:', requestData.url);
+                }
+            } catch (error) {
+                console.error('[SW] Retry failed:', error);
+            }
+        }
+    } catch (error) {
+        console.error('[SW] Error retrying failed requests:', error);
+    }
+}
+
+// ============================================================================
+// MENSAJES - Comunicación con la app
+// ============================================================================
+
+self.addEventListener('message', (event) => {
+    console.log('[SW] Message received:', event.data);
+    
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+    
+    if (event.data && event.data.type === 'CLEAR_CACHE') {
+        event.waitUntil(
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => caches.delete(cacheName))
+                );
+            })
+        );
+    }
+    
+    if (event.data && event.data.type === 'SYNC_NOW') {
+        event.waitUntil(retryFailedRequests());
+    }
+});
+
+// ============================================================================
+// PUSH NOTIFICATIONS (preparado para futuro)
+// ============================================================================
+
 self.addEventListener('push', (event) => {
+    console.log('[SW] Push notification received');
+    
     const data = event.data ? event.data.json() : {};
     const title = data.title || 'RIVERS Tochito Club';
     const options = {
         body: data.body || 'Nueva notificación',
-        icon: './android-512x512-icon.png',
-        badge: './logo.png',
-        data: data.url || './',
-        vibrate: [200, 100, 200]
+        icon: '/android-192x192-icon.png',
+        badge: '/favicon-32x32.png',
+        data: data,
+        vibrate: [200, 100, 200],
+        tag: 'rivers-notification'
     };
     
     event.waitUntil(
@@ -339,8 +385,12 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
+    console.log('[SW] Notification clicked');
     event.notification.close();
+    
     event.waitUntil(
-        clients.openWindow(event.notification.data)
+        clients.openWindow('/')
     );
 });
+
+console.log('[SW] Service Worker loaded successfully');
