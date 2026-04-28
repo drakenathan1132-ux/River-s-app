@@ -101,7 +101,7 @@ const CONFIG = {
     // ... otras configs
     TARGET_LAT: 19.0732,    // ← CAMBIAR A TU CAMPO
     TARGET_LON: -97.0461,   // ← CAMBIAR A TU CAMPO
-    MAX_DISTANCE_KM: 0.5    // 500 metros tolerancia
+    MAX_DISTANCE_KM: 0.3    // 300 metros tolerancia
 };``
 
 Cómo obtener coordenadas:
