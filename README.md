@@ -96,21 +96,23 @@ Código
 
 Editar en `app.js` (líneas 3-6):
 
-```javascript
+``javascript
 const CONFIG = {
     // ... otras configs
     TARGET_LAT: 19.0732,    // ← CAMBIAR A TU CAMPO
     TARGET_LON: -97.0461,   // ← CAMBIAR A TU CAMPO
     MAX_DISTANCE_KM: 0.3    // 300 metros tolerancia
-};
+};``
 
 Cómo obtener coordenadas:
 Google Maps → Click derecho en el campo → "¿Qué hay aquí?"
 Copiar los números (19.0732, -97.0461)
 3️⃣ PINs de Coach
 4 coaches con acceso al panel (editable en app.js):
-Javascript
-COACH_PINS: ['2501', '2502', '2503', '2504']
+
+``Javascript
+COACH_PINS: ['2501', '2502', '2503', '2504']``
+
 4️⃣ Horarios de Sesiones
 Configurable desde Coach Panel (no tocar código):
 Días: Martes y Jueves (default)
@@ -119,15 +121,19 @@ Tolerancia: 15 min
 🚀 Despliegue en Vercel
 Deploy Automático
 Push al repo GitHub:
-Bash
+
+``Bash
 git add .
 git commit -m "Deploy RIVERS PWA"
-git push origin main
+git push origin main``
+
 Vercel detecta y despliega automáticamente:
 URL: https://riversapp.vercel.app
 Deploy Manual
-Bash
-npm install -g vercel
+
+``Bash
+npm install -g vercel``
+
 vercel --prod
 🔒 Seguridad Implementada
 ✅ Mitigaciones
@@ -142,22 +148,20 @@ Rate limiting en Service Worker + whitelist de hosts
 XSS
 Headers X-Content-Type-Options, X-Frame-Options
 Ejemplo de Validación Segura (app.js):
-Javascript
+``javascript
 function handleScan(qrData) {
     try {
         const url = new URL(qrData);
-        const allowed = ['riversapp.vercel.app', 'localhost'];
-        
+        const allowed = ['riversapp.vercel.app', 'localhost'];        
         if (allowed.includes(url.hostname) && url.pathname.includes('/checkin.html')) {
             window.location.href = qrData;
             return;
         }
-        
         showScanResult('❌ QR no autorizado', 'error');
     } catch (error) {
         showScanResult('❌ QR inválido', 'error');
     }
-}
+}``
 
 📊 Uso del Sistema
 Para Jugadoras
@@ -185,7 +189,8 @@ Funciones Disponibles:
 🧪 Pruebas y Verificación
 Test de Conexión Google Sheets
 Método 1: Consola del Navegador (F12)
-Javascript
+
+``Javascript
 fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
   .then(r => r.json())
   .then(data => {
@@ -193,16 +198,17 @@ fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
     console.log('Total registros:', data.length);
     console.table(data);
   })
-  .catch(err => console.error('❌ Error:', err));
+  .catch(err => console.error('❌ Error:', err));``
+  
 Método 2: Botón de Test en Coach Panel
 Funcionalidad incluida en app.js (botón "🔌 Test Conexión")
 Test de Geolocalización
-Javascript
+``Javascript
 // Pegar en consola del navegador
 navigator.geolocation.getCurrentPosition(
     pos => console.log('GPS OK:', pos.coords.latitude, pos.coords.longitude),
     err => console.error('GPS Error:', err.message)
-);
+);``
 
 🐛 Troubleshooting
 ❌ "QR no válido" al escanear
@@ -230,11 +236,11 @@ Test de conexión desde consola (ver sección Pruebas)
 [ ] Dashboard administrativo con gráficas
 [ ] Sistema de multas automáticas
 
-📄 Licencia
+``📄 Licencia
 Este proyecto es privado y de uso exclusivo para RIVERS Tochito Club.
 👨‍💻 Autor
 Jesús Bonilla - Coach y Desarrollador
-RIVERS Tochito Club © 2025
+RIVERS Tochito Club © 2025``
 
 🔗 Enlaces Útiles
 Documentación Service Workers
