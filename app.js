@@ -178,16 +178,45 @@ function stopQRScanner() {
 }
 
 function handleScan(qrData) {
-    console.log('QR Escaneado:', qrData);
-    
-    // Validación segura de URL
-    try {
-        const scannedUrl = new URL(qrData);
-        const allowedHosts = [
-            window.location.hostname,
-            'riversapp.vercel.app',
-            'localhost'
-        ];
+    console.log('Iniciando validación de ubicación y QR...');
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Cálculo de distancia (Fórmula de Haversine)
+        const R = 6371; 
+        const dLat = (latitude - CONFIG.TARGET_LAT) * Math.PI / 180;
+        const dLon = (longitude - CONFIG.TARGET_LON) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(CONFIG.TARGET_LAT * Math.PI / 180) * Math.cos(latitude * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+
+        // 1. Validar Distancia (300 metros según tu CONFIG)
+        if (distance > CONFIG.MAX_DISTANCE_KM) {
+            showScanResult(`❌ Fuera de rango (${(distance).toFixed(2)}km). Acércate al campo.`, 'error');
+            return;
+        }
+
+        // 2. Validar URL del QR
+        try {
+            const scannedUrl = new URL(qrData);
+            const allowedHosts = [window.location.hostname, 'riversapp.vercel.app', 'localhost'];
+            
+            if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
+                // Hack: Pasamos lat/lon a la siguiente página para el registro final
+                window.location.href = `${qrData}?lat=${latitude}&lon=${longitude}`;
+                return;
+            }
+            showScanResult('❌ QR no autorizado', 'error');
+        } catch (error) {
+            showScanResult('❌ QR inválido', 'error');
+        }
+    }, (err) => {
+        showScanResult('❌ Error: Activa el GPS para marcar asistencia', 'error');
+    }, { enableHighAccuracy: true });
+}
         
         // Verificar que el hostname sea permitido Y tenga /checkin.html
         if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
