@@ -65,17 +65,18 @@
         .status-offline { background: #ef4444; }
         
         .hidden { display: none !important; }
-    </style>
-</head>
+     </style>
+  </head>
 <body>
     
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black opacity-50 z-40 hidden"></div>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black opacity-50 z-40 hidden">
+             </div>
     
     <aside class="sidebar" id="sidebar">
+
         <div class="p-6 border-b border-gray-800">
             <h2 class="text-xl font-bold text-cyan-400">RIVERS Admin</h2>
-
-        </div>
+            </div>
         <nav class="mt-4">
             <div class="nav-item" data-tab="home"><span>🏠</span> Inicio</div>
             <div class="nav-item" data-tab="scan"><span>📷</span> Escanear</div>
@@ -109,15 +110,17 @@
 
         <span id="statusBadge" class="status-badge status-online">Online</span>
 
-    <header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#1a1a1a]">
+<header class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#1a1a1a]">
     <div class="flex items-center gap-3">
-        <button id="menuBtn" class="text-2xl hover:text-cyan-400">≡</button>
+        <button id="menuBtn" class="text-2xl text-white">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="flex items-center gap-2">
-            <img src="logo.png" alt="Logo" class="h-8 w-auto object-contain">
-            <h1 class="font-bold text-lg uppercase tracking-wider text-white">Rivers</h1>
+            <img src="logo.png" alt="RIVERS" class="h-8 w-auto object-contain">
+            <h1 class="font-bold text-lg text-white">RIVERS</h1>
         </div>
     </div>
-    <span id="statusBadge" class="status-badge status-offline">Offline</span>
+    <span id="statusBadge" class="status-badge status-online text-xs px-2 py-1 rounded-full">Online</span>
 </header>
 
     <main class="p-4 pb-20">
@@ -152,12 +155,16 @@
         <div id="coachTab" class="tab-content hidden">
             <div id="coachLogin" class="card text-center">
                 <input type="password" id="coachPIN" placeholder="PIN" class="bg-gray-800 p-2 rounded mb-4 text-center block w-full">
-                <button id="unlockCoach" class="btn-primary w-full py-2 rounded">Entrar</button>
+
+                      <button id="unlockCoach" class="btn-primary w-full py-2 rounded"
+                 >Entrar
+              </button>
             </div>
 
             <div id="coachPanel" class="hidden">
                 <div class="card bg-white p-4 mb-4 flex justify-center" id="qrContainer"></div>
-                <button id="exportCSV" class="btn-primary w-full py-3 rounded font-bold">📥 EXPORTAR ASISTENCIAS</button>
+                <button id="exportCSV" class="btn-primary w-full py-3 rounded font-bold">📥 EXPORTAR ASISTENCIAS
+                </button>
             </div>
         </div>
     </main>
