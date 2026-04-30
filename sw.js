@@ -89,9 +89,8 @@ self.addEventListener('fetch', (event) => {
     // ===== GOOGLE SHEETS API - Network First =====
     if (url.hostname === 'sheets.googleapis.com' || 
         url.hostname === 'www.googleapis.com' ||
-        url.hostname === 'sheetbest.com' ||
-        url.hostname.endsWith('.sheetbest.com')) {
-        event.respondWith(networkFirstStrategy(request));
+
+        evento.respondWith ( networkFirstStrategy ( request ) ) ;
         return;
     }
     

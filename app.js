@@ -4,13 +4,14 @@
 // ========================================
 
 const CONFIG = {
-    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
-    COACH_PINS: ['2501', '2502', '2503', '2504'],
-    CHECKIN_URL: window.location.origin + '/checkin.html',
-    TARGET_LAT: 19.0732,     // Coordenadas del campo
-    TARGET_LON: -97.0461,
-    MAX_DISTANCE_KM: 0.3     // 300 metros tolerancia
+    // Reemplaza con tu URL de conexión de Sheetbest
+    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55', 
+    CHECKIN_START: '16:00',
+    CHECKIN_END: '17:30',
+    SESSION_TIME: '16:45',
+    TOLERANCE: 15,
 };
+
 
 const state = {
     currentTab: 'home',
