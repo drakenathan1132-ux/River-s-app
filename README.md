@@ -1,437 +1,394 @@
 # 🏈 RIVERS Tochito Club - Sistema de Gestión PWA
 
-![Version](https://img.shields.io/badge/version-3.0.0-orange)
-![PWA](https://img.shields.io/badge/PWA-Ready-success)
-![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue)
-![Offline](https://img.shields.io/badge/Offline-Supported-green)
+Sistema integral de gestión de asistencias para club de flag football femenil. PWA offline-first con geolocalización GPS, QR dinámico y sincronización automática con Google Sheets.
 
-Sistema de gestión de asistencias para club de flag football con tecnología PWA, generador de QR dinámico, sistema offline robusto y sincronización con Google Sheets.
+
+
+![Version](https://img.shields.io/badge/version-2.1.0-orange)
+
+
+
+
+![PWA](https://img.shields.io/badge/PWA-Ready-success)
+
+
+
+
+![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue)
+
+
+
+
+![Security](https://img.shields.io/badge/security-SRI%20Enabled-green)
+
+
+
+**🔗 Producción:** [https://riversapp.vercel.app](https://riversapp.vercel.app)  
+**📊 Google Sheets:** [Ver hoja de cálculo](https://docs.google.com/spreadsheets/d/1c152e4a-32f0-4216-aafa-086c7c972c55)
 
 ---
 
-## 🚀 Características
+## 🚀 Características Principales
 
-### ✅ Core Features
-- **QR Dinámico**: Genera códigos QR únicos por sesión de entrenamiento
-- **Sistema de Asistencia**: Check-in automático con escaneo de QR
-- **Offline-First**: Funciona sin conexión, sincroniza cuando vuelve online
-- **Google Sheets Integration**: Almacenamiento en la nube con sincronización automática
-- **Sistema de Palomitas**: Marcado visual (Verde/Amarilla/Roja) para asistencias
-- **Feed de Avisos**: Muro de noticias y comunicados del club
-- **Exportación CSV**: Dashboard para coaches con descarga de datos
-- **PWA Instalable**: Se instala como app nativa en Android/iOS
-- **IndexedDB Storage**: Base de datos local para modo offline
+### ✅ Sistema de Asistencias
+- **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
+- **QR Protegido**: Código generado por coaches, accesible solo con PIN
+- **Validación Horaria**: 16:45 hrs + 15 min de tolerancia (configurable)
+- **Device ID Único**: 1 registro por dispositivo por día (anti-fraude)
 
 ### 🔒 Reglas de Negocio
-- ✅ 15 minutos de tolerancia para marcar asistencia
-- ⚠️ 3 retardos = 1 falta
-- ❌ 3 faltas = Baja del club
+- ✅ **Asistencia**: Llegar dentro de 15 min de tolerancia
+- ⚠️ **Retardo**: Llegar después de 15 min (3 retardos = 1 falta)
+- ❌ **Falta**: No asistir (3 faltas = baja del club)
 
-### 🎯 Tecnologías
-- **Frontend**: HTML5, Tailwind CSS, Vanilla JS
-- **PWA**: Service Worker con caché híbrido + Offline Queue
-- **Storage**: IndexedDB para datos offline + Google Sheets API
-- **QR**: HTML5-QRCode library + QRCode.js
-- **Backend**: Google Sheets API v4
+### 📱 Funcionalidades Clave
+- **Offline-First**: Funciona sin internet, sincroniza automáticamente
+- **PWA Instalable**: Se instala como app nativa (iOS/Android)
+- **Panel de Coach**: Gestión con 4 PINs, exportación CSV, reset de temporada
+- **Avisos del Club**: Muro de noticias en vista principal
+- **Estadísticas**: Dashboard personal de asistencias/retardos/faltas
+
+### 🎯 Stack Tecnológico
+
+| Capa | Tecnología |
+|------|-----------|
+| **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
+| **PWA** | Service Worker (Network-First + Background Sync) |
+| **Backend** | Google Sheets + SheetBest REST API |
+| **Sensores** | HTML5-QRCode (Cámara) + Geolocation API (GPS) |
+| **Seguridad** | SRI (Subresource Integrity) en CDN externos |
+| **Hosting** | Vercel (Deploy automático desde GitHub) |
 
 ---
 
 ## 📦 Estructura del Proyecto
-
-```
 River-s-app/
-├── index.html              # Aplicación principal
-├── checkin.html            # Página de check-in
-├── app.js                  # Lógica de negocio principal
-├── sw.js                   # Service Worker (Offline + Sync)
-├── manifest.json           # Configuración PWA
-├── offline.html            # Página fallback sin conexión
-├── README.md               # Documentación
-├── reglamento.pdf          # Reglamento del club
-├── logo.png                # Logo principal
-├── apple-180x180-icon.png  # Ícono iOS
-├── android-192x192-icon.png # Ícono Android (launcher)
-├── android-512x512-icon.png # Ícono Android (splash)
-├── favicon-32x32.png       # Favicon 32px
-└── favicon-16x16.png       # Favicon 16px
-```
-
+├── index.html              # App principal (Inicio, Scan, Coach Panel)
+├── app.js                  # Lógica de negocio y geolocalización
+├── sw.js                   # Service Worker + Offline Queue
+├── checkin.html            # Validador GPS/QR/Horario (destino del QR)
+├── manifest.json           # Configuración PWA (iconos, shortcuts)
+├── reglamento.pdf          # Reglamento oficial del club
+├── offline.html            # Fallback sin conexión
+├── vercel.json             # Headers de seguridad y rewrites SPA
+├── README.md               # Esta documentación
+└── assets/
+├── logo.png            # Logo principal
+├── android-192x192-icon.png
+├── android-512x512-icon.png
+└── apple-180x180-icon.png
 ---
 
-## 🛠️ Instalación y Configuración
+## 🔧 Configuración Inicial
 
-### 1️⃣ Clonar Repositorio
-```bash
-git clone https://github.com/drakenathan1132-ux/River-s-app.git
-cd River-s-app
-```
+### 1️⃣ Google Sheets + SheetBest
+**URL de API:**
+https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55
 
-### 2️⃣ Configurar Google Sheets API
+**Estructura de columnas necesarias:**
 
-#### A. Crear Proyecto en Google Cloud Console
-1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
-2. Crea un nuevo proyecto: "RIVERS Tochito Club"
-3. Habilita **Google Sheets API**:
-   - Menú → APIs & Services → Enable APIs
-   - Busca "Google Sheets API" → Enable
+| Columna | Tipo | Descripción |
+|---------|------|-------------|
+| `nombre` | string | Nombre completo de la jugadora |
+| `tipo` | string | `asistencia` o `retardo` |
+| `timestamp` | string | ISO 8601 (ej: 2026-04-30T16:50:00Z) |
+| `session` | string | Fecha de sesión (YYYY-MM-DD) |
+| `deviceId` | string | ID único del dispositivo |
+| `diffMinutes` | number | Minutos de diferencia vs hora oficial |
+| `latitud` | number | Coordenada GPS (opcional) |
+| `longitud` | number | Coordenada GPS (opcional) |
 
-#### B. Crear API Key
-1. APIs & Services → Credentials
-2. Create Credentials → API Key
-3. Copia el API Key generado
-4. (Opcional) Restringir el API Key:
-   - Application restrictions: HTTP referrers
-   - Agregar tu dominio: `https://tu-dominio.com/*`
-   - API restrictions: Google Sheets API
+### 2️⃣ Coordenadas del Campo
 
-#### C. Crear Google Sheet
-1. Crea una nueva hoja de cálculo en Google Sheets
-2. Nómbrala: "RIVERS Asistencias"
-3. Crea una hoja llamada: **"Asistencias"**
-4. Agrega los siguientes headers en la fila 1:
+Editar en `app.js` (líneas 3-8):
 
-| Timestamp | Nombre | Tipo | Sesión | Device ID | Diff Minutos | Status |
-|-----------|--------|------|--------|-----------|--------------|--------|
-
-5. Comparte el Sheet con permisos de "Viewer" a "Anyone with the link"
-6. Copia el ID del Sheet desde la URL:
-   ```
-   https://docs.google.com/spreadsheets/d/[SHEET_ID_AQUÍ]/edit
-   ```
-
-#### D. Configurar Credenciales en el Código
-
-**En `app.js` (líneas 10-13):**
-```javascript
+`javascript
 const CONFIG = {
-    GOOGLE_SHEETS_ID: 'TU_SHEET_ID_AQUÍ',
-    GOOGLE_API_KEY: 'TU_API_KEY_AQUÍ',
-    SHEET_NAME: 'Asistencias',
-    // ...
+    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
+    COACH_PINS: ['2501', '2502', '2503', '2504'],
+    CHECKIN_URL: window.location.origin + '/checkin.html',
+    TARGET_LAT: 19.0732,    // ← CAMBIAR A TU CAMPO
+    TARGET_LON: -97.0461,   // ← CAMBIAR A TU CAMPO
+    MAX_DISTANCE_KM: 0.3    // 300 metros tolerancia
 };
-```
-
-**En `checkin.html` (líneas 105-108):**
-```javascript
-const CONFIG = {
-    GOOGLE_SHEETS_ID: 'TU_SHEET_ID_AQUÍ',
-    GOOGLE_API_KEY: 'TU_API_KEY_AQUÍ',
-    SHEET_NAME: 'Asistencias',
-    // ...
-};
-```
-
-### 3️⃣ Desplegar la Aplicación
-
-#### Opción A: GitHub Pages (Recomendado)
-```bash
-# Asegúrate de que todo esté commiteado
+Cómo obtener coordenadas:
+Google Maps → Click derecho en el campo → "¿Qué hay aquí?"
+Copiar los números que aparecen (ej: 19.0732, -97.0461)
+Pegar en TARGET_LAT y TARGET_LON
+3️⃣ PINs de Coach
+4 coaches con acceso al panel (editable en app.js):
+COACH_PINS: ['2501', '2502', '2503', '2504']
+Cambiar PINs:
+Editar array en app.js
+Commit y push a GitHub
+Vercel redespliega automáticamente
+4️⃣ Horarios de Sesiones
+Configurable desde Coach Panel (no requiere tocar código):
+Días predeterminados: Martes (2) y Jueves (4)
+Hora: 16:45 hrs
+Tolerancia: 15 minutos
+Ubicación: Cancha Principal
+Para cambiar horarios:
+Ir a Coach Panel
+Click en "📅 Editar Horarios"
+Seguir prompts para cambiar días/hora/tolerancia/ubicación
+🚀 Despliegue en Vercel
+Deploy Automático (Recomendado)
+Push al repositorio GitHub:
 git add .
-git commit -m "Configure Google Sheets API"
+git commit -m "Actualizar configuración"
 git push origin main
-
-# Ir a Settings → Pages → Source: main branch
-# Tu app estará en: https://tu-usuario.github.io/River-s-app/
-```
-
-#### Opción B: Netlify
-```bash
-npm install -g netlify-cli
-netlify deploy --prod
-```
-
-#### Opción C: Vercel
-```bash
+Vercel detecta cambios y despliega automáticamente:
+URL de producción: https://riversapp.vercel.app
+Preview URLs para cada commit
+Deploy Manual (CLI)
+# Instalar Vercel CLI
 npm install -g vercel
+
+# Deploy a producción
 vercel --prod
-```
 
-#### Opción D: Servidor Local (Desarrollo)
-```bash
-# Python 3
-python -m http.server 8000
-
-# Node.js
-npx http-server -p 8000
-
-# Abre: http://localhost:8000
-```
-
----
-
-## 📱 Instalación en Dispositivos
-
-### Android (Chrome/Edge)
-1. Abre la app en el navegador
-2. Toca el menú ⋮ → **Instalar aplicación**
-3. O usa el banner "Agregar a pantalla de inicio"
-4. **IMPORTANTE**: Dar permisos de cámara para QR scanner
-
-### iOS (Safari)
-1. Abre la app en Safari
-2. Toca el botón **Compartir** 
-3. Selecciona **"Agregar a pantalla de inicio"**
-4. **IMPORTANTE**: La app solo funciona en Safari en iOS
-
-### HyperOS (Xiaomi)
-1. Abre en Chrome/Mi Browser
-2. Menú → **Agregar a escritorio**
-3. Dar permisos de cámara
-
----
-
-## 🎨 Personalización
-
-### Colores y Temas
-Edita las variables CSS en `index.html` y `checkin.html`:
-```css
-:root {
-  --primary-cyan: #00D9FF;
-  --primary-pink: #FF006E;
-  --bg-dark: #0A0A0A;
-  --bg-card: #1a1a1a;
+Configuración de Vercel
+El archivo vercel.json incluye:
+Headers de seguridad (X-Frame-Options, CSP, etc.)
+Service Worker headers optimizados
+Rewrites para SPA routing
+🔒 Seguridad Implementada
+✅ Mitigaciones de Vulnerabilidades
+Vulnerabilidad
+Solución Implementada
+URL Injection (CWE-20)
+Validación estricta con new URL() + whitelist de dominios permitidos
+Script Tampering
+SRI (Subresource Integrity) en todos los CDN externos
+API Abuse
+Rate limiting en Service Worker + whitelist de hosts API
+XSS
+Headers X-Content-Type-Options: nosniff, X-Frame-Options: DENY
+Clickjacking
+Headers X-Frame-Options: DENY en todas las respuestas
+Ejemplo de Validación Segura (app.js)
+function handleScan(qrData) {
+    try {
+        const url = new URL(qrData);
+        const allowed = ['riversapp.vercel.app', 'localhost'];
+        
+        if (allowed.includes(url.hostname) && url.pathname.includes('/checkin.html')) {
+            window.location.href = qrData;
+            return;
+        }
+        
+        showScanResult('❌ QR no autorizado', 'error');
+    } catch (error) {
+        showScanResult('❌ QR inválido', 'error');
+    }
 }
-```
+Scripts CDN con SRI
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography" 
+        crossorigin="anonymous"></script>
 
-### Logo y Iconos
-Reemplaza los archivos de iconos con tus diseños:
-- `logo.png` (principal)
-- `android-192x192-icon.png`
-- `android-512x512-icon.png`
-- `apple-180x180-icon.png`
-- `favicon-32x32.png`
-- `favicon-16x16.png`
+<!-- HTML5 QR Code Scanner -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" 
+        integrity="sha384-/t+9nqJOCNZzHfPnJCQQRGfmOaLoJ7RwA4vfvLfDRAZJFZqFr2Y3B3g1DIZvvbPJ" 
+        crossorigin="anonymous"></script>
 
-### Reglas de Asistencia
-Edita en `app.js` y `checkin.html`:
-```javascript
+<!-- QR Code Generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" 
+        integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" 
+        crossorigin="anonymous" 
+        referrerpolicy="no-referrer"></script>
+        📊 Uso del Sistema
+Para Jugadoras
+1️⃣ Instalar PWA
+Android (Chrome/Edge):
+Abrir https://riversapp.vercel.app
+Menú (⋮) → "Agregar a pantalla de inicio"
+Confirmar instalación
+iOS (Safari):
+Abrir https://riversapp.vercel.app
+Botón compartir → "Agregar a pantalla de inicio"
+Confirmar
+2️⃣ Marcar Asistencia
+Primera vez:
+Ir al campo físico
+Tab "Escanear" → Escanear QR del coach
+Click "Soy nueva - Agregar mi nombre"
+Ingresar nombre completo
+Se guarda automáticamente y marca asistencia
+Siguientes veces:
+Escanear QR del coach
+Seleccionar nombre de la lista
+Confirmar asistencia
+3️⃣ Ver Estadísticas
+Tab "Inicio" → Card "Mis Estadísticas"
+Muestra: Asistencias, Retardos, Faltas
+Se actualiza en tiempo real desde Google Sheets
+Para Coaches
+1️⃣ Acceder al Panel
+Tab "Coach Panel"
+Ingresar uno de los 4 PINs válidos
+Panel se desbloquea
+2️⃣ Funciones Disponibles
+Botón
+Función
+🔒 Generar QR
+Código para que jugadoras escaneen en el campo
+📅 Editar Horarios
+Cambiar días/hora/tolerancia sin tocar código
+📥 Exportar CSV
+Descargar todas las asistencias históricas
+📢 Publicar Avisos
+Comunicados en muro principal de jugadoras
+🔄 Reset Temporada
+Limpiar datos locales (NO borra Google Sheet)
+3️⃣ Generar QR para el Campo
+Coach Panel → "🔒 Generar QR"
+Imprimir el código QR generado
+Plastificar y pegar en entrada del campo
+Jugadoras lo escanean para marcar asistencia
+Recomendación: Imprimir en carta completa para mayor visibilidad.
+🧪 Pruebas y Verificación
+✅ Test de Conexión Google Sheets
+Método 1: Consola del Navegador (F12)
+// Pegar en consola de Chrome DevTools
+fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
+  .then(r => r.json())
+  .then(data => {
+    console.log('✅ Conexión exitosa!');
+    console.log('📊 Total registros:', data.length);
+    console.table(data);
+  })
+  .catch(err => console.error('❌ Error:', err));
+  Resultado esperado:
+Mensaje "✅ Conexión exitosa!"
+Tabla con todos los registros de asistencia
+Método 2: Botón de Test en Coach Panel
+Funcionalidad incluida en app.js (se puede agregar botón "🔌 Test Conexión").
+Método 3: Prueba Manual Completa
+Ir a /checkin.html directamente
+Agregar nombre de prueba
+Marcar asistencia
+Verificar que aparezca nueva fila en Google Sheet
+// Pegar en consola del navegador
+navigator.geolocation.getCurrentPosition(
+    pos => {
+        console.log('✅ GPS Funcional');
+        console.log('📍 Latitud:', pos.coords.latitude);
+        console.log('📍 Longitud:', pos.coords.longitude);
+        console.log('🎯 Precisión:', pos.coords.accuracy, 'metros');
+    },
+    err => console.error('❌ Error GPS:', err.message)
+);
+Resultado esperado:
+Coordenadas actuales del dispositivo
+Precisión en metros
+// Verificar que el SW esté activo
+navigator.serviceWorker.getRegistration()
+    .then(reg => {
+        if (reg) {
+            console.log('✅ Service Worker activo');
+            console.log('📦 Scope:', reg.scope);
+            console.log('🔄 Estado:', reg.active.state);
+        } else {
+            console.log('❌ Service Worker no registrado');
+        }
+    });
+    🐛 Troubleshooting
+❌ "QR no válido" al escanear
+Causa: URL del QR no coincide con dominio permitido
+Solución:
+Verificar que el QR apunte a https://riversapp.vercel.app/checkin.html
+Regenerar QR desde Coach Panel
+Verificar whitelist en app.js:
+const allowedHosts = [
+    window.location.hostname,
+    'riversapp.vercel.app',
+    'localhost'
+];
+❌ "Fuera de rango" en check-in
+Causa: Coordenadas GPS incorrectas en CONFIG
+Solución:
+Obtener coordenadas reales del campo (Google Maps)
+Actualizar en app.js:
+TARGET_LAT: 19.0732,  // ← TU LATITUD
+TARGET_LON: -97.0461  // ← TU LONGITUD
+Commit y push
+Esperar redeploy de Vercel
+❌ Service Worker no actualiza
+Solución:
+Chrome:
+F12 → Application → Service Workers
+Click "Unregister"
+Ctrl+Shift+R (recarga forzada)
+Safari (iOS):
+Desinstalar PWA
+Limpiar caché de Safari
+Reinstalar PWA
+❌ Datos no llegan a Google Sheets
+Verificaciones:
+URL correcta en CONFIG.SHEETBEST_URL
 const CONFIG = {
-    CHECKIN_START: '16:00',  // Hora inicio check-in
-    CHECKIN_END: '17:30',    // Hora cierre check-in
-    SESSION_TIME: '16:45',   // Hora de sesión
-    TOLERANCE: 15,           // Minutos de tolerancia
+    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
+    // ...
 };
-```
-
-### PINs de Coach
-Edita en `app.js`:
-```javascript
-COACH_PINS: ['2501', '2502', '2503', '2504'],
-```
-
----
-
-## 🔧 Funcionalidades Principales
-
-### Sistema de Check-In
-1. **Jugadora**: Escanea QR generado por el coach
-2. **Sistema**: Calcula diferencia de tiempo vs hora de sesión
-3. **Resultado**:
-   - ≤ 15 min = ✅ **Asistencia** (palomita verde)
-   - \> 15 min = ⚠️ **Retardo** (palomita amarilla)
-   - Sin registro = ❌ **Falta** (palomita roja)
-4. **Guardado**: 
-   - Online → Google Sheets directo
-   - Offline → IndexedDB local → Sync automático al volver online
-
-### Panel de Coach
-- **QR Generator**: Genera códigos QR únicos por sesión
-- **Tabla de Asistencias**: Vista en tiempo real con sistema de palomitas
-- **Estadísticas**: Total jugadoras, asistencia promedio, retardos del día
-- **Exportar CSV**: Descarga de datos para análisis
-- **Configuración**: Editar horarios, tolerancia, ubicación
-
-### Modo Offline
-- ✅ Check-in funciona sin conexión
-- 💾 Datos guardados en IndexedDB
-- 🔄 Sincronización automática al recuperar conexión
-- 📱 Indicador visual de estado de red
-- ⏳ Cola de sincronización para requests fallidos
-
----
-
-## 🐛 Troubleshooting
-
-### ❌ "Service Worker no se registra"
-**Solución:**
-- Verifica que uses **HTTPS** (o localhost)
-- Revisa la consola del navegador (F12)
-- Asegúrate que `sw.js` esté en la raíz del proyecto
-- Verifica que no haya errores de sintaxis en `sw.js`
-
-### ❌ "QR Scanner no funciona"
-**Solución:**
-- Otorga permisos de cámara al navegador
-- Solo funciona en **HTTPS** (no HTTP)
-- En Android: Settings → Apps → Chrome → Permissions → Camera
-- En iOS: Settings → Safari → Camera → Allow
-
-### ❌ "No se sincroniza con Google Sheets"
-**Solución:**
-1. Verifica que el `GOOGLE_SHEETS_ID` sea correcto
-2. Verifica que el `GOOGLE_API_KEY` sea válido
-3. Verifica que el Sheet esté compartido públicamente
-4. Revisa en DevTools → Network si hay errores 403/401
-5. Verifica que Google Sheets API esté habilitada en Google Cloud Console
-
-### ❌ "Error 403: Permission denied"
-**Solución:**
-- El Sheet debe estar compartido con "Anyone with the link" (Viewer)
-- Settings del Sheet → Share → Change to anyone with link
-
-### ❌ "Offline Queue no funciona"
-**Solución:**
-- IndexedDB requiere contexto seguro (HTTPS)
-- Verifica en DevTools → Application → IndexedDB
-- Revisa en Application → Service Workers que esté activo
-
-### ❌ "PWA no se instala"
-**Solución:**
-- Verifica que `manifest.json` sea válido
-- HTTPS es requerido
-- Todos los iconos deben existir
-- Usa Lighthouse en Chrome DevTools para diagnosticar
-
----
-
-## 📊 Estructura de Datos en Google Sheets
-
-### Hoja "Asistencias"
-
-| Timestamp | Nombre | Tipo | Sesión | Device ID | Diff Minutos | Status |
-|-----------|--------|------|--------|-----------|--------------|--------|
-| 2025-04-22T18:00:00.000Z | María López | asistencia | 2025-04-22 | DEV-1234 | 5 | confirmado |
-| 2025-04-22T18:12:00.000Z | Ana García | retardo | 2025-04-22 | DEV-5678 | 17 | confirmado |
-
-**Campos:**
-- `Timestamp`: Fecha y hora exacta del check-in (ISO 8601)
-- `Nombre`: Nombre completo de la jugadora
-- `Tipo`: `asistencia` | `retardo` | `falta`
-- `Sesión`: Fecha de la sesión (YYYY-MM-DD)
-- `Device ID`: Identificador único del dispositivo
-- `Diff Minutos`: Diferencia en minutos vs hora de sesión
-- `Status`: `confirmado` | `pendiente`
-
----
-
-## 🔐 Seguridad
-
-### Content Security Policy (CSP)
-Ambos archivos HTML incluyen CSP headers:
-```html
-<meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self'; 
-               script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; 
-               connect-src 'self' https://sheets.googleapis.com;">
-```
-
-### Sanitización de Datos
-Todas las entradas de usuario son sanitizadas:
-```javascript
-const sanitizeHTML = (str) => {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-};
-```
-
-### Validación de Nombres
-```javascript
-const validateName = (name) => {
-    const cleaned = name.trim();
-    return cleaned.length >= 5 && 
-           cleaned.length <= 50 && 
-           /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(cleaned);
-};
-```
-
----
-
-## 📈 Roadmap
-
-- [x] Sistema básico de asistencia
-- [x] QR dinámico por sesión
-- [x] Offline-first architecture
-- [x] Google Sheets Integration
-- [x] Sistema de palomitas (Verde/Amarilla/Roja)
-- [x] IndexedDB Storage
-- [x] Background Sync
-- [ ] Push Notifications
-- [ ] Estadísticas por jugador
-- [ ] Gráficas de progreso
-- [ ] Sistema de rankings
-- [ ] Integración con Telegram Bot
-- [ ] Modo multi-equipos
-
----
-
-## 👨‍💻 Autor
-
-**Jesús Bonilla** - Head Coach RIVERS Tochito Club  
-GitHub: [@drakenathan1132-ux](https://github.com/drakenathan1132-ux)
-
----
-
-## 📄 Licencia
-
-MIT License - Siéntete libre de usar y modificar este código.
-
----
-
-## 🤝 Contribuciones
-
-¡Las contribuciones son bienvenidas!
-
-1. Fork el proyecto
-2. Crea tu branch (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit cambios (`git commit -m 'Add: nueva funcionalidad'`)
-4. Push al branch (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
----
-
-## ⭐ Agradecimientos
-
-- HTML5-QRCode library
-- QRCode.js
-- Tailwind CSS
-- Google Sheets API
-- Anthropic Claude (asistencia en desarrollo)
-
----
-
-## 📞 Soporte
-
-¿Encontraste un bug o tienes una sugerencia?
-
-1. **Issues**: Abre un issue en GitHub
-2. **Email**: contacto@riverstochito.com
-3. **Documentación**: Revisa este README
-
----
-
-**¿Encontraste útil este proyecto? Dale una ⭐ en GitHub!**
-
----
-
-## 🔄 Changelog
-
-### v3.0.0 (2025-04-28)
-- ✅ Integración completa con Google Sheets API
-- ✅ Sistema de palomitas (Verde/Amarilla/Roja)
-- ✅ IndexedDB para almacenamiento offline
-- ✅ Background Sync automático
-- ✅ Mejoras de seguridad (CSP, sanitización)
-- ✅ Service Worker optimizado
-- ✅ Página offline mejorada
-- ✅ Documentación completa
-
-### v2.1.0 (2025-01-15)
-- ✅ QR dinámico
-- ✅ Feed de avisos
-- ✅ Exportación CSV
-
-### v2.0.0 (2025-01-01)
-- ✅ PWA básica
-- ✅ Sistema de asistencia
-- ✅ Coach panel
+Permisos de la Sheet:
+Compartir → "Cualquiera con el enlace"
+O agregar email de SheetBest
+Test de conexión (consola):
+fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
+  .then(r => r.json())
+  .then(d => console.log('✅ OK:', d.length, 'registros'))
+  .catch(e => console.error('❌ Fallo:', e));
+❌ PWA no se instala
+Solución:
+Verificar manifest.json:
+{
+  "name": "RIVERS Tochito Club",
+  "short_name": "RIVERS",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/android-192x192-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-512x512-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+Verificar HTTPS:
+Vercel provee HTTPS automático
+En localhost, usar http://localhost:8080 (permitido para pruebas)
+📝 Roadmap
+[ ] Notificaciones Push cuando se publican avisos
+[ ] Modo oscuro/claro toggle
+[ ] Exportación PDF de estadísticas individuales
+[ ] Integración con WhatsApp para recordatorios automáticos
+[ ] Dashboard administrativo con gráficas de asistencia
+[ ] Sistema de multas automáticas por faltas
+[ ] Historial de asistencias por jugadora (vista detallada)
+[ ] Backup automático a Google Drive
+📄 Licencia
+Este proyecto es privado y de uso exclusivo para RIVERS Tochito Club.
+Todos los derechos reservados © 2025.
+👨‍💻 Autor y Contacto
+Jesús Bonilla
+Coach Principal y Desarrollador
+RIVERS Tochito Club
+Soporte técnico:
+GitHub Issues: River-s-app/issues
+Email del club: contacto@riverstochito.com
+🔗 Enlaces Útiles
+📱 App en Producción
+📊 Google Sheets (Asistencias)
+📁 Repositorio GitHub
+📘 Documentación Service Workers
+📗 PWA Best Practices
+📙 SheetBest API Docs
+📕 Geolocation API
+✅ Sistema operativo y verificado - Listo para la temporada 2025 🏈
