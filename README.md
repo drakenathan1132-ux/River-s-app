@@ -28,26 +28,25 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 
     ## 🚀 Características Principales
 
-      ### ✅ Sistema de Asistencias
-- **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
-- **QR Protegido**: Código generado por coaches, accesible solo con PIN
-- **Validación Horaria**: 16:45 hrs + 15 min de tolerancia (configurable)
-- **Device ID Único**: 1 registro por dispositivo por día (anti-fraude)
+    ### ✅ Sistema de Asistencias
+    - **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
+    - **QR Protegido**: Código generado por coaches, accesible solo con PIN
+    - **Validación Horaria**: 16:45 hrs + 15 min de tolerancia (configurable)
+    - **Device ID Único**: 1 registro por dispositivo por día (anti-fraude)
 
       ### 🔒 Reglas de Negocio
-- ✅ **Asistencia**: Llegar dentro de 15 min de tolerancia
-- ⚠️ **Retardo**: Llegar después de 15 min (3 retardos = 1 falta)
-- ❌ **Falta**: No asistir (3 faltas = baja del club)
+    - ✅ **Asistencia**: Llegar dentro de 15 min de tolerancia
+    - ⚠️ **Retardo**: Llegar después de 15 min (3 retardos = 1 falta)
+    - ❌ **Falta**: No asistir (3 faltas = baja del club)
 
       ### 📱 Funcionalidades Clave
-- **Offline-First**: Funciona sin internet, sincroniza automáticamente
-- **PWA Instalable**: Se instala como app nativa (iOS/Android)
-- **Panel de Coach**: Gestión con 4 PINs, exportación CSV, reset de temporada
-- **Avisos del Club**: Muro de noticias en vista principal
-- **Estadísticas**: Dashboard personal de asistencias/retardos/faltas
+    - **Offline-First**: Funciona sin internet, sincroniza automáticamente
+    - **PWA Instalable**: Se instala como app nativa (iOS/Android)
+    - **Panel de Coach**: Gestión con 4 PINs, exportación CSV, reset de temporada
+    - **Avisos del Club**: Muro de noticias en vista principal
+    - **Estadísticas**: Dashboard personal de asistencias/retardos/faltas
 
-      ### 🎯 Stack Tecnológico
-
+ ### 🎯 Stack Tecnológico
 | Capa | Tecnología |
 |------|-----------|
 | **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
@@ -59,8 +58,8 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 
 ---
 
-    ## 📦 Estructura del Proyecto
-    River-s-app/
+   ## 📦 Estructura del Proyecto
+   River-s-app/
 
 ├── index.html              # App principal (Inicio, Scan, Coach Panel)
 
@@ -90,15 +89,13 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 └── apple-180x180-icon.png
 
 ---
+## 🔧 Configuración Inicial
 
-    ## 🔧 Configuración Inicial
-
-    ### 1️⃣ Google Sheets + SheetBest
+   ### 1️⃣ Google Sheets + SheetBest
     **URL de API:**
-    https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55
+    https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55  
 
-    **Estructura de columnas necesarias:**
-
+**Estructura de columnas necesarias:**
 | Columna | Tipo | Descripción |
 |---------|------|-------------|
 | `nombre` | string | Nombre completo de la jugadora |
@@ -111,11 +108,9 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 | `longitud` | number | Coordenada GPS (opcional) |
 
 ### 2️⃣ Coordenadas del Campo
-
 Editar en `app.js` (líneas 3-8):
 
-``javascript
-
+    ``javascript
     const CONFIG = {
     SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
     COACH_PINS: ['2501', '2502', '2503', '2504'],
@@ -125,12 +120,12 @@ Editar en `app.js` (líneas 3-8):
     MAX_DISTANCE_KM: 0.3    // 300 metros tolerancia
     };
 
-    Cómo obtener coordenadas:
+Cómo obtener coordenadas:
 Google Maps → Click derecho en el campo → "¿Qué hay aquí?"
 Copiar los números que aparecen (ej: 19.0732, -97.0461)
 Pegar en TARGET_LAT y TARGET_LON
 
-    3️⃣ PINs de Coach
+3️⃣ PINs de Coach
 4 coaches con acceso al panel (editable en app.js):
 COACH_PINS: ['2501', '2502', '2503', '2504']
 Cambiar PINs:
@@ -138,7 +133,7 @@ Editar array en app.js
 Commit y push a GitHub
 Vercel redespliega automáticamente
 
-    4️⃣ Horarios de Sesiones
+4️⃣ Horarios de Sesiones
 Configurable desde Coach Panel (no requiere tocar código):
 Días predeterminados: Martes (2) y Jueves (4)
 Hora: 16:45 hrs
@@ -149,51 +144,51 @@ Ir a Coach Panel
 Click en "📅 Editar Horarios"
 Seguir prompts para cambiar días/hora/tolerancia/ubicación
 
-    🚀 Despliegue en Vercel
+   🚀 Despliegue en Vercel
 Deploy Automático (Recomendado)
 Push al repositorio GitHub:
 git add .
 git commit -m "Actualizar configuración"
 git push origin main
 
-    Vercel detecta cambios y despliega automáticamente:
-URL de producción: https://riversapp.vercel.app
+   Vercel detecta cambios y despliega automáticamente:
+      
+    URL de producción: https://riversapp.vercel.app
 Preview URLs para cada commit
 Deploy Manual (CLI)
 
-    # Instalar Vercel CLI
+   # Instalar Vercel CLI
 npm install -g vercel
 
-    # Deploy a producción
+   # Deploy a producción
 vercel --prod
 
-    Configuración de Vercel
+   Configuración de Vercel
 El archivo vercel.json incluye:
 Headers de seguridad (X-Frame-Options, CSP, etc.)
 Service Worker headers optimizados
 Rewrites para SPA routing
 🔒 Seguridad Implementada
 
-    ✅ Mitigaciones de Vulnerabilidades
+   ✅ Mitigaciones de Vulnerabilidades
 Vulnerabilidad
 Solución Implementada
 URL Injection (CWE-20)
 Validación estricta con new URL() + whitelist de dominios permitidos
 
-    Script Tampering
+   Script Tampering
 SRI (Subresource Integrity) en todos los CDN externos
 API Abuse
 Rate limiting en Service Worker + whitelist de hosts API
 XSS
 Headers X-Content-Type-Options: nosniff, X-Frame-Options: DENY
 
-    Clickjacking
+   Clickjacking
 Headers X-Frame-Options: DENY en todas las respuestas
 Ejemplo de Validación Segura (app.js)
 function handleScan(qrData)
 
-{try
-
+    {try
     { const url = new URL(qrData);
         const allowed = ['riversapp.vercel.app', 'localhost'];
         
@@ -201,38 +196,39 @@ function handleScan(qrData)
             window.location.href = qrData;
             return;
         }
-        
         showScanResult('❌ QR no autorizado', 'error');
     } catch (error) {
         showScanResult('❌ QR inválido', 'error');
     }}
     
 Scripts CDN con SRI
-    <!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,typography" 
+<!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography" 
         crossorigin="anonymous"></script>
-
 <!-- HTML5 QR Code Scanner -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" 
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" 
         integrity="sha384-/t+9nqJOCNZzHfPnJCQQRGfmOaLoJ7RwA4vfvLfDRAZJFZqFr2Y3B3g1DIZvvbPJ" 
         crossorigin="anonymous"></script>
-
 <!-- QR Code Generator -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" 
         integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" 
         crossorigin="anonymous" 
         referrerpolicy="no-referrer"></script>
         
-        📊 Uso del Sistema
-           Para Jugadoras:
-       
-    1️⃣ Instalar PWA
-Android (Chrome/Edge):
-Abrir https://riversapp.vercel.app
+    📊 Uso del Sistema Para Jugadoras
+1️⃣ Instalar PWA
+Android (Chrome/Edge):      
+    Abrir 
+     
+      https://riversapp.vercel.app
+      
 Menú (⋮) → "Agregar a pantalla de inicio"
 Confirmar instalación
 iOS (Safari):
-Abrir https://riversapp.vercel.app
+Abrir https:
+     
+    //riversapp.vercel.app
+    
 Botón compartir → "Agregar a pantalla de inicio"
 Confirmar
 
@@ -263,32 +259,31 @@ Panel se desbloquea
 Botón
 Función
 
-    🔒 Generar QR
+   🔒 Generar QR
 Código para que jugadoras escaneen en el campo
 
-    📅 Editar Horarios
+   📅 Editar Horarios
 Cambiar días/hora/tolerancia sin tocar código
 
-    📥 Exportar CSV
+   📥 Exportar CSV
 Descargar todas las asistencias históricas
 
-    📢 Publicar Avisos
+   📢 Publicar Avisos
 Comunicados en muro principal de jugadoras
 
-    🔄 Reset Temporada
+   🔄 Reset Temporada
 Limpiar datos locales (NO borra Google Sheet)
 
-    3️⃣ Generar QR para el Campo
+   3️⃣ Generar QR para el Campo
 Coach Panel → "🔒 Generar QR"
 Imprimir el código QR generado
 Plastificar y pegar en entrada del campo
 Jugadoras lo escanean para marcar asistencia
 Recomendación: Imprimir en carta completa para mayor visibilidad.
 
-    🧪 Pruebas y Verificación
+   🧪 Pruebas y Verificación
 ✅ Test de Conexión Google Sheets
 Método 1: Consola del Navegador (F12)
-
 // Pegar en consola de Chrome DevTools
 
     fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
@@ -308,14 +303,14 @@ Método 2: Botón de Test en Coach Panel
 Funcionalidad incluida en app.js (se puede agregar botón "🔌 Test Conexión").
 
 Método 3: Prueba Manual Completa
-Ir a /checkin.html directamente
+Ir a 
+    
+    /checkin.html directamente
+    
+   Agregar nombre de prueba
+   Marcar asistencia
 
-Agregar nombre de prueba
-
-Marcar asistencia
-
-Verificar que aparezca nueva fila en Google Sheet
-         
+Verificar que aparezca nueva fila en Google Sheet         
 // Pegar en consola del navegador
 
     navigator.geolocation.getCurrentPosition(
@@ -330,8 +325,7 @@ Verificar que aparezca nueva fila en Google Sheet
     
 Resultado esperado:
 Coordenadas actuales del dispositivo
-Precisión en metros
-                
+Precisión en metros          
    // Verificar que el SW esté activo:
 
     navigator.serviceWorker.getRegistration()
@@ -350,14 +344,19 @@ Precisión en metros
 Causa: URL del QR no coincide con dominio permitido
 
     Solución:
-Verificar que el QR apunte a https://riversapp.vercel.app/checkin.html
+Verificar que el QR apunte a 
+      
+    https://riversapp.vercel.app/checkin.html
+
 Regenerar QR desde Coach Panel
 Verificar whitelist en app.js:
 const allowedHosts 
+    
          [
-    window.location.hostname,
-    'riversapp.vercel.app',
-    'localhost`];
+         window.location.hostname,
+        'riversapp.vercel.app',
+        'localhost`
+        ];
 
 ❌ "Fuera de rango" en check-in
 Causa: Coordenadas GPS incorrectas en CONFIG
@@ -392,7 +391,7 @@ const CONFIG =
     // ...
     };
 
-    Permisos de la Sheet:
+   Permisos de la Sheet:
 Compartir → "Cualquiera con el enlace"
 O agregar email de SheetBest
 Test de conexión (consola):
@@ -423,13 +422,15 @@ Test de conexión (consola):
       "type": "image/png"
     }
     ]
-    }
-
-    Verificar HTTPS:
+    }  
+  
+   Verificar HTTPS:
 Vercel provee HTTPS automático
-En localhost, usar http://localhost:8080 (permitido para pruebas)
+En localhost, usar 
+    
+    http://localhost:8080 (permitido para pruebas)
 
-    📝 Roadmap
+   📝 Roadmap
 [ ] Notificaciones Push cuando se publican avisos
 
 [ ] Modo oscuro/claro toggle
@@ -446,21 +447,24 @@ En localhost, usar http://localhost:8080 (permitido para pruebas)
 
 [ ] Backup automático a Google Driver 
             
-    📄 Licencia
+  📄 Licencia
     Este proyecto es privado y de uso exclusivo para RIVERS Tochito Club.
-    Todos los derechos reservados © 2025.🇲🇽
+      Todos los derechos reservados © 2026.🇲🇽
 
-    👨‍💻 Autor y Contacto:
-    🇲🇽Jesús Bonilla Desarrollador y Auxiliar Tecnico.
+  👨‍💻 Autor y Contacto:
+   🇲🇽Jesús Bonilla Desarrollador y Auxiliar Tecnico.
     🇲🇽Tadeo Solis Coach Principal  
 
                              RIVERS Tochito Club®️
 
 Soporte técnico:
+GitHub Issues:
+     
+    River-s-app/issues
 
-GitHub Issues: River-s-app/issues
+Email del club:
 
-Email del club: contacto@riverstochito.com
+    drakenathan1132@gmail.com
 
 🔗 Enlaces Útiles:
 
