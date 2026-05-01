@@ -21,7 +21,7 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 
  ![Security](https://img.shields.io/badge/security-SRI%20Enabled-green)
 
-    blllll      
+ blllll      
     **🔗 Producción:** [https://riversapp.vercel.app](https://riversapp.vercel.app)  
     **📊 Google Sheets:** [Ver hoja de cálculo](https://docs.google.com/spreadsheets/d/1c152e4a-32f0-4216-aafa-086c7c972c55)
 
