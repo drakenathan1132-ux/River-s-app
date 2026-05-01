@@ -137,6 +137,11 @@
     </main>
     <script src="app.js"></script>
     <script>
+        // Vercel Web Analytics
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script>
         // Registro del Service Worker para modo Offline
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -158,4 +163,3 @@
     </script>
 </body>
 </html>
-
