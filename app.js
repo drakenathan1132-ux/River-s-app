@@ -471,13 +471,3 @@ function updateScheduleDisplay() {
     document.getElementById('sessionTime').textContent = config.hora + ' hrs';
     document.getElementById('sessionLocation').textContent = config.location;
 }
-
-// ========================================
-// UTILITIES
-// ========================================
-
-function getTodaySession() {
-    return new Date().toISOString().split('T')[0];
-}
-
-console.log('✅ App inicializada - RIVERS Tochito Club');
