@@ -102,7 +102,7 @@ https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55
 
 Editar en `app.js` (líneas 3-8):
 
-`javascript
+``javascript
 const CONFIG = {
     SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
     COACH_PINS: ['2501', '2502', '2503', '2504'],
@@ -111,10 +111,12 @@ const CONFIG = {
     TARGET_LON: -97.0461,   // ← CAMBIAR A TU CAMPO
     MAX_DISTANCE_KM: 0.3    // 300 metros tolerancia
 };
+
 Cómo obtener coordenadas:
 Google Maps → Click derecho en el campo → "¿Qué hay aquí?"
 Copiar los números que aparecen (ej: 19.0732, -97.0461)
 Pegar en TARGET_LAT y TARGET_LON
+
 3️⃣ PINs de Coach
 4 coaches con acceso al panel (editable en app.js):
 COACH_PINS: ['2501', '2502', '2503', '2504']
@@ -122,6 +124,7 @@ Cambiar PINs:
 Editar array en app.js
 Commit y push a GitHub
 Vercel redespliega automáticamente
+
 4️⃣ Horarios de Sesiones
 Configurable desde Coach Panel (no requiere tocar código):
 Días predeterminados: Martes (2) y Jueves (4)
@@ -132,16 +135,19 @@ Para cambiar horarios:
 Ir a Coach Panel
 Click en "📅 Editar Horarios"
 Seguir prompts para cambiar días/hora/tolerancia/ubicación
+
 🚀 Despliegue en Vercel
 Deploy Automático (Recomendado)
 Push al repositorio GitHub:
 git add .
 git commit -m "Actualizar configuración"
 git push origin main
+
 Vercel detecta cambios y despliega automáticamente:
 URL de producción: https://riversapp.vercel.app
 Preview URLs para cada commit
 Deploy Manual (CLI)
+
 # Instalar Vercel CLI
 npm install -g vercel
 
@@ -154,23 +160,28 @@ Headers de seguridad (X-Frame-Options, CSP, etc.)
 Service Worker headers optimizados
 Rewrites para SPA routing
 🔒 Seguridad Implementada
+
 ✅ Mitigaciones de Vulnerabilidades
 Vulnerabilidad
 Solución Implementada
 URL Injection (CWE-20)
 Validación estricta con new URL() + whitelist de dominios permitidos
+
 Script Tampering
 SRI (Subresource Integrity) en todos los CDN externos
 API Abuse
 Rate limiting en Service Worker + whitelist de hosts API
 XSS
 Headers X-Content-Type-Options: nosniff, X-Frame-Options: DENY
+
 Clickjacking
 Headers X-Frame-Options: DENY en todas las respuestas
 Ejemplo de Validación Segura (app.js)
-function handleScan(qrData) {
-    try {
-        const url = new URL(qrData);
+function handleScan(qrData)
+
+{try
+
+    { const url = new URL(qrData);
         const allowed = ['riversapp.vercel.app', 'localhost'];
         
         if (allowed.includes(url.hostname) && url.pathname.includes('/checkin.html')) {
@@ -181,8 +192,8 @@ function handleScan(qrData) {
         showScanResult('❌ QR no autorizado', 'error');
     } catch (error) {
         showScanResult('❌ QR inválido', 'error');
-    }
-}
+    }}
+    
 Scripts CDN con SRI
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,typography" 
@@ -198,7 +209,9 @@ Scripts CDN con SRI
         integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" 
         crossorigin="anonymous" 
         referrerpolicy="no-referrer"></script>
+        
         📊 Uso del Sistema
+
 Para Jugadoras
 1️⃣ Instalar PWA
 Android (Chrome/Edge):
@@ -209,6 +222,7 @@ iOS (Safari):
 Abrir https://riversapp.vercel.app
 Botón compartir → "Agregar a pantalla de inicio"
 Confirmar
+
 2️⃣ Marcar Asistencia
 Primera vez:
 Ir al campo físico
@@ -220,34 +234,44 @@ Siguientes veces:
 Escanear QR del coach
 Seleccionar nombre de la lista
 Confirmar asistencia
+
 3️⃣ Ver Estadísticas
 Tab "Inicio" → Card "Mis Estadísticas"
 Muestra: Asistencias, Retardos, Faltas
 Se actualiza en tiempo real desde Google Sheets
 Para Coaches
+
 1️⃣ Acceder al Panel
 Tab "Coach Panel"
 Ingresar uno de los 4 PINs válidos
 Panel se desbloquea
+
 2️⃣ Funciones Disponibles
 Botón
 Función
+
 🔒 Generar QR
 Código para que jugadoras escaneen en el campo
+
 📅 Editar Horarios
 Cambiar días/hora/tolerancia sin tocar código
+
 📥 Exportar CSV
 Descargar todas las asistencias históricas
+
 📢 Publicar Avisos
 Comunicados en muro principal de jugadoras
+
 🔄 Reset Temporada
 Limpiar datos locales (NO borra Google Sheet)
+
 3️⃣ Generar QR para el Campo
 Coach Panel → "🔒 Generar QR"
 Imprimir el código QR generado
 Plastificar y pegar en entrada del campo
 Jugadoras lo escanean para marcar asistencia
 Recomendación: Imprimir en carta completa para mayor visibilidad.
+
 🧪 Pruebas y Verificación
 ✅ Test de Conexión Google Sheets
 Método 1: Consola del Navegador (F12)
@@ -259,7 +283,9 @@ fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
     console.log('📊 Total registros:', data.length);
     console.table(data);
   })
+
   .catch(err => console.error('❌ Error:', err));
+  
   Resultado esperado:
 Mensaje "✅ Conexión exitosa!"
 Tabla con todos los registros de asistencia
@@ -272,14 +298,15 @@ Marcar asistencia
 Verificar que aparezca nueva fila en Google Sheet
 // Pegar en consola del navegador
 navigator.geolocation.getCurrentPosition(
+
     pos => {
         console.log('✅ GPS Funcional');
         console.log('📍 Latitud:', pos.coords.latitude);
         console.log('📍 Longitud:', pos.coords.longitude);
         console.log('🎯 Precisión:', pos.coords.accuracy, 'metros');
     },
-    err => console.error('❌ Error GPS:', err.message)
-);
+    err => console.error('❌ Error GPS:', err.message));
+    
 Resultado esperado:
 Coordenadas actuales del dispositivo
 Precisión en metros
@@ -294,6 +321,7 @@ navigator.serviceWorker.getRegistration()
             console.log('❌ Service Worker no registrado');
         }
     });
+    
     🐛 Troubleshooting
 ❌ "QR no válido" al escanear
 Causa: URL del QR no coincide con dominio permitido
@@ -306,6 +334,7 @@ const allowedHosts = [
     'riversapp.vercel.app',
     'localhost'
 ];
+
 ❌ "Fuera de rango" en check-in
 Causa: Coordenadas GPS incorrectas en CONFIG
 Solución:
@@ -315,6 +344,7 @@ TARGET_LAT: 19.0732,  // ← TU LATITUD
 TARGET_LON: -97.0461  // ← TU LONGITUD
 Commit y push
 Esperar redeploy de Vercel
+
 ❌ Service Worker no actualiza
 Solución:
 Chrome:
@@ -325,6 +355,7 @@ Safari (iOS):
 Desinstalar PWA
 Limpiar caché de Safari
 Reinstalar PWA
+
 ❌ Datos no llegan a Google Sheets
 Verificaciones:
 URL correcta en CONFIG.SHEETBEST_URL
@@ -340,9 +371,12 @@ fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
   .then(r => r.json())
   .then(d => console.log('✅ OK:', d.length, 'registros'))
   .catch(e => console.error('❌ Fallo:', e));
+
 ❌ PWA no se instala
 Solución:
+
 Verificar manifest.json:
+
 {
   "name": "RIVERS Tochito Club",
   "short_name": "RIVERS",
@@ -360,10 +394,12 @@ Verificar manifest.json:
       "type": "image/png"
     }
   ]
-}
+  }
+
 Verificar HTTPS:
 Vercel provee HTTPS automático
 En localhost, usar http://localhost:8080 (permitido para pruebas)
+
 📝 Roadmap
 [ ] Notificaciones Push cuando se publican avisos
 [ ] Modo oscuro/claro toggle
@@ -373,6 +409,7 @@ En localhost, usar http://localhost:8080 (permitido para pruebas)
 [ ] Sistema de multas automáticas por faltas
 [ ] Historial de asistencias por jugadora (vista detallada)
 [ ] Backup automático a Google Drive
+
 📄 Licencia
 Este proyecto es privado y de uso exclusivo para RIVERS Tochito Club.
 Todos los derechos reservados © 2025.
@@ -383,6 +420,7 @@ RIVERS Tochito Club
 Soporte técnico:
 GitHub Issues: River-s-app/issues
 Email del club: contacto@riverstochito.com
+
 🔗 Enlaces Útiles
 📱 App en Producción
 📊 Google Sheets (Asistencias)
