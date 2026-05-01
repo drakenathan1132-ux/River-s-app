@@ -1,4 +1,4 @@
-    # 🏈 RIVERS Tochito Club - Sistema de Gestión PWA
+ # 🏈 RIVERS Tochito Club - Sistema de Gestión PWA
 
 Sistema integral de gestión de asistencias para club de flag football femenil. PWA offline-first con geolocalización GPS, QR dinámico y sincronización automática con Google Sheets.
 
@@ -19,9 +19,8 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 
 
 
- ![Security](https://img.shields.io/badge/security-SRI%20Enabled-green)
-
- blllll      
+    ![Security](https://img.shields.io/badge/security-SRI%20Enabled-green)
+    blllll      
     **🔗 Producción:** [https://riversapp.vercel.app](https://riversapp.vercel.app)  
     **📊 Google Sheets:** [Ver hoja de cálculo](https://docs.google.com/spreadsheets/d/1c152e4a-32f0-4216-aafa-086c7c972c55)
 
@@ -60,8 +59,8 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 
 ---
 
-## 📦 Estructura del Proyecto
-River-s-app/
+    ## 📦 Estructura del Proyecto
+    River-s-app/
 
 ├── index.html              # App principal (Inicio, Scan, Coach Panel)
 
