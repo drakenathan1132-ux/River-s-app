@@ -466,8 +466,3 @@ function updateScheduleDisplay() {
     nextSession.setDate(now.getDate() + daysUntil);
     
     const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    
-    document.getElementById('sessionDate').textContent = dayNames[nextSession.getDay()];
-    document.getElementById('sessionTime').textContent = config.hora + ' hrs';
-    document.getElementById('sessionLocation').textContent = config.location;
-}
