@@ -3,26 +3,30 @@
 Sistema integral de gestión de asistencias para club de flag football femenil. PWA offline-first con geolocalización GPS, QR dinámico y sincronización automática con Google Sheets.
 
 
-
-    ![Version](https://img.shields.io/badge/version-2.1.0-orange)
-
-
-
-
-    ![PWA](https://img.shields.io/badge/PWA-Ready-success)
+   ![Version](https://img.shields.io/badge/version-2.1.0-orange)
 
 
 
 
-    ![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue)
+   ![PWA](https://img.shields.io/badge/PWA-Ready-success)
 
 
 
 
-    ![Security](https://img.shields.io/badge/security-SRI%20Enabled-green)
-    blllll      
-    **🔗 Producción:** [https://riversapp.vercel.app](https://riversapp.vercel.app)  
-    **📊 Google Sheets:** [Ver hoja de cálculo](https://docs.google.com/spreadsheets/d/1c152e4a-32f0-4216-aafa-086c7c972c55)
+   ![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue)
+
+
+
+
+   ![Security](https://img.shields.io/badge/security-SRI%20Enabled-green)
+   blllll      
+
+   **🔗 Producción:** 
+   [https://riversapp.vercel.app](https://riversapp.vercel.app)  
+
+   **📊 Google Sheets:**
+   [Ver hoja de cálculo]       
+   (https://docs.google.com/spreadsheets/d/1c152e4a-32f0-4216-aafa-086c7c972c55)
 
 ---
 
@@ -109,9 +113,10 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 
 ### 2️⃣ Coordenadas del Campo
 Editar en `app.js` (líneas 3-8):
+``javascript
+const CONFIG = 
 
-    ``javascript
-    const CONFIG = {
+    {
     SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
     COACH_PINS: ['2501', '2502', '2503', '2504'],
     CHECKIN_URL: window.location.origin + '/checkin.html',
@@ -153,15 +158,18 @@ git push origin main
 
    Vercel detecta cambios y despliega automáticamente:
       
-    URL de producción: https://riversapp.vercel.app
+  URL de producción: 
+   
+    https://riversapp.vercel.app
+
 Preview URLs para cada commit
 Deploy Manual (CLI)
 
    # Instalar Vercel CLI
-npm install -g vercel
+    npm install -g vercel
 
    # Deploy a producción
-vercel --prod
+    vercel --prod
 
    Configuración de Vercel
 El archivo vercel.json incluye:
@@ -232,7 +240,7 @@ Abrir https:
 Botón compartir → "Agregar a pantalla de inicio"
 Confirmar
 
-    2️⃣ Marcar Asistencia
+ 2️⃣ Marcar Asistencia
 Primera vez:
 Ir al campo físico
 Tab "Escanear" → Escanear QR del coach
@@ -244,47 +252,37 @@ Escanear QR del coach
 Seleccionar nombre de la lista
 Confirmar asistencia
 
-    3️⃣ Ver Estadísticas
+  3️⃣ Ver Estadísticas
 Tab "Inicio" → Card "Mis Estadísticas"
 Muestra: Asistencias, Retardos, Faltas
 Se actualiza en tiempo real desde Google Sheets
 Para Coaches
-
-    1️⃣ Acceder al Panel
+   1️⃣ Acceder al Panel
 Tab "Coach Panel"
 Ingresar uno de los 4 PINs válidos
 Panel se desbloquea
-
-    2️⃣ Funciones Disponibles
-Botón
-Función
-
+   2️⃣ Funciones Disponibles
+Botón Función
    🔒 Generar QR
 Código para que jugadoras escaneen en el campo
-
    📅 Editar Horarios
 Cambiar días/hora/tolerancia sin tocar código
-
-   📥 Exportar CSV
+ 📥 Exportar CSV
 Descargar todas las asistencias históricas
-
    📢 Publicar Avisos
 Comunicados en muro principal de jugadoras
-
    🔄 Reset Temporada
 Limpiar datos locales (NO borra Google Sheet)
-
    3️⃣ Generar QR para el Campo
 Coach Panel → "🔒 Generar QR"
 Imprimir el código QR generado
 Plastificar y pegar en entrada del campo
 Jugadoras lo escanean para marcar asistencia
 Recomendación: Imprimir en carta completa para mayor visibilidad.
-
    🧪 Pruebas y Verificación
 ✅ Test de Conexión Google Sheets
 Método 1: Consola del Navegador (F12)
-// Pegar en consola de Chrome DevTools
+ // Pegar en consola de Chrome DevTools
 
     fetch('https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55')
     .then(r => r.json())
@@ -298,10 +296,8 @@ Método 1: Consola del Navegador (F12)
   Resultado esperado:
 Mensaje "✅ Conexión exitosa!"
 Tabla con todos los registros de asistencia
-
 Método 2: Botón de Test en Coach Panel
 Funcionalidad incluida en app.js (se puede agregar botón "🔌 Test Conexión").
-
 Método 3: Prueba Manual Completa
 Ir a 
     
@@ -310,7 +306,7 @@ Ir a
    Agregar nombre de prueba
    Marcar asistencia
 
-Verificar que aparezca nueva fila en Google Sheet         
+Verificar que aparezca nueva fila asistenciSheet         
 // Pegar en consola del navegador
 
     navigator.geolocation.getCurrentPosition(
@@ -367,10 +363,8 @@ TARGET_LAT: 19.0732,  // ← TU LATITUD
 TARGET_LON: -97.0461  // ← TU LONGITUD
 Commit y push
 Esperar redeploy de Vercel
-
 ❌ Service Worker no actualiza
 Solución:
-
 Chrome:
 F12 → Application → Service Workers
 Click "Unregister"
@@ -379,10 +373,8 @@ Safari (iOS):
 Desinstalar PWA
 Limpiar caché de Safari
 Reinstalar PWA
-
 ❌ Datos no llegan a Google Sheets
 Verificaciones:
-
 URL correcta en CONFIG.SHEETBEST_URL
 const CONFIG =
 
@@ -402,9 +394,8 @@ Test de conexión (consola):
     .catch(e => console.error('❌ Fallo:', e));
 
 ❌ PWA no se instala
-
-    Solución:
-    Verificar manifest.json:
+    Solución Verificar manifest.json:
+    
     {
     "name": "RIVERS Tochito Club",
     "short_name": "RIVERS",
