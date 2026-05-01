@@ -1,9 +1,7 @@
-/* =========================================
    RIVERS TOCHITO CLUB - SERVICE WORKER
    Versión 3.1.0 - PWA con Auto-Sync
-   ========================================= */
 
-// --- CONFIGURACIÓN Y CONSTANTES ---
+ CONFIGURACIÓN Y CONSTANTES 
 const CACHE_VERSION = 'rivers-v3.1.0';
 const CACHES = {
     static: `${CACHE_VERSION}-static`,
@@ -11,12 +9,12 @@ const CACHES = {
     images: `${CACHE_VERSION}-images`
 };
 
-// Configuración de límites y archivos
+Configuración de límites y archivos
 const MAX_CACHE_SIZE = 50;
 const OFFLINE_PAGE = '/offline.html';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutos
 
-// Lista de activos estáticos a cachear
+ Lista de activos estáticos a cachear
 const STATIC_ASSETS = [
     '/',
     '/index.html',
