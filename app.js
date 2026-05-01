@@ -1,27 +1,21 @@
+```javascript
+// ========================================
+// RIVERS TOCHITO CLUB - APP LOGIC
+// ========================================
+
 const CONFIG = {
-    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
-    COACH_PINS: ['2501', '2502', '2503', '2504'],
-    CHECKIN_URL: window.location.origin + '/checkin.html'
+    // Reemplaza con tu URL de conexión de Sheetbest
+    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55', 
+    CHECKIN_START: '16:00',
+    CHECKIN_END: '17:30',
+    SESSION_TIME: '16:45',
+    TOLERANCE: 15,
 };
 
-const getScheduleConfig = () => {
-    const saved = localStorage.getItem('scheduleConfig');
-    if (saved) return JSON.parse(saved);
-    
-    return {
-        dias: [2, 4],
-        hora: '16:45',
-        tolerancia: 15,
-        location: 'Cancha Principal'
-    };
-};
-
-let scheduleConfig = getScheduleConfig();
 
 const state = {
     currentTab: 'home',
     qrScanner: null,
-    currentQR: null,
     userData: {
         nombre: localStorage.getItem('userName') || '',
         asistencias: 0,
@@ -30,13 +24,17 @@ const state = {
     }
 };
 
+// ========================================
+// INIT
+// ========================================
+
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
     generateQRCode();
     loadUserStats();
-    loadFeed();
     updateScheduleDisplay();
+    loadFeed();
 });
 
 function initApp() {
@@ -47,179 +45,199 @@ function initApp() {
             localStorage.setItem('userName', nombre);
         }
     }
-    
-    updateNextSessionInfo();
 }
 
-function updateNextSessionInfo() {
-    const now = new Date();
-    const nextSession = getNextSessionDate();
-    
-    if (nextSession) {
-        const options = { weekday: 'long', day: 'numeric', month: 'long' };
-        const isToday = nextSession.toDateString() === now.toDateString();
-        
-        document.getElementById('sessionDate').textContent = isToday ? 'Hoy' : nextSession.toLocaleDateString('es-MX', options);
-        document.getElementById('sessionTime').textContent = scheduleConfig.hora + ' hrs';
-        document.getElementById('sessionLocation').textContent = scheduleConfig.location;
-    }
-}
-
-function getNextSessionDate() {
-    const now = new Date();
-    
-    for (let i = 0; i <= 7; i++) {
-        const checkDate = new Date(now);
-        checkDate.setDate(now.getDate() + i);
-        const checkDay = checkDate.getDay();
-        
-        if (scheduleConfig.dias.includes(checkDay)) {
-            if (i === 0) {
-                const [hours, minutes] = scheduleConfig.hora.split(':');
-                const sessionTime = new Date(now);
-                sessionTime.setHours(parseInt(hours), parseInt(minutes), 0);
-                
-                if (now < sessionTime) {
-                    return checkDate;
-                }
-            } else {
-                return checkDate;
-            }
-        }
-    }
-    
-    return null;
-}
+// ========================================
+// EVENT LISTENERS
+// ========================================
 
 function setupEventListeners() {
+    // Menú y navegación
     document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
     document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
     
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', () => {
-            switchTab(item.dataset.tab);
+            const tab = item.dataset.tab;
+            switchTab(tab);
             toggleSidebar();
+            
+            // Iniciar scanner si vamos al tab de scan
+            if (tab === 'scan') {
+                startQRScanner();
+            } else {
+                stopQRScanner();
+            }
         });
     });
-    
-    document.getElementById('refreshQR').addEventListener('click', generateQRCode);
-    
+
+    // Coach Panel
     document.getElementById('unlockCoach').addEventListener('click', unlockCoachPanel);
-    document.getElementById('editSchedule').addEventListener('click', editSchedule);
-    document.getElementById('exportCSV').addEventListener('click', exportToCSV);
-    document.getElementById('sendNotice').addEventListener('click', publishNotice);
-    document.getElementById('resetSeason').addEventListener('click', resetSeason);
+    document.getElementById('coachPIN').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') unlockCoachPanel();
+    });
     
-    document.getElementById('stopScan').addEventListener('click', stopScanner);
+    // Coach Actions
+    document.getElementById('refreshQR')?.addEventListener('click', generateQRCode);
+    document.getElementById('exportCSV')?.addEventListener('click', exportToCSV);
+    document.getElementById('editSchedule')?.addEventListener('click', editScheduleConfig);
+    document.getElementById('sendNotice')?.addEventListener('click', sendNotice);
+    document.getElementById('resetSeason')?.addEventListener('click', resetSeason);
+    
+    // Stop Scanner
+    document.getElementById('stopScan')?.addEventListener('click', stopQRScanner);
 }
 
+// ========================================
+// NAVIGATION
+// ========================================
+
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('active');
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
 }
 
 function switchTab(tabName) {
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.add('hidden');
-    });
+    // Ocultar todos los tabs
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
     
-    document.getElementById(`${tabName}Tab`).classList.remove('hidden');
+    // Mostrar tab seleccionado
+    document.getElementById(`${tabName}Tab`)?.classList.remove('hidden');
     
+    // Actualizar estado activo en sidebar
     document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-        if (item.dataset.tab === tabName) {
-            item.classList.add('active');
-        }
+        item.classList.toggle('active', item.dataset.tab === tabName);
     });
     
     state.currentTab = tabName;
-    
-    if (tabName === 'scan') {
-        startScanner();
-    } else if (state.qrScanner) {
-        stopScanner();
-    }
-    
-    if (tabName === 'feed') {
-        loadFeed();
-    }
 }
+
+// ========================================
+// QR CODE GENERATION
+// ========================================
 
 function generateQRCode() {
     const container = document.getElementById('qrContainer');
+    if (!container) return;
+    
     container.innerHTML = '';
     
-    const qrDiv = document.createElement('div');
-    container.appendChild(qrDiv);
-    
-    new QRCode(qrDiv, {
+    new QRCode(container, {
         text: CONFIG.CHECKIN_URL,
-        width: 256,
-        height: 256,
+        width: 250,
+        height: 250,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
     });
     
-    state.currentQR = CONFIG.CHECKIN_URL;
-    console.log('QR Real Generated:', CONFIG.CHECKIN_URL);
+    console.log('✅ QR generado:', CONFIG.CHECKIN_URL);
 }
 
-function startScanner() {
+// ========================================
+// QR SCANNER
+// ========================================
+
+function startQRScanner() {
+    if (state.qrScanner) {
+        state.qrScanner.clear();
+    }
+    
     const html5QrCode = new Html5Qrcode("reader");
-    state.qrScanner = html5QrCode;
     
     html5QrCode.start(
         { facingMode: "environment" },
-        {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-        },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
             handleScan(decodedText);
-            stopScanner();
+            html5QrCode.stop();
         },
-        (errorMessage) => {}
-    ).catch((err) => {
-        console.error('Scanner error:', err);
-        showScanResult('❌ Error al iniciar cámara. Verifica permisos.', 'error');
+        (errorMessage) => {
+            // Silenciar errores de escaneo continuo
+        }
+    ).then(() => {
+        state.qrScanner = html5QrCode;
+        document.getElementById('stopScan')?.classList.remove('hidden');
+        console.log('📷 Scanner iniciado');
+    }).catch((err) => {
+        console.error('Error al iniciar scanner:', err);
+        showScanResult('❌ Error al acceder a la cámara', 'error');
     });
-    
-    document.getElementById('stopScan').classList.remove('hidden');
 }
 
-function stopScanner() {
+function stopQRScanner() {
     if (state.qrScanner) {
         state.qrScanner.stop().then(() => {
+            state.qrScanner.clear();
             state.qrScanner = null;
-            document.getElementById('stopScan').classList.add('hidden');
+            document.getElementById('stopScan')?.classList.add('hidden');
+            console.log('📷 Scanner detenido');
         }).catch((err) => {
-            console.error('Stop scanner error:', err);
+            console.error('Error al detener scanner:', err);
         });
     }
 }
 
 function handleScan(qrData) {
-    console.log('QR Scanned:', qrData);
-    
-    if (qrData.includes('/checkin.html')) {
-        window.location.href = qrData;
-        return;
+    console.log('Iniciando validación de ubicación y QR...');
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Cálculo de distancia (Fórmula de Haversine)
+        const R = 6371; 
+        const dLat = (latitude - CONFIG.TARGET_LAT) * Math.PI / 180;
+        const dLon = (longitude - CONFIG.TARGET_LON) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(CONFIG.TARGET_LAT * Math.PI / 180) * Math.cos(latitude * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c;
+
+        // 1. Validar Distancia (300 metros según tu CONFIG)
+        if (distance > CONFIG.MAX_DISTANCE_KM) {
+            showScanResult(`❌ Fuera de rango (${(distance).toFixed(2)}km). Acércate al campo.`, 'error');
+            return;
+        }
+
+        // 2. Validar URL del QR
+        try {
+            const scannedUrl = new URL(qrData);
+            const allowedHosts = [window.location.hostname, 'riversapp.vercel.app', 'localhost'];
+            
+            if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
+                // Hack: Pasamos lat/lon a la siguiente página para el registro final
+                window.location.href = `${qrData}?lat=${latitude}&lon=${longitude}`;
+                return;
+            }
+            showScanResult('❌ QR no autorizado', 'error');
+        } catch (error) {
+            showScanResult('❌ QR inválido', 'error');
+        }
+    }, (err) => {
+        showScanResult('❌ Error: Activa el GPS para marcar asistencia', 'error');
+    }, { enableHighAccuracy: true });
+}
+        
+        // Verificar que el hostname sea permitido Y tenga /checkin.html
+        if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
+            window.location.href = qrData;
+            return;
+        }
+        
+        showScanResult('❌ QR no autorizado', 'error');
+    } catch (error) {
+        showScanResult('❌ QR inválido', 'error');
     }
-    
-    showScanResult('❌ QR no válido', 'error');
 }
 
 function showScanResult(message, type) {
     const resultDiv = document.getElementById('scanResult');
+    if (!resultDiv) return;
+    
     resultDiv.textContent = message;
     resultDiv.className = `mt-4 p-4 rounded-lg text-center ${
-        type === 'success' ? 'bg-green-600' :
-        type === 'error' ? 'bg-red-600' :
-        'bg-yellow-600'
+        type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
     }`;
     resultDiv.classList.remove('hidden');
     
@@ -228,60 +246,22 @@ function showScanResult(message, type) {
     }, 3000);
 }
 
-function loadUserStats() {
-    const stats = JSON.parse(localStorage.getItem('userStats') || '{}');
-    state.userData.asistencias = stats.asistencias || 0;
-    state.userData.retardos = stats.retardos || 0;
-    state.userData.faltas = stats.faltas || 0;
-    
-    document.getElementById('asistencias').textContent = state.userData.asistencias;
-    document.getElementById('retardos').textContent = state.userData.retardos;
-    document.getElementById('faltas').textContent = state.userData.faltas;
-}
-
-async function loadFeed() {
-    const container = document.getElementById('feedContainer');
-    
-    const feed = [
-        {
-            id: 1,
-            title: 'Bienvenida a RIVERS',
-            message: 'Entrenamientos: Martes y Jueves 4:45 PM. ¡No faltes!',
-            date: new Date().toISOString(),
-            type: 'info'
-        }
-    ];
-    
-    container.innerHTML = feed.map(item => `
-        <div class="feed-item card mb-4 pl-4">
-            <div class="flex justify-between items-start mb-2">
-                <h3 class="font-bold">${item.title}</h3>
-                <span class="text-xs text-gray-500">${formatDate(item.date)}</span>
-            </div>
-            <p class="text-sm text-gray-300">${item.message}</p>
-        </div>
-    `).join('');
-}
-
-function formatDate(isoDate) {
-    const date = new Date(isoDate);
-    const now = new Date();
-    const diff = now - date;
-    
-    if (diff < 86400000) return 'Hoy';
-    if (diff < 172800000) return 'Ayer';
-    return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-}
+// ========================================
+// COACH PANEL
+// ========================================
 
 function unlockCoachPanel() {
-    const pin = document.getElementById('coachPIN').value;
+    const pin = document.getElementById('coachPIN').value.trim();
     
     if (CONFIG.COACH_PINS.includes(pin)) {
         document.getElementById('coachLogin').classList.add('hidden');
         document.getElementById('coachPanel').classList.remove('hidden');
         loadCoachStats();
+        loadScheduleConfig();
+        console.log('✅ Coach Panel desbloqueado');
     } else {
-        alert('❌ PIN incorrecto');
+        alert('❌ PIN Incorrecto');
+        document.getElementById('coachPIN').value = '';
     }
 }
 
@@ -290,62 +270,19 @@ async function loadCoachStats() {
         const response = await fetch(CONFIG.SHEETBEST_URL);
         const data = await response.json();
         
-        const totalJugadoras = new Set(data.map(row => row.nombre)).size;
-        const today = new Date().toISOString().split('T')[0];
-        const todayRecords = data.filter(row => row.session === today);
-        const retardosHoy = todayRecords.filter(row => row.tipo === 'retardo').length;
-        
-        const asistenciaPromedio = totalJugadoras > 0 
-            ? Math.round((todayRecords.filter(r => r.tipo === 'asistencia').length / totalJugadoras) * 100) 
-            : 0;
+        const totalPlayers = new Set(data.map(r => r.nombre)).size;
+        const totalRecords = data.length;
+        const avgAttendance = totalRecords > 0 ? Math.round((totalRecords / totalPlayers) * 100) : 0;
+        const todayLate = data.filter(r => r.tipo === 'retardo' && r.session === getTodaySession()).length;
         
         document.getElementById('coachStats').innerHTML = `
-            <p>Total Jugadoras: <span class="float-right font-bold">${totalJugadoras}</span></p>
-            <p>Asistencia Promedio: <span class="float-right font-bold">${asistenciaPromedio}%</span></p>
-            <p>Retardos Hoy: <span class="float-right font-bold">${retardosHoy}</span></p>
+            <p>Total Jugadoras: <span class="float-right font-bold">${totalPlayers}</span></p>
+            <p>Asistencia Promedio: <span class="float-right font-bold">${avgAttendance}%</span></p>
+            <p>Retardos Hoy: <span class="float-right font-bold">${todayLate}</span></p>
         `;
     } catch (error) {
-        console.error('Error loading stats:', error);
-        document.getElementById('coachStats').innerHTML = `
-            <p>Total Jugadoras: <span class="float-right font-bold">0</span></p>
-            <p>Asistencia Promedio: <span class="float-right font-bold">0%</span></p>
-            <p>Retardos Hoy: <span class="float-right font-bold">0</span></p>
-        `;
+        console.error('Error cargando stats:', error);
     }
-}
-
-function editSchedule() {
-    const newTime = prompt('Hora de entrenamiento (HH:MM):', scheduleConfig.hora);
-    if (newTime && /^\d{2}:\d{2}$/.test(newTime)) {
-        scheduleConfig.hora = newTime;
-    }
-    
-    const newTolerance = prompt('Minutos de tolerancia:', scheduleConfig.tolerancia);
-    if (newTolerance && !isNaN(newTolerance)) {
-        scheduleConfig.tolerancia = parseInt(newTolerance);
-    }
-    
-    const newLocation = prompt('Ubicación:', scheduleConfig.location);
-    if (newLocation) {
-        scheduleConfig.location = newLocation;
-    }
-    
-    localStorage.setItem('scheduleConfig', JSON.stringify(scheduleConfig));
-    updateScheduleDisplay();
-    updateNextSessionInfo();
-    
-    alert('✅ Configuración actualizada');
-}
-
-function updateScheduleDisplay() {
-    const dias = scheduleConfig.dias.map(d => {
-        const names = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        return names[d];
-    }).join(', ');
-    
-    document.getElementById('configDays').textContent = dias;
-    document.getElementById('configTime').textContent = scheduleConfig.hora;
-    document.getElementById('configTolerance').textContent = scheduleConfig.tolerancia + ' min';
 }
 
 async function exportToCSV() {
@@ -353,37 +290,186 @@ async function exportToCSV() {
         const response = await fetch(CONFIG.SHEETBEST_URL);
         const data = await response.json();
         
-        let csv = 'Nombre,Tipo,Fecha,Hora,Sesión\n';
+        let csv = 'Nombre,Tipo,Fecha_Hora,Sesion,Dispositivo,Diff_Minutos\n';
         data.forEach(row => {
-            csv += `${row.nombre},${row.tipo},${row.timestamp},${row.diffMinutes || 0},${row.session}\n`;
+            csv += `${row.nombre},${row.tipo},${row.timestamp},${row.session},${row.deviceId || 'N/A'},${row.diffMinutes || 0}\n`;
         });
         
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `RIVERS_Asistencias_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `RIVERS_Asistencias_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
         
-        alert('✅ CSV descargado');
+        alert('✅ CSV exportado correctamente');
     } catch (error) {
-        console.error('Error exporting CSV:', error);
-        alert('❌ Error al exportar. Verifica tu conexión.');
+        console.error('Error exportando CSV:', error);
+        
+        // Fallback: Exportar datos locales si falla la conexión
+        const localData = localStorage.getItem('rivers_backup');
+        if (localData) {
+            const blob = new Blob([localData], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `RIVERS_Backup_Local_${Date.now()}.json`;
+            link.click();
+            alert('⚠️ Exportando respaldo local (sin conexión)');
+        } else {
+            alert('❌ Error al exportar y no hay datos locales');
+        }
     }
 }
 
-function publishNotice() {
-    const message = prompt('Escribe el aviso a publicar:');
-    if (message) {
-        alert('✅ Aviso publicado');
+function editScheduleConfig() {
+    const currentConfig = JSON.parse(localStorage.getItem('scheduleConfig')) || {
+        dias: [2, 4],
+        hora: '16:45',
+        tolerancia: 15,
+        location: 'Cancha Principal'
+    };
+    
+    const newDays = prompt(`Días de sesión (0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb)\nActual: ${currentConfig.dias.join(', ')}`, currentConfig.dias.join(','));
+    const newTime = prompt(`Hora de inicio (HH:MM):\nActual: ${currentConfig.hora}`, currentConfig.hora);
+    const newTolerance = prompt(`Tolerancia en minutos:\nActual: ${currentConfig.tolerancia}`, currentConfig.tolerancia);
+    const newLocation = prompt(`Ubicación:\nActual: ${currentConfig.location}`, currentConfig.location);
+    
+    if (newDays && newTime && newTolerance && newLocation) {
+        const updatedConfig = {
+            dias: newDays.split(',').map(d => parseInt(d.trim())),
+            hora: newTime.trim(),
+            tolerancia: parseInt(newTolerance),
+            location: newLocation.trim()
+        };
+        
+        localStorage.setItem('scheduleConfig', JSON.stringify(updatedConfig));
+        loadScheduleConfig();
+        alert('✅ Configuración actualizada');
+    }
+}
+
+function loadScheduleConfig() {
+    const config = JSON.parse(localStorage.getItem('scheduleConfig')) || {
+        dias: [2, 4],
+        hora: '16:45',
+        tolerancia: 15,
+        location: 'Cancha Principal'
+    };
+    
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const dayLabels = config.dias.map(d => dayNames[d]).join(', ');
+    
+    document.getElementById('configDays').textContent = dayLabels;
+    document.getElementById('configTime').textContent = config.hora;
+    document.getElementById('configTolerance').textContent = `${config.tolerancia} min`;
+}
+
+function sendNotice() {
+    const notice = prompt('Escribe el aviso para publicar:');
+    if (notice) {
+        const notices = JSON.parse(localStorage.getItem('clubNotices')) || [];
+        notices.unshift({
+            id: Date.now(),
+            text: notice,
+            timestamp: new Date().toISOString(),
+            author: 'Coach'
+        });
+        localStorage.setItem('clubNotices', JSON.stringify(notices));
         loadFeed();
+        alert('✅ Aviso publicado');
     }
 }
 
 function resetSeason() {
-    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada? Esto borrará todos los datos.')) {
-        localStorage.clear();
-        alert('✅ Temporada reseteada');
-        location.reload();
+    if (confirm('⚠️ ¿Seguro que quieres resetear la temporada?\n\nEsto NO borrará la Sheet, solo limpiará datos locales.')) {
+        localStorage.removeItem('rivers_backup');
+        localStorage.removeItem('clubNotices');
+        alert('✅ Temporada reseteada (datos locales)');
     }
 }
+
+// ========================================
+// FEED DE AVISOS
+// ========================================
+
+function loadFeed() {
+    const container = document.getElementById('feedContainer');
+    if (!container) return;
+    
+    const notices = JSON.parse(localStorage.getItem('clubNotices')) || [
+        { id: 1, text: 'Bienvenidas a la temporada 2025 de RIVERS Tochito Club 🏈', timestamp: new Date().toISOString(), author: 'Dirección' }
+    ];
+    
+    if (notices.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">No hay avisos publicados</p>';
+        return;
+    }
+    
+    container.innerHTML = notices.map(notice => `
+        <div class="feed-item p-4 mb-3 rounded-lg bg-gray-800">
+            <p class="text-sm mb-2">${notice.text}</p>
+            <div class="flex justify-between items-center text-xs text-gray-400">
+                <span>${notice.author}</span>
+                <span>${new Date(notice.timestamp).toLocaleDateString('es-MX')}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ========================================
+// USER STATS
+// ========================================
+
+async function loadUserStats() {
+    try {
+        const response = await fetch(CONFIG.SHEETBEST_URL);
+        const data = await response.json();
+        
+        const userRecords = data.filter(r => r.nombre === state.userData.nombre);
+        
+        const asistencias = userRecords.filter(r => r.tipo === 'asistencia').length;
+        const retardos = userRecords.filter(r => r.tipo === 'retardo').length;
+        const faltas = Math.floor(retardos / 3);
+        
+        document.getElementById('asistencias').textContent = asistencias;
+        document.getElementById('retardos').textContent = retardos;
+        document.getElementById('faltas').textContent = faltas;
+        
+        state.userData.asistencias = asistencias;
+        state.userData.retardos = retardos;
+        state.userData.faltas = faltas;
+        
+    } catch (error) {
+        console.error('Error cargando stats de usuario:', error);
+    }
+}
+
+// ========================================
+// SCHEDULE DISPLAY
+// ========================================
+
+function updateScheduleDisplay() {
+    const config = JSON.parse(localStorage.getItem('scheduleConfig')) || {
+        dias: [2, 4],
+        hora: '16:45',
+        location: 'Cancha Principal'
+    };
+    
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    
+    // Encontrar próximo día de sesión
+    let nextSessionDay = config.dias.find(d => d > dayOfWeek);
+    if (!nextSessionDay) nextSessionDay = config.dias[0];
+    
+    const daysUntil = nextSessionDay > dayOfWeek ? nextSessionDay - dayOfWeek : 7 - dayOfWeek + nextSessionDay;
+    const nextSession = new Date(now);
+    nextSession.setDate(now.getDate() + daysUntil);
+    
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    
+    document.getElementById('sessionDate').textContent = dayNames[nextSession.getDay()];
+    document.getElementById('sessionTime').textContent = config.hora + ' hrs';
+    document.getElementById('sessionLocation').textContent = config.location;
+}
+
+

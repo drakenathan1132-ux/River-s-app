@@ -1,20 +1,26 @@
 {
-  "name": "RIVERS Tochito Club - Sistema de Gestión",
+  "name": "RIVERS Tochito Club",
   "short_name": "RIVERS",
-  "description": "Sistema de asistencia y gestión para RIVERS Tochito Club con QR dinámico y exportación CSV",
+  "description": "Sistema de gestión de asistencias para RIVERS Tochito Club",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#0A0A0A",
+  "orientation": "portrait",
   "theme_color": "#0A0A0A",
+  "background_color": "#0A0A0A",
   "lang": "es-MX",
   "dir": "ltr",
-  "categories": ["sports", "utilities", "productivity"],
+  "categories": ["sports", "lifestyle", "productivity"],
   "icons": [
     {
-      "src": "/logo.png",
-      "sizes": "any",
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
       "type": "image/png",
       "purpose": "any"
     },
@@ -42,26 +48,37 @@
       "src": "/screenshot-home.png",
       "sizes": "540x720",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Pantalla principal con QR"
+      "form_factor": "narrow"
     }
   ],
   "shortcuts": [
     {
-      "name": "Marcar Asistencia",
-      "short_name": "Asistencia",
-      "description": "Escanear QR para marcar asistencia",
-      "url": "/?action=scan",
-      "icons": [{ "src": "/android-192x192-icon.png", "sizes": "192x192" }]
+      "name": "Escanear QR",
+      "short_name": "Escanear",
+      "description": "Escanear código QR para check-in",
+      "url": "/?tab=scan",
+      "icons": [
+        {
+          "src": "/android-192x192-icon.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
-      "name": "Ver Avisos",
-      "short_name": "Feed",
-      "description": "Muro de avisos del club",
-      "url": "/?action=feed",
-      "icons": [{ "src": "/android-192x192-icon.png", "sizes": "192x192" }]
+      "name": "Panel Coach",
+      "short_name": "Coach",
+      "description": "Acceder al panel de coach",
+      "url": "/?tab=coach",
+      "icons": [
+        {
+          "src": "/android-192x192-icon.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
+  "related_applications": [],
+  "prefer_related_applications": false,
   "share_target": {
     "action": "/share",
     "method": "POST",
@@ -71,5 +88,11 @@
       "text": "text",
       "url": "url"
     }
-  }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+rivers",
+      "url": "/?action=%s"
+    }
+  ]
 }
