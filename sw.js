@@ -1,14 +1,12 @@
-// ============================================================================
-// RIVERS TOCHITO CLUB - SERVICE WORKER
-// Versión 3.0 - PWA Offline-First con Background Sync
-// ============================================================================
-
+RIVERS TOCHITO CLUB - SERVICE WORKER
+Versión 3.0 - PWA Offline-First con Background Sync
 const CACHE_VERSION = 'rivers-v3.0.0';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 const CACHE_IMAGES = `${CACHE_VERSION}-images`;
 
-const STATIC_ASSETS = [
+const STATIC_ASSETS = 
+    [
     '/',
     '/index.html',
     '/checkin.html',
@@ -17,19 +15,13 @@ const STATIC_ASSETS = [
     '/offline.html',
     'https://cdn.tailwindcss.com',
     'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
-];
-
+    'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'  
+    ]; 
 const OFFLINE_PAGE = '/offline.html';
 const MAX_CACHE_SIZE = 50;
-
-// ============================================================================
-// INSTALL - Cachear archivos estáticos
-// ============================================================================
-
+INSTALL - Cachear archivos estáticos
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing Service Worker...', CACHE_VERSION);
-    
     event.waitUntil(
         caches.open(CACHE_STATIC)
             .then((cache) => {
@@ -45,10 +37,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// ============================================================================
-// ACTIVATE - Limpiar cachés viejos
-// ============================================================================
-
+ACTIVATE - Limpiar cachés viejos
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating Service Worker...', CACHE_VERSION);
     
@@ -68,25 +57,21 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// ============================================================================
-// FETCH - Estrategia híbrida
-// ============================================================================
-
+ FETCH - Estrategia híbrida
 self.addEventListener('fetch', (event) => {
     const { request } = event;
-    const url = new URL(request.url);
-    
-    // Ignorar requests no-HTTP
+    const url = new URL(request.url)}
+    Ignorar requests no-HTTP
     if (!request.url.startsWith('http')) {
         return;
     }
     
-    // Ignorar requests de Chrome Extensions
+    Ignorar requests de Chrome Extensions
     if (url.protocol === 'chrome-extension:') {
         return;
     }
     
-    // ===== GOOGLE SHEETS API - Network First =====
+    GOOGLE SHEETS API - Network First 
     if (url.hostname === 'sheets.googleapis.com' || 
         url.hostname === 'www.googleapis.com' ||
 
@@ -94,19 +79,19 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
-    // ===== APIs externas - Network First =====
+    APIs externas - Network First 
     if (url.pathname.includes('/api/') || request.method === 'POST') {
         event.respondWith(networkFirstStrategy(request));
         return;
     }
     
-    // ===== Imágenes - Cache First =====
-    if (request.destination === 'image') {
+     Imágenes - Cache First 
+    if (request.destination'image') {
         event.respondWith(cacheFirstStrategy(request, CACHE_IMAGES));
         return;
     }
-    
-    // ===== Assets estáticos - Cache First =====
+
+    Assets estáticos - Cache First 
     if (url.pathname.endsWith('.js') || 
         url.pathname.endsWith('.css') ||
         url.pathname.endsWith('.json') ||
@@ -116,29 +101,26 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
-    // ===== HTML - Network First con fallback offline =====
-    if (request.destination === 'document' || 
+    HTML - Network First con fallback offline 
+    if (request.destination === 'document' ||
         request.headers.get('accept').includes('text/html')) {
         event.respondWith(networkFirstWithOfflineFallback(request));
         return;
-    }
+       }
     
-    // ===== Default - Network First =====
+    Default - Network First 
     event.respondWith(networkFirstStrategy(request));
 });
 
-// ============================================================================
-// ESTRATEGIAS DE CACHÉ
-// ============================================================================
-
-// Cache First - Para assets estáticos e imágenes
+   ESTRATEGIAS DE CACHÉ
+Cache First - Para assets estáticos e imágenes
 async function cacheFirstStrategy(request, cacheName) {
     try {
         const cache = await caches.open(cacheName);
         const cachedResponse = await cache.match(request);
         
         if (cachedResponse) {
-            // Actualizar en background
+            Actualizar en background
             fetch(request)
                 .then(response => {
                     if (response && response.status === 200) {
@@ -146,7 +128,7 @@ async function cacheFirstStrategy(request, cacheName) {
                     }
                 })
                 .catch(() => {
-                    // Silent fail
+                     Silent fail
                 });
             
             return cachedResponse;
@@ -168,7 +150,7 @@ async function cacheFirstStrategy(request, cacheName) {
     }
 }
 
-// Network First - Para APIs y contenido dinámico
+Network First - Para APIs y contenido dinámico
 async function networkFirstStrategy(request) {
     try {
         const networkResponse = await fetch(request);
@@ -188,8 +170,8 @@ async function networkFirstStrategy(request) {
             return cachedResponse;
         }
         
-        // Si es POST y falló, guardar en IndexedDB para retry
-        if (request.method === 'POST') {
+        Si es POST y falló, guardar en IndexedDB para retry
+        if (request.method ='POST') {
             await saveFailedRequest(request);
         }
         
@@ -197,7 +179,7 @@ async function networkFirstStrategy(request) {
     }
 }
 
-// Network First con Offline Fallback - Para páginas HTML
+ Network First con Offline Fallback - Para páginas HTML
 async function networkFirstWithOfflineFallback(request) {
     try {
         const networkResponse = await fetch(request);
@@ -231,11 +213,9 @@ async function networkFirstWithOfflineFallback(request) {
     }
 }
 
-// ============================================================================
-// UTILIDADES
-// ============================================================================
 
-// Limitar tamaño del caché
+ UTILIDADES
+ Limitar tamaño del caché
 async function limitCacheSize(cacheName, maxItems) {
     const cache = await caches.open(cacheName);
     const keys = await cache.keys();
@@ -248,7 +228,7 @@ async function limitCacheSize(cacheName, maxItems) {
     }
 }
 
-// Guardar requests fallidos para retry
+ Guardar requests fallidos para retry
 async function saveFailedRequest(request) {
     try {
         const db = await openDB();
@@ -270,7 +250,7 @@ async function saveFailedRequest(request) {
     }
 }
 
-// Abrir IndexedDB
+Abrir IndexedDB
 function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open('RiversDB', 1);
@@ -290,11 +270,8 @@ function openDB() {
         };
     });
 }
-
-// ============================================================================
-// BACKGROUND SYNC - Retry requests fallidos
-// ============================================================================
-
+ 
+BACKGROUND SYNC - Retry requests fallidos
 self.addEventListener('sync', (event) => {
     console.log('[SW] Background Sync triggered:', event.tag);
     
@@ -335,10 +312,8 @@ async function retryFailedRequests() {
     }
 }
 
-// ============================================================================
-// MENSAJES - Comunicación con la app
-// ============================================================================
 
+MENSAJES - Comunicación con la app
 self.addEventListener('message', (event) => {
     console.log('[SW] Message received:', event.data);
     
@@ -361,13 +336,12 @@ self.addEventListener('message', (event) => {
     }
 });
 
-// ============================================================================
-// PUSH NOTIFICATIONS (preparado para futuro)
-// ============================================================================
+
+PUSH NOTIFICATIONS (preparado para futuro)
 
 self.addEventListener('push', (event) => {
     console.log('[SW] Push notification received');
-    
+
     const data = event.data ? event.data.json() : {};
     const title = data.title || 'RIVERS Tochito Club';
     const options = {
