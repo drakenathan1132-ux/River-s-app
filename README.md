@@ -27,24 +27,20 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
    **📊 Google Sheets:**
    [Ver hoja de cálculo]       
    (https://docs.google.com/spreadsheets/d/1c152e4a-32f0-4216-aafa-086c7c972c55)
-
+   
 ---
-
-    ## 🚀 Características Principales
-
-    ### ✅ Sistema de Asistencias
-    - **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
+## 🚀 Características Principales
+### ✅ Sistema de Asistencias
+   - **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
     - **QR Protegido**: Código generado por coaches, accesible solo con PIN
     - **Validación Horaria**: 16:45 hrs + 15 min de tolerancia (configurable)
     - **Device ID Único**: 1 registro por dispositivo por día (anti-fraude)
-
-      ### 🔒 Reglas de Negocio
-    - ✅ **Asistencia**: Llegar dentro de 15 min de tolerancia
+### 🔒 Reglas de Negocio
+   - ✅ **Asistencia**: Llegar dentro de 15 min de tolerancia
     - ⚠️ **Retardo**: Llegar después de 15 min (3 retardos = 1 falta)
     - ❌ **Falta**: No asistir (3 faltas = baja del club)
-
-      ### 📱 Funcionalidades Clave
-    - **Offline-First**: Funciona sin internet, sincroniza automáticamente
+### 📱 Funcionalidades Clave
+   - **Offline-First**: Funciona sin internet, sincroniza automáticamente
     - **PWA Instalable**: Se instala como app nativa (iOS/Android)
     - **Panel de Coach**: Gestión con 4 PINs, exportación CSV, reset de temporada
     - **Avisos del Club**: Muro de noticias en vista principal
@@ -82,6 +78,7 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 ├── vercel.json             # Headers de seguridad y rewrites SPA
 
 ├── README.md               # Esta documentación
+
 └── assets/
 
 ├── logo.png                # Logo principal
@@ -222,8 +219,8 @@ Scripts CDN con SRI
         integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" 
         crossorigin="anonymous" 
         referrerpolicy="no-referrer"></script>
-        
-    📊 Uso del Sistema Para Jugadoras
+  
+   📊 Uso del Sistema Para Jugadoras
 1️⃣ Instalar PWA
 Android (Chrome/Edge):      
     Abrir 
@@ -305,7 +302,6 @@ Ir a
     
    Agregar nombre de prueba
    Marcar asistencia
-
 Verificar que aparezca nueva fila asistenciSheet         
 // Pegar en consola del navegador
 
@@ -334,14 +330,13 @@ Precisión en metros
             console.log('❌ Service Worker no registrado');
         }
          });
-    
-    🐛 Troubleshooting
+   🐛 Troubleshooting
 ❌ "QR no válido" al escanear
 Causa: URL del QR no coincide con dominio permitido
 
-    Solución:
-Verificar que el QR apunte a 
-      
+   Solución:
+Verificar que el QR apunte a  
+ 
     https://riversapp.vercel.app/checkin.html
 
 Regenerar QR desde Coach Panel
