@@ -1,6 +1,6 @@
 const CONFIG = {
   SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
-  CHECKIN_URL: 'https://rivers.vercel.app/checkin',
+  CHECKIN_URL: 'https://rivers.vercel.app/checkin.html',
   CHECKIN_START: '16:00',
   CHECKIN_END: '17:30',
   SESSION_TIME: '16:45',
@@ -177,7 +177,7 @@ function handleScan(qrData) {
     try {
       const scannedUrl = new URL(qrData, window.location.href);
       const allowedHosts = [window.location.hostname, 'rivers.vercel.app', 'localhost'];
-      if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin')) {
+      if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
         window.location.href = `${scannedUrl.href}?lat=${latitude}&lon=${longitude}`;
         return;
       }
