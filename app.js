@@ -4,7 +4,7 @@ const CONFIG = {
   TARGET_LAT: 20.0,
   TARGET_LON: -100.0,
   MAX_DISTANCE_KM: 0.5,
-  COACH_PINS: ['1234', '0000']
+  COACH_PINS: ['2000']
 };
 
 const state = {
@@ -21,7 +21,6 @@ const state = {
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
   setupEventListeners();
-  generateQRCode();
   loadUserStats();
   updateScheduleDisplay();
   loadFeed();
@@ -71,9 +70,6 @@ function setupEventListeners() {
   document.getElementById('coachPIN')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') unlockCoachPanel();
   });
-  document.getElementById('refreshQR')?.addEventListener('click', () => {
-    generateQRCode();
-  });
   document.getElementById('exportCSV')?.addEventListener('click', exportToCSV);
   document.getElementById('editSchedule')?.addEventListener('click', editScheduleConfig);
   document.getElementById('sendNotice')?.addEventListener('click', sendNotice);
@@ -96,15 +92,15 @@ function switchTab(tabName) {
 }
 
 function generateQRCode() {
-  const container = document.getElementById('qrContainer');
+  const container = document.getElementById('fixedQR');
   if (!container || typeof QRCode === 'undefined') return;
   container.innerHTML = '';
   new QRCode(container, {
     text: CONFIG.CHECKIN_URL,
-    width: 250,
-    height: 250,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
+    width: 220,
+    height: 220,
+    colorDark: '#1F1133',
+    colorLight: '#F7F0FF',
     correctLevel: QRCode.CorrectLevel.H
   });
 }
@@ -117,6 +113,7 @@ function unlockCoachPanel() {
     document.getElementById('coachPanel')?.classList.remove('hidden');
     loadCoachStats();
     loadScheduleConfig();
+    generateQRCode();
   } else {
     alert('❌ PIN incorrecto');
     document.getElementById('coachPIN').value = '';
