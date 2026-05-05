@@ -144,7 +144,7 @@
         <div class="text-center mb-6">
             <img src="/logo.png" alt="RIVERS" class="w-20 h-20 rounded-full mx-auto mb-4">
             <h1 class="text-2xl font-bold mb-2">Check-In de Asistencia</h1>
-            <p class="text-gray-400 text-sm" id="sessionInfo">Cargando...</p>
+            <p class="text-gray-400 text-sm">Registra tu asistencia al club</p>
         </div>
         
         <div id="selectView">
@@ -186,10 +186,6 @@
     <script>
         const CONFIG = {
             SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
-            CHECKIN_START: '16:00',
-            CHECKIN_END: '17:30',
-            SESSION_TIME: '16:45',
-            TOLERANCE: 15,
         };
         
         let selectedPlayer = null;
@@ -197,8 +193,6 @@
         let playersList = [];
         
         document.addEventListener('DOMContentLoaded', () => {
-            if (!checkSchedule()) return;
-            
             loadPlayers();
             
             document.getElementById('newPlayerBtn').addEventListener('click', showAddView);
@@ -206,39 +200,15 @@
             document.getElementById('saveNewPlayer').addEventListener('click', saveNewPlayer);
         });
         
-        function checkSchedule() {
-            const now = new Date();
-            const [startHour, startMin] = CONFIG.CHECKIN_START.split(':');
-            const [endHour, endMin] = CONFIG.CHECKIN_END.split(':');
-            
-            const startTime = new Date(now);
-            startTime.setHours(parseInt(startHour), parseInt(startMin), 0);
-            
-            const endTime = new Date(now);
-            endTime.setHours(parseInt(endHour), parseInt(endMin), 0);
-            
-            document.getElementById('sessionInfo').textContent = 
-                `Sesión hoy ${CONFIG.SESSION_TIME} hrs | Tolerancia: ${CONFIG.TOLERANCE} min`;
-            
-            if (now < startTime) {
-                showError(`⏰ El check-in abre a las ${CONFIG.CHECKIN_START}`);
-                return false;
-            }
-            
-            if (now > endTime) {
-                showError(`⏰ El check-in cerró a las ${CONFIG.CHECKIN_END}`);
-                return false;
-            }
-            
+        function checkIfAlreadyCheckedIn() {
             const lastCheckin = localStorage.getItem(`checkin_${deviceId}`);
-            const today = now.toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
             
             if (lastCheckin === today) {
                 showError('✅ Ya registraste tu asistencia hoy');
-                return false;
+                return true;
             }
-            
-            return true;
+            return false;
         }
         
         async function loadPlayers() {
@@ -334,25 +304,21 @@
                 return;
             }
             
+            if (checkIfAlreadyCheckedIn()) return;
+            
             document.getElementById('selectView').classList.add('hidden');
             document.getElementById('addView').classList.add('hidden');
             document.getElementById('confirmView').classList.remove('hidden');
             
             const now = new Date();
-            const [sessionHour, sessionMin] = CONFIG.SESSION_TIME.split(':');
-            const sessionTime = new Date(now);
-            sessionTime.setHours(parseInt(sessionHour), parseInt(sessionMin), 0);
-            
-            const diffMinutes = (now - sessionTime) / (1000 * 60);
-            const isLate = diffMinutes > CONFIG.TOLERANCE;
             
             const data = {
                 nombre: selectedPlayer,
-                tipo: isLate ? 'retardo' : 'asistencia',
+                tipo: 'asistencia',
                 timestamp: now.toISOString(),
                 session: now.toISOString().split('T')[0],
                 deviceId: deviceId,
-                diffMinutes: Math.round(diffMinutes)
+                diffMinutes: 0
             };
             
             try {
@@ -364,7 +330,8 @@
                 
                 if (response.ok) {
                     localStorage.setItem(`checkin_${deviceId}`, data.session);
-                    showSuccess(isLate);
+                    localStorage.setItem('userName', selectedPlayer);
+                    showSuccess();
                 } else {
                     showError('Error al registrar. Intenta de nuevo.');
                 }
@@ -374,22 +341,21 @@
             }
         }
         
-        function showSuccess(isLate) {
-            document.getElementById('statusIcon').textContent = isLate ? '⚠️' : '✅';
-            document.getElementById('statusTitle').textContent = isLate ? 'Retardo Registrado' : '¡Asistencia Confirmada!';
+        function showSuccess() {
+            document.getElementById('statusIcon').textContent = '✅';
+            document.getElementById('statusTitle').textContent = '¡Asistencia Confirmada!';
             document.getElementById('statusMessage').textContent = 
-                isLate 
-                    ? `${selectedPlayer}, llegaste tarde. 3 retardos = 1 falta.` 
-                    : `${selectedPlayer}, tu asistencia se registró correctamente.`;
+                `${selectedPlayer}, tu asistencia se registró correctamente.`;
             
             const badge = document.getElementById('statusBadge');
-            badge.textContent = isLate ? 'RETARDO' : 'A TIEMPO';
-            badge.className = `status ${isLate ? 'status-late' : 'status-success'}`;
+            badge.textContent = 'A TIEMPO';
+            badge.className = 'status status-success';
             badge.classList.remove('hidden');
             
+            localStorage.setItem('userName', selectedPlayer);
             setTimeout(() => {
-                window.close();
-            }, 3000);
+                window.location.href = '/';
+            }, 2200);
         }
         
         function showError(message) {

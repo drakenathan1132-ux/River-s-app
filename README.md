@@ -34,12 +34,11 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
    - **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
     - **QR Protegido**: Código generado únicamente en el panel de coach (accesible solo con PIN)
     - **Flujo de Check-in**: QR → checkin.html → registro → redirección a dashboard principal
-    - **Validación Horaria**: 16:45 hrs + 15 min de tolerancia (configurable)
+    - **Sin Restricción Horaria**: Check-in disponible en cualquier momento del día
     - **Device ID Único**: 1 registro por dispositivo por día (anti-fraude)
 ### 🔒 Reglas de Negocio
-   - ✅ **Asistencia**: Llegar dentro de 15 min de tolerancia
-    - ⚠️ **Retardo**: Llegar después de 15 min (3 retardos = 1 falta)
-    - ❌ **Falta**: No asistir (3 faltas = baja del club)
+   - ✅ **Asistencia**: Registro exitoso en cualquier momento del día
+    - ❌ **Falta**: No registrar asistencia (configurable por coach)
 ### 📱 Funcionalidades Clave
    - **Offline-First**: Funciona sin internet, sincroniza automáticamente
     - **PWA Instalable**: Se instala como app nativa (iOS/Android)
@@ -136,16 +135,24 @@ Editar array en app.js
 Commit y push a GitHub
 Vercel redespliega automáticamente
 
-4️⃣ Horarios de Sesiones
-Configurable desde Coach Panel (no requiere tocar código):
-Días predeterminados: Martes (2) y Jueves (4)
-Hora: 16:45 hrs
-Tolerancia: 15 minutos
-Ubicación: Cancha Principal
-Para cambiar horarios:
-Ir a Coach Panel
-Click en "📅 Editar Horarios"
-Seguir prompts para cambiar días/hora/tolerancia/ubicación
+4️⃣ Configuración de Ubicación
+Editar en `app.js` (líneas 3-8):
+``javascript
+const CONFIG = 
+
+    {
+    SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
+    COACH_PINS: ['2501', '2502', '2503', '2504'],
+    CHECKIN_URL: window.location.origin + '/checkin.html',
+    TARGET_LAT: 19.0732,    // ← CAMBIAR A TU CAMPO
+    TARGET_LON: -97.0461,   // ← CAMBIAR A TU CAMPO
+    MAX_DISTANCE_KM: 0.3    // 300 metros tolerancia
+    };
+
+Cómo obtener coordenadas:
+Google Maps → Click derecho en el campo → "¿Qué hay aquí?"
+Copiar los números que aparecen (ej: 19.0732, -97.0461)
+Pegar en TARGET_LAT y TARGET_LON
 
    🚀 Despliegue en Vercel
 Deploy Automático (Recomendado)
