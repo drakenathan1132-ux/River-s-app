@@ -176,8 +176,8 @@ function handleScan(qrData) {
     }
     try {
       const scannedUrl = new URL(qrData, window.location.href);
-      const allowedHosts = [window.location.hostname, 'riversapp.vercel.app', 'localhost'];
-      if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
+      const allowedHosts = [window.location.hostname, 'rivers.vercel.app', 'localhost'];
+      if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin')) {
         window.location.href = `${scannedUrl.href}?lat=${latitude}&lon=${longitude}`;
         return;
       }
