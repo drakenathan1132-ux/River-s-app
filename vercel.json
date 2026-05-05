@@ -2,18 +2,32 @@
   "version": 2,
   "public": true,
   "routes": [
-    { "handle": "filesystem" },
+    { "src": "/(.*\\.html)$", "dest": "/$1" },
+    { "src": "/(.*\\.js)$", "dest": "/$1" },
+    { "src": "/(.*\\.json)$", "dest": "/$1" },
+    { "src": "/(.*\\.css)$", "dest": "/$1" },
     { "src": "/.*", "dest": "/index.html" }
   ],
   "headers": [
     {
+      "source": "/checkin.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "Referrer-Policy", "value": "no-referrer-when-downgrade" },
-        { "key": "Permissions-Policy", "value": "geolocation=(self), microphone=()" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        { "key": "Permissions-Policy", "value": "geolocation=(self), camera=(self)" }
       ]
     }
   ]
