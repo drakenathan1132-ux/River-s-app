@@ -239,59 +239,39 @@
             const today = now.getDay();
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-            if (!config.dias.includes(today)) {
-                const nextDay = config.dias.map(d => dayNames[d]).join(', ');
-                return {
-                    allowRegistration: false,
-                    message: `No hay entrenamiento hoy. Días programados: ${nextDay}.`,
-                    type: null,
-                    sessionTime: null
-                };
-            }
+            const isTrainingDay = config.dias.includes(today);
+            let sessionTime = null;
+            let type = 'asistencia'; // default
+            let message = 'Registra tu asistencia al club';
+            let diffMinutes = 0;
 
-            const { hour, minute } = parseHourMinute(config.hora);
-            const sessionTime = new Date(now);
-            sessionTime.setHours(hour, minute, 0, 0);
+            if (isTrainingDay) {
+                const { hour, minute } = parseHourMinute(config.hora);
+                sessionTime = new Date(now);
+                sessionTime.setHours(hour, minute, 0, 0);
 
-            const attendanceStart = new Date(sessionTime.getTime() - 15 * 60000);
-            const lateEnd = new Date(sessionTime.getTime() + config.tolerancia * 60000);
-            const diffMinutes = Math.round((now - sessionTime) / 60000);
+                const attendanceStart = new Date(sessionTime.getTime() - 15 * 60000);
+                const lateEnd = new Date(sessionTime.getTime() + config.tolerancia * 60000);
+                diffMinutes = Math.round((now - sessionTime) / 60000);
 
-            if (now < attendanceStart) {
-                return {
-                    allowRegistration: false,
-                    message: `Check-in abre a las ${formatTime(attendanceStart)}.`,
-                    type: null,
-                    sessionTime
-                };
-            }
-
-            if (now <= sessionTime) {
-                return {
-                    allowRegistration: true,
-                    message: `Check-in abierto. Marca asistencia antes de las ${config.hora}.`,
-                    type: 'asistencia',
-                    diffMinutes: 0,
-                    sessionTime
-                };
-            }
-
-            if (now <= lateEnd) {
-                return {
-                    allowRegistration: true,
-                    message: `Llegaste tarde. Retardo registrado.`,
-                    type: 'retardo',
-                    diffMinutes,
-                    sessionTime
-                };
+                if (now <= sessionTime) {
+                    type = 'asistencia';
+                    message = `Check-in abierto. Marca asistencia antes de las ${config.hora}.`;
+                } else if (now <= lateEnd) {
+                    type = 'retardo';
+                    message = `Llegaste tarde. Retardo registrado.`;
+                } else {
+                    type = 'falta';
+                    message = `Llegaste muy tarde. Se registra falta.`;
+                }
             }
 
             return {
                 allowRegistration: true,
-                message: `Llegaste muy tarde. Se registra falta.`,
-                type: 'falta',
-                diffMinutes,
-                sessionTime
+                message,
+                type,
+                sessionTime,
+                diffMinutes
             };
         }
 
