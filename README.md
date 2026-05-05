@@ -32,7 +32,8 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 ## 🚀 Características Principales
 ### ✅ Sistema de Asistencias
    - **Geofencing GPS**: Check-in solo si estás en el campo (300m de tolerancia)
-    - **QR Protegido**: Código generado por coaches, accesible solo con PIN
+    - **QR Protegido**: Código generado únicamente en el panel de coach (accesible solo con PIN)
+    - **Flujo de Check-in**: QR → checkin.html → registro → redirección a dashboard principal
     - **Validación Horaria**: 16:45 hrs + 15 min de tolerancia (configurable)
     - **Device ID Único**: 1 registro por dispositivo por día (anti-fraude)
 ### 🔒 Reglas de Negocio
@@ -42,9 +43,9 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
 ### 📱 Funcionalidades Clave
    - **Offline-First**: Funciona sin internet, sincroniza automáticamente
     - **PWA Instalable**: Se instala como app nativa (iOS/Android)
-    - **Panel de Coach**: Gestión con 4 PINs, exportación CSV, reset de temporada
-    - **Avisos del Club**: Muro de noticias en vista principal
-    - **Estadísticas**: Dashboard personal de asistencias/retardos/faltas
+    - **Panel de Coach**: Gestión con 4 PINs, exportación CSV, reset de temporada, generación de QR
+    - **Dashboard Principal**: Avisos del club, estadísticas personales, acceso a check-in
+    - **Check-in Seguro**: Solo accesible vía QR generado por coach, con validación GPS y horario
 
  ### 🎯 Stack Tecnológico
 | Capa | Tecnología |
@@ -61,7 +62,7 @@ Sistema integral de gestión de asistencias para club de flag football femenil. 
    ## 📦 Estructura del Proyecto
    River-s-app/
 
-├── index.html              # App principal (Inicio, Scan, Coach Panel)
+├── index.html              # App principal (Inicio, Coach Panel)
 
 ├── app.js                  # Lógica de negocio y geolocalización
 
