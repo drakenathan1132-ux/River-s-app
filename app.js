@@ -1,6 +1,6 @@
 const CONFIG = {
   SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
-  CHECKIN_URL: window.location.origin + '/checkin.html',
+  CHECKIN_URL: 'https://rivers.vercel.app/checkin',
   CHECKIN_START: '16:00',
   CHECKIN_END: '17:30',
   SESSION_TIME: '16:45',
@@ -64,10 +64,6 @@ function setupEventListeners() {
   document.getElementById('unlockCoach')?.addEventListener('click', unlockCoachPanel);
   document.getElementById('coachPIN')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') unlockCoachPanel();
-  });
-  document.getElementById('refreshQR')?.addEventListener('click', () => {
-    generateQRCode();
-    generateMainQRCode();
   });
   document.getElementById('exportCSV')?.addEventListener('click', exportToCSV);
   document.getElementById('editSchedule')?.addEventListener('click', editScheduleConfig);
