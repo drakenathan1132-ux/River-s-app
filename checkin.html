@@ -144,7 +144,7 @@
         <div class="text-center mb-6">
             <img src="/logo.png" alt="RIVERS" class="w-20 h-20 rounded-full mx-auto mb-4">
             <h1 class="text-2xl font-bold mb-2">Check-In de Asistencia</h1>
-            <p class="text-gray-400 text-sm">Registra tu asistencia al club</p>
+            <p class="text-gray-400 text-sm" id="sessionInfo">Registra tu asistencia al club</p>
         </div>
         
         <div id="selectView">
@@ -197,14 +197,113 @@
         let selectedPlayer = null;
         let deviceId = getOrCreateDeviceId();
         let playersList = [];
+        let currentCheckinState = null;
         
         document.addEventListener('DOMContentLoaded', () => {
+            const state = getCheckinState();
+            renderSessionInfo(state);
+
+            if (!state.allowRegistration) {
+                showError(state.message);
+                return;
+            }
+
             loadPlayers();
-            
+
             document.getElementById('newPlayerBtn').addEventListener('click', showAddView);
             document.getElementById('backToList').addEventListener('click', showSelectView);
             document.getElementById('saveNewPlayer').addEventListener('click', saveNewPlayer);
         });
+
+        function getScheduleConfig() {
+            return JSON.parse(localStorage.getItem('scheduleConfig')) || {
+                dias: [2, 4],
+                hora: '16:45',
+                tolerancia: 15,
+                location: 'Cancha Principal'
+            };
+        }
+
+        function parseHourMinute(timeString) {
+            const [hour, minute] = timeString.split(':').map(Number);
+            return { hour, minute };
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getCheckinState() {
+            const config = getScheduleConfig();
+            const now = new Date();
+            const today = now.getDay();
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+            if (!config.dias.includes(today)) {
+                const nextDay = config.dias.map(d => dayNames[d]).join(', ');
+                return {
+                    allowRegistration: false,
+                    message: `No hay entrenamiento hoy. Días programados: ${nextDay}.`,
+                    type: null,
+                    sessionTime: null
+                };
+            }
+
+            const { hour, minute } = parseHourMinute(config.hora);
+            const sessionTime = new Date(now);
+            sessionTime.setHours(hour, minute, 0, 0);
+
+            const attendanceStart = new Date(sessionTime.getTime() - 15 * 60000);
+            const lateEnd = new Date(sessionTime.getTime() + config.tolerancia * 60000);
+            const diffMinutes = Math.round((now - sessionTime) / 60000);
+
+            if (now < attendanceStart) {
+                return {
+                    allowRegistration: false,
+                    message: `Check-in abre a las ${formatTime(attendanceStart)}.`,
+                    type: null,
+                    sessionTime
+                };
+            }
+
+            if (now <= sessionTime) {
+                return {
+                    allowRegistration: true,
+                    message: `Check-in abierto. Marca asistencia antes de las ${config.hora}.`,
+                    type: 'asistencia',
+                    diffMinutes: 0,
+                    sessionTime
+                };
+            }
+
+            if (now <= lateEnd) {
+                return {
+                    allowRegistration: true,
+                    message: `Llegaste tarde. Retardo registrado.`,
+                    type: 'retardo',
+                    diffMinutes,
+                    sessionTime
+                };
+            }
+
+            return {
+                allowRegistration: true,
+                message: `Llegaste muy tarde. Se registra falta.`,
+                type: 'falta',
+                diffMinutes,
+                sessionTime
+            };
+        }
+
+        function renderSessionInfo(state) {
+            const info = document.getElementById('sessionInfo');
+            if (!info) return;
+            if (state.sessionTime) {
+                info.textContent = `${state.message} Hora del entrenamiento: ${formatTime(state.sessionTime)}.`;
+            } else {
+                info.textContent = state.message;
+            }
+        }
         
         function checkIfAlreadyCheckedIn() {
             const lastCheckin = localStorage.getItem(`checkin_${deviceId}`);
@@ -264,6 +363,15 @@
                 confirmBtn.addEventListener('click', submitCheckin);
                 document.getElementById('playerList').insertAdjacentElement('afterend', confirmBtn);
             }
+            
+            const state = getCheckinState();
+            if (state.type === 'retardo') {
+                confirmBtn.textContent = '⚠️ Registrar Retardo';
+            } else if (state.type === 'falta') {
+                confirmBtn.textContent = '❌ Registrar Falta';
+            } else {
+                confirmBtn.textContent = '✅ Registrar Asistencia';
+            }
         }
         
         function showAddView() {
@@ -312,19 +420,24 @@
             
             if (checkIfAlreadyCheckedIn()) return;
             
+            const state = getCheckinState();
+            if (!state.allowRegistration) {
+                showError(state.message);
+                return;
+            }
+            
             document.getElementById('selectView').classList.add('hidden');
             document.getElementById('addView').classList.add('hidden');
             document.getElementById('confirmView').classList.remove('hidden');
             
             const now = new Date();
-            
             const data = {
                 nombre: selectedPlayer,
-                tipo: 'asistencia',
+                tipo: state.type,
                 timestamp: now.toISOString(),
                 session: now.toISOString().split('T')[0],
                 deviceId: deviceId,
-                diffMinutes: 0
+                diffMinutes: state.type === 'asistencia' ? 0 : Math.max(0, state.diffMinutes)
             };
             
             try {
@@ -337,7 +450,7 @@
                 if (response.ok) {
                     localStorage.setItem(`checkin_${deviceId}`, data.session);
                     localStorage.setItem('userName', selectedPlayer);
-                    showSuccess();
+                    showSuccess(state.type);
                 } else {
                     showError('Error al registrar. Intenta de nuevo.');
                 }
@@ -347,17 +460,29 @@
             }
         }
         
-        function showSuccess() {
-            document.getElementById('statusIcon').textContent = '✅';
-            document.getElementById('statusTitle').textContent = '¡Asistencia Confirmada!';
-            document.getElementById('statusMessage').textContent = 
-                `${selectedPlayer}, tu asistencia se registró correctamente.`;
-            
+        function showSuccess(type) {
             const badge = document.getElementById('statusBadge');
-            badge.textContent = 'A TIEMPO';
-            badge.className = 'status status-success';
-            badge.classList.remove('hidden');
+            if (type === 'retardo') {
+                document.getElementById('statusIcon').textContent = '⚠️';
+                document.getElementById('statusTitle').textContent = 'Retardo Registrado';
+                document.getElementById('statusMessage').textContent = `${selectedPlayer}, llegaste tarde. 3 retardos = 1 falta.`;
+                badge.textContent = 'RETARDO';
+                badge.className = 'status status-late';
+            } else if (type === 'falta') {
+                document.getElementById('statusIcon').textContent = '❌';
+                document.getElementById('statusTitle').textContent = 'Falta Registrada';
+                document.getElementById('statusMessage').textContent = `${selectedPlayer}, tu asistencia se registró como falta.`;
+                badge.textContent = 'FALTA';
+                badge.className = 'status status-error';
+            } else {
+                document.getElementById('statusIcon').textContent = '✅';
+                document.getElementById('statusTitle').textContent = '¡Asistencia Confirmada!';
+                document.getElementById('statusMessage').textContent = `${selectedPlayer}, tu asistencia se registró correctamente.`;
+                badge.textContent = 'A TIEMPO';
+                badge.className = 'status status-success';
+            }
             
+            badge.classList.remove('hidden');
             localStorage.setItem('userName', selectedPlayer);
             setTimeout(() => {
                 window.location.href = '/';
