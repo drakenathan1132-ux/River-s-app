@@ -1,10 +1,6 @@
 const CONFIG = {
   SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
   CHECKIN_URL: window.location.origin + '/checkin.html',
-  CHECKIN_START: '16:00',
-  CHECKIN_END: '17:30',
-  SESSION_TIME: '16:45',
-  TOLERANCE: 15,
   TARGET_LAT: 20.0,
   TARGET_LON: -100.0,
   MAX_DISTANCE_KM: 0.5,
@@ -26,19 +22,34 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
   setupEventListeners();
   generateQRCode();
-  generateMainQRCode();
   loadUserStats();
   updateScheduleDisplay();
   loadFeed();
 });
 
 function initApp() {
-  if (!state.userData.nombre) {
-    const nombre = prompt('¿Cuál es tu nombre completo?');
-    if (nombre) {
-      state.userData.nombre = nombre;
-      localStorage.setItem('userName', nombre);
-    }
+  updateHomeUI();
+}
+
+function updateHomeUI() {
+  const welcomeTitle = document.getElementById('welcomeTitle');
+  const homeSubtitle = document.getElementById('homeSubtitle');
+  const checkinButton = document.getElementById('goCheckin');
+
+  if (welcomeTitle) {
+    welcomeTitle.textContent = state.userData.nombre ? `¡Hola, ${state.userData.nombre}!` : 'Bienvenida a RIVERS';
+  }
+
+  if (homeSubtitle) {
+    homeSubtitle.textContent = state.userData.nombre
+      ? 'Revisa tus avisos y estadísticas actualizadas del equipo.'
+      : 'Para registrarte primero debes hacer check-in desde el enlace que genera el coach.';
+  }
+
+  if (checkinButton) {
+    checkinButton.addEventListener('click', () => {
+      window.location.href = CONFIG.CHECKIN_URL;
+    });
   }
 }
 
@@ -53,11 +64,6 @@ function setupEventListeners() {
       const tab = item.dataset.tab;
       switchTab(tab);
       toggleSidebar();
-      if (tab === 'scan') {
-        startQRScanner();
-      } else {
-        stopQRScanner();
-      }
     });
   });
 
@@ -67,13 +73,11 @@ function setupEventListeners() {
   });
   document.getElementById('refreshQR')?.addEventListener('click', () => {
     generateQRCode();
-    generateMainQRCode();
   });
   document.getElementById('exportCSV')?.addEventListener('click', exportToCSV);
   document.getElementById('editSchedule')?.addEventListener('click', editScheduleConfig);
   document.getElementById('sendNotice')?.addEventListener('click', sendNotice);
   document.getElementById('resetSeason')?.addEventListener('click', resetSeason);
-  document.getElementById('stopScan')?.addEventListener('click', stopQRScanner);
 }
 
 function toggleSidebar() {
@@ -103,104 +107,6 @@ function generateQRCode() {
     colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.H
   });
-}
-
-function generateMainQRCode() {
-  const container = document.getElementById('mainQRContainer');
-  if (!container || typeof QRCode === 'undefined') return;
-  container.innerHTML = '';
-  new QRCode(container, {
-    text: CONFIG.CHECKIN_URL,
-    width: 200,
-    height: 200,
-    colorDark: '#00D9FF',
-    colorLight: '#0A0A0A',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-}
-
-function startQRScanner() {
-  if (typeof Html5Qrcode === 'undefined') {
-    showScanResult('La biblioteca de QR no está cargada', 'error');
-    return;
-  }
-  if (state.qrScanner) {
-    state.qrScanner.clear();
-  }
-  const html5QrCode = new Html5Qrcode('reader');
-  html5QrCode.start(
-    { facingMode: 'environment' },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    (decodedText) => {
-      handleScan(decodedText);
-      html5QrCode.stop();
-    },
-    () => {}
-  ).then(() => {
-    state.qrScanner = html5QrCode;
-    document.getElementById('stopScan')?.classList.remove('hidden');
-  }).catch((err) => {
-    console.error('Error al iniciar scanner:', err);
-    showScanResult('❌ Error al acceder a la cámara', 'error');
-  });
-}
-
-function stopQRScanner() {
-  if (state.qrScanner) {
-    state.qrScanner.stop().then(() => {
-      state.qrScanner.clear();
-      state.qrScanner = null;
-      document.getElementById('stopScan')?.classList.add('hidden');
-    }).catch((err) => {
-      console.error('Error al detener scanner:', err);
-    });
-  }
-}
-
-function handleScan(qrData) {
-  const resultDiv = document.getElementById('scanResult');
-  if (!resultDiv) return;
-  if (!navigator.geolocation) {
-    showScanResult('Tu navegador no soporta geolocalización', 'error');
-    return;
-  }
-  navigator.geolocation.getCurrentPosition((position) => {
-    const { latitude, longitude } = position.coords;
-    const R = 6371;
-    const dLat = (latitude - CONFIG.TARGET_LAT) * Math.PI / 180;
-    const dLon = (longitude - CONFIG.TARGET_LON) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(CONFIG.TARGET_LAT * Math.PI / 180) * Math.cos(latitude * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    if (distance > CONFIG.MAX_DISTANCE_KM) {
-      showScanResult(`❌ Fuera de rango (${distance.toFixed(2)} km). Acércate al campo.`, 'error');
-      return;
-    }
-    try {
-      const scannedUrl = new URL(qrData, window.location.href);
-      const allowedHosts = [window.location.hostname, 'riversapp.vercel.app', 'localhost'];
-      if (allowedHosts.includes(scannedUrl.hostname) && scannedUrl.pathname.includes('/checkin.html')) {
-        window.location.href = `${scannedUrl.href}?lat=${latitude}&lon=${longitude}`;
-        return;
-      }
-      showScanResult('❌ QR no autorizado', 'error');
-    } catch (error) {
-      showScanResult('❌ QR inválido', 'error');
-    }
-  }, () => {
-    showScanResult('❌ Activa el GPS y vuelve a intentar', 'error');
-  }, { enableHighAccuracy: true });
-}
-
-function showScanResult(message, type) {
-  const resultDiv = document.getElementById('scanResult');
-  if (!resultDiv) return;
-  resultDiv.textContent = message;
-  resultDiv.className = `mt-4 p-4 rounded-lg text-center ${type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`;
-  resultDiv.classList.remove('hidden');
-  setTimeout(() => resultDiv.classList.add('hidden'), 4000);
 }
 
 function unlockCoachPanel() {
