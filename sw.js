@@ -11,7 +11,7 @@ const SYNC_TAG = 'sync-attendance';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/checkin.html',
+  '/punto.html', 
   '/app.js',
   '/manifest.json',
   '/offline.html',
