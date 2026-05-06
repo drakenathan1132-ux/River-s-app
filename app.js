@@ -1,6 +1,6 @@
 const CONFIG = {
   SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
-  CHECKIN_URL: 'https://riversapp.vercel.app/checkin.html',l',
+  CHECKIN_URL: 'https://riversapp.vercel.app/checkin.html',
   CHECKIN_START: '16:00',
   CHECKIN_END: '17:30',
   SESSION_TIME: '16:45',
@@ -8,7 +8,7 @@ const CONFIG = {
   TARGET_LAT: 20.0,
   TARGET_LON: -100.0,
   MAX_DISTANCE_KM: 0.5,
-  COACH_PINS: ['1234', '0000']
+  COACH_PINS: ['2000', '2912']
 };
 
 const state = {
@@ -306,12 +306,10 @@ function loadScheduleConfig() {
   const configDaysEl = document.getElementById('configDays');
   const configTimeEl = document.getElementById('configTime');
   const configToleranceEl = document.getElementById('configTolerance');
-  const sessionLocationEl = document.getElementById('sessionLocation');
-
+  
   if (configDaysEl) configDaysEl.textContent = dayLabels;
   if (configTimeEl) configTimeEl.textContent = config.hora;
   if (configToleranceEl) configToleranceEl.textContent = `${config.tolerancia} min`;
-  if (sessionLocationEl) sessionLocationEl.textContent = config.location;
 }
 
 function sendNotice() {
@@ -336,66 +334,45 @@ function resetSeason() {
   }
 }
 
+// --- FUNCIONES FALTANTES PARA EVITAR COLAPSO ---
+
+function loadUserStats() {
+  const userStats = state.userData;
+  const asistenciasEl = document.getElementById('asistencias');
+  const retardosEl = document.getElementById('retardos');
+  const faltasEl = document.getElementById('faltas');
+  
+  if(asistenciasEl) asistenciasEl.textContent = userStats.asistencias || 0;
+  if(retardosEl) retardosEl.textContent = userStats.retardos || 0;
+  if(faltasEl) faltasEl.textContent = userStats.faltas || 0;
+}
+
+function updateScheduleDisplay() {
+  const config = JSON.parse(localStorage.getItem('scheduleConfig')) || { location: 'Campos de la Laguna' };
+  const sessionLocationEl = document.getElementById('sessionLocation');
+  const sessionDateEl = document.getElementById('sessionDate');
+  
+  if (sessionLocationEl) sessionLocationEl.textContent = config.location;
+  if (sessionDateEl) sessionDateEl.textContent = 'Próximo Entrenamiento';
+}
+
 function loadFeed() {
   const container = document.getElementById('feedContainer');
   if (!container) return;
   const notices = JSON.parse(localStorage.getItem('clubNotices')) || [
-    { id: 1, text: 'Bienvenidas a la temporada 2025 de RIVERS Tochito Club 🏈', timestamp: new Date().toISOString(), author: 'Dirección' }
+    { id: 1, text: 'Bienvenidas a la temporada de RIVERS Tochito Club 🏈', timestamp: new Date().toISOString(), author: 'Dirección' }
   ];
   if (notices.length === 0) {
     container.innerHTML = '<p class="text-gray-400 text-center py-4">No hay avisos publicados</p>';
     return;
   }
   container.innerHTML = notices.map(notice => `
-    <div class="feed-item p-4 mb-3 rounded-lg bg-gray-800">
-      <p class="text-sm mb-2">${notice.text}</p>
-      <div class="flex justify-between items-center text-xs text-gray-400">
+    <div class="feed-item p-4 mb-3 rounded-lg bg-gray-800 border border-gray-700">
+      <p class="text-sm mb-2 text-white">${notice.text}</p>
+      <div class="flex justify-between text-xs text-gray-400">
+        <span>${new Date(notice.timestamp).toLocaleDateString()}</span>
         <span>${notice.author}</span>
-        <span>${new Date(notice.timestamp).toLocaleDateString('es-MX')}</span>
       </div>
     </div>
   `).join('');
-}
-
-async function loadUserStats() {
-  if (!state.userData.nombre) return;
-  try {
-    const response = await fetch(CONFIG.SHEETBEST_URL);
-    const data = await response.json();
-    const userRecords = data.filter(r => r.nombre === state.userData.nombre);
-    const asistencias = userRecords.filter(r => r.tipo === 'asistencia').length;
-    const retardos = userRecords.filter(r => r.tipo === 'retardo').length;
-    const faltas = Math.floor(retardos / 3);
-    const asistenciasEl = document.getElementById('asistencias');
-    const retardosEl = document.getElementById('retardos');
-    const faltasEl = document.getElementById('faltas');
-    if (asistenciasEl) asistenciasEl.textContent = asistencias;
-    if (retardosEl) retardosEl.textContent = retardos;
-    if (faltasEl) faltasEl.textContent = faltas;
-    state.userData.asistencias = asistencias;
-    state.userData.retardos = retardos;
-    state.userData.faltas = faltas;
-  } catch (error) {
-    console.error('Error cargando stats de usuario:', error);
-  }
-}
-
-function updateScheduleDisplay() {
-  const config = JSON.parse(localStorage.getItem('scheduleConfig')) || {
-    dias: [2, 4],
-    hora: '16:45',
-    location: 'Cancha Principal'
-  };
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  let nextSessionDay = config.dias.find(d => d > dayOfWeek);
-  if (typeof nextSessionDay === 'undefined') nextSessionDay = config.dias[0];
-  const daysUntil = nextSessionDay > dayOfWeek ? nextSessionDay - dayOfWeek : 7 - dayOfWeek + nextSessionDay;
-  const nextSession = new Date(now);
-  nextSession.setDate(now.getDate() + daysUntil);
-  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const sessionDateEl = document.getElementById('sessionDate');
-  const sessionLocationEl = document.getElementById('sessionLocation');
-  if (sessionDateEl) sessionDateEl.textContent = `${dayNames[nextSession.getDay()]}, ${nextSession.toLocaleDateString('es-MX')} a las ${config.hora}`;
-  if (sessionLocationEl) sessionLocationEl.textContent = config.location;
 }
