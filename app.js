@@ -1,9 +1,9 @@
 const CONFIG = {
   SHEETBEST_URL: 'https://api.sheetbest.com/sheets/1c152e4a-32f0-4216-aafa-086c7c972c55',
   CHECKIN_URL: 'https://riversapp.vercel.app/checkin.html',
-  CHECKIN_START: '16:00',
-  CHECKIN_END: '17:30',
-  SESSION_TIME: '16:45',
+  CHECKIN_START: '15:00',
+  CHECKIN_END: '18:00',
+  SESSION_TIME: '16:00',
   TOLERANCE: 15,
   TARGET_LAT: 20.0,
   TARGET_LON: -100.0,
@@ -297,9 +297,9 @@ function editScheduleConfig() {
 function loadScheduleConfig() {
   const config = JSON.parse(localStorage.getItem('scheduleConfig')) || {
     dias: [2, 4],
-    hora: '16:45',
+    hora: '16:00',
     tolerancia: 15,
-    location: 'Cancha Principal'
+    location: 'Col. La Laguna, Coscomatepec.'
   };
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const dayLabels = config.dias.map(d => dayNames[d] || '-').join(', ');
